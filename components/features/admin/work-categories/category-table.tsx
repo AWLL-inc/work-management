@@ -14,7 +14,6 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 
 interface CategoryTableProps {
   categories: WorkCategory[];
@@ -76,10 +75,6 @@ export function CategoryTable({
       await onUpdateCategory(prevCategory.id, {
         displayOrder: category.displayOrder,
       });
-      toast.success("Order updated successfully");
-    } catch (error) {
-      toast.error("Failed to update order");
-      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -100,10 +95,6 @@ export function CategoryTable({
       await onUpdateCategory(nextCategory.id, {
         displayOrder: category.displayOrder,
       });
-      toast.success("Order updated successfully");
-    } catch (error) {
-      toast.error("Failed to update order");
-      throw error;
     } finally {
       setIsSubmitting(false);
     }

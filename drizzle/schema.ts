@@ -60,6 +60,50 @@ export const verificationTokens = pgTable("verification_tokens", {
 }));
 
 /**
+ * Work Management Tables
+ */
+
+// Projects Master Table
+export const projects = pgTable("projects", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+});
+
+// Work Categories Master Table
+export const workCategories = pgTable("work_categories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  displayOrder: integer("display_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+});
+
+// Work Logs Table
+export const workLogs = pgTable("work_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  date: timestamp("date", { mode: "date" }).notNull(),
+  hours: varchar("hours", { length: 10 }).notNull(), // Using varchar for decimal(5,2) compatibility
+  projectId: uuid("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "restrict" }),
+  categoryId: uuid("category_id")
+    .notNull()
+    .references(() => workCategories.id, { onDelete: "restrict" }),
+  details: text("details"),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+});
+
+/**
  * Type exports for TypeScript
  */
 export type User = typeof users.$inferSelect;
@@ -67,3 +111,10 @@ export type NewUser = typeof users.$inferInsert;
 export type Account = typeof accounts.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type VerificationToken = typeof verificationTokens.$inferSelect;
+
+export type Project = typeof projects.$inferSelect;
+export type NewProject = typeof projects.$inferInsert;
+export type WorkCategory = typeof workCategories.$inferSelect;
+export type NewWorkCategory = typeof workCategories.$inferInsert;
+export type WorkLog = typeof workLogs.$inferSelect;
+export type NewWorkLog = typeof workLogs.$inferInsert;

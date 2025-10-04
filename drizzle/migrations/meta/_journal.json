@@ -8,6 +8,13 @@
       "when": 1759561967104,
       "tag": "0000_whole_blackheart",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759578587798,
+      "tag": "0001_fuzzy_cerise",
+      "breakpoints": true
     }
   ]
 }

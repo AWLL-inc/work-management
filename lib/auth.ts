@@ -5,22 +5,17 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db/connection";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
+import { authConfig } from "./auth-config";
 
 /**
- * NextAuth.js v5 Configuration
- * Supports Credentials (Email/Password) authentication
- * with Drizzle ORM adapter for database sessions
+ * NextAuth.js v5 Configuration with Database
+ * This file includes database connections and providers
+ * Use this in API routes (Node.js runtime)
+ * For middleware, use auth-config.ts instead
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   adapter: DrizzleAdapter(db),
-  session: {
-    strategy: "jwt", // Use JWT for better edge compatibility
-  },
-  pages: {
-    signIn: "/login",
-    signOut: "/",
-    error: "/login",
-  },
   providers: [
     Credentials({
       name: "credentials",
@@ -65,24 +60,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      // Add user role to token on sign in
-      if (user) {
-        token.role = user.role;
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      // Add user role and id to session
-      if (session.user) {
-        session.user.role = token.role as string;
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  trustHost: true, // Required for Vercel deployment
 });

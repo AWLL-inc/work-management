@@ -41,7 +41,7 @@ async function seed() {
       const [createdUser] = await db
         .insert(users)
         .values(user)
-        .returning({ id: users.id, email: users.email, role: users.role });
+        .returning();
 
       console.log(
         `✓ Created user: ${createdUser.email} (${createdUser.role})`

@@ -17,6 +17,7 @@ export default function WorkCategoriesPage() {
     mutate,
   } = useSWR("/api/work-categories", () => getWorkCategories(false), {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   const handleCreateCategory = async (data: {
@@ -32,7 +33,6 @@ export default function WorkCategoriesPage() {
         displayOrder: data.displayOrder,
         isActive: data.isActive,
       });
-      toast.success("Category created successfully");
       mutate();
     } catch (error) {
       toast.error(
@@ -53,7 +53,6 @@ export default function WorkCategoriesPage() {
   ) => {
     try {
       await updateWorkCategory(id, data);
-      toast.success("Category updated successfully");
       mutate();
     } catch (error) {
       toast.error(
@@ -66,7 +65,6 @@ export default function WorkCategoriesPage() {
   const handleDeleteCategory = async (id: string) => {
     try {
       await deleteWorkCategory(id);
-      toast.success("Category deleted successfully");
       mutate();
     } catch (error) {
       toast.error(

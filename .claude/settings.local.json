@@ -15,7 +15,8 @@
       "Bash(gh label:*)",
       "Bash(gh issue list:*)",
       "Bash(gh issue edit:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(gh issue create:*)"
     ],
     "deny": [],
     "ask": []

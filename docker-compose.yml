@@ -1,0 +1,79 @@
+version: '3.9'
+
+services:
+  # ============================================
+  # Next.js Application Service
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: work-management-app
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+      # Prevent .next from being overwritten
+      - /app/.next
+    environment:
+      # Database connection (uses db service)
+      - POSTGRES_URL=postgres://postgres:postgres@db:5432/work_management
+      - POSTGRES_URL_NON_POOLING=postgres://postgres:postgres@db:5432/work_management
+      # NextAuth.js configuration
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your-secret-here-change-in-production}
+      - NEXTAUTH_URL=http://localhost:3000
+      # Development settings
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ============================================
+  # PostgreSQL Database Service
+  # ============================================
+  db:
+    image: postgres:15-alpine
+    container_name: work-management-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=work_management
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      # Persistent data storage
+      - postgres_data:/var/lib/postgresql/data
+      # Database initialization script
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d work_management"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# ============================================
+# Volumes for data persistence
+# ============================================
+volumes:
+  postgres_data:
+    driver: local
+
+# ============================================
+# Network configuration
+# ============================================
+networks:
+  app-network:
+    driver: bridge

@@ -6,4 +6,8 @@ import { handlers } from "@/lib/auth";
  *
  * @see https://authjs.dev/getting-started/installation?framework=next.js
  */
+
+// Use Node.js runtime for database operations
+export const runtime = "nodejs";
+
 export const { GET, POST } = handlers;

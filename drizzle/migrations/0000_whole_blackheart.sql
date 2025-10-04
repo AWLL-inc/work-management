@@ -1,5 +1,4 @@
 CREATE TABLE "accounts" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"type" varchar(255) NOT NULL,
 	"provider" varchar(255) NOT NULL,
@@ -15,11 +14,9 @@ CREATE TABLE "accounts" (
 );
 --> statement-breakpoint
 CREATE TABLE "sessions" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"session_token" varchar(255) NOT NULL,
+	"session_token" varchar(255) PRIMARY KEY NOT NULL,
 	"user_id" uuid NOT NULL,
-	"expires" timestamp NOT NULL,
-	CONSTRAINT "sessions_session_token_unique" UNIQUE("session_token")
+	"expires" timestamp NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "users" (

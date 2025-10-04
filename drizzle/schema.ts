@@ -22,7 +22,6 @@ export const users = pgTable("users", {
 });
 
 export const accounts = pgTable("accounts", {
-  id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
@@ -43,8 +42,7 @@ export const accounts = pgTable("accounts", {
 }));
 
 export const sessions = pgTable("sessions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  sessionToken: varchar("session_token", { length: 255 }).notNull().unique(),
+  sessionToken: varchar("session_token", { length: 255 }).primaryKey(),
   userId: uuid("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

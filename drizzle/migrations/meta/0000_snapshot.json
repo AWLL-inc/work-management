@@ -1,5 +1,5 @@
 {
-  "id": "b14d1bcb-54e7-492e-8d9c-929b15213226",
+  "id": "6b946660-b54e-48f8-9fd5-a1386f7b4786",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -8,13 +8,6 @@
       "name": "accounts",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
         "user_id": {
           "name": "user_id",
           "type": "uuid",
@@ -116,17 +109,10 @@
       "name": "sessions",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
         "session_token": {
           "name": "session_token",
           "type": "varchar(255)",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
         "user_id": {
@@ -159,15 +145,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "sessions_session_token_unique": {
-          "name": "sessions_session_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "session_token"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

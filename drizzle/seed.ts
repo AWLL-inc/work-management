@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { db } from "@/lib/db/connection";
-import { users, projects, workCategories } from "./schema";
+import { users, projects, workCategories, workLogs, sessions, accounts, verificationTokens } from "./schema";
 import { hashPassword } from "@/lib/auth-helpers";
+import { sql } from "drizzle-orm";
 
 /**
  * Seed database with initial test data
@@ -11,6 +12,33 @@ async function seed() {
   console.log("🌱 Seeding database...");
 
   try {
+    // Delete all existing data (in reverse order of dependencies)
+    console.log("🗑️  Deleting existing data...");
+
+    await db.delete(workLogs);
+    console.log("✓ Deleted work logs");
+
+    await db.delete(sessions);
+    console.log("✓ Deleted sessions");
+
+    await db.delete(accounts);
+    console.log("✓ Deleted accounts");
+
+    await db.delete(verificationTokens);
+    console.log("✓ Deleted verification tokens");
+
+    await db.delete(workCategories);
+    console.log("✓ Deleted work categories");
+
+    await db.delete(projects);
+    console.log("✓ Deleted projects");
+
+    await db.delete(users);
+    console.log("✓ Deleted users");
+
+    console.log("\n✅ All existing data deleted");
+    console.log("\n🌱 Creating new data...\n");
+
     // Create test users
     const testUsers = [
       {

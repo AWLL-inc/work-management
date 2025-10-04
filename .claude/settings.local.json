@@ -20,7 +20,12 @@
       "Bash(npm run:*)",
       "Bash(docker-compose exec:*)",
       "Bash(node:*)",
-      "Bash(gh issue view:*)"
+      "Bash(gh issue view:*)",
+      "Bash(curl:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(gh issue close:*)"
     ],
     "deny": [],
     "ask": []

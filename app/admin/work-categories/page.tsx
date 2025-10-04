@@ -51,6 +51,14 @@ export default function WorkCategoriesPage() {
       isActive?: boolean;
     }
   ) => {
+    // Optimistic update: update UI immediately
+    if (categories && data.displayOrder !== undefined) {
+      const updatedCategories = categories.map((cat) =>
+        cat.id === id ? { ...cat, displayOrder: data.displayOrder! } : cat
+      );
+      mutate(updatedCategories, false);
+    }
+
     try {
       await updateWorkCategory(id, data);
       mutate();
@@ -58,6 +66,7 @@ export default function WorkCategoriesPage() {
       toast.error(
         error instanceof Error ? error.message : "Failed to update category"
       );
+      mutate(); // Revert on error
       throw error;
     }
   };

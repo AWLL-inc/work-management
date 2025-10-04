@@ -67,16 +67,18 @@ export function CategoryTable({
     const prevCategory = categories[currentIndex - 1];
     if (!prevCategory) return;
 
-    setIsSubmitting(true);
     try {
-      await onUpdateCategory(category.id, {
-        displayOrder: prevCategory.displayOrder,
-      });
-      await onUpdateCategory(prevCategory.id, {
-        displayOrder: category.displayOrder,
-      });
-    } finally {
-      setIsSubmitting(false);
+      // Update both categories in parallel for faster response
+      await Promise.all([
+        onUpdateCategory(category.id, {
+          displayOrder: prevCategory.displayOrder,
+        }),
+        onUpdateCategory(prevCategory.id, {
+          displayOrder: category.displayOrder,
+        }),
+      ]);
+    } catch (error) {
+      // Error handling is done in parent component
     }
   };
 
@@ -87,16 +89,18 @@ export function CategoryTable({
     const nextCategory = categories[currentIndex + 1];
     if (!nextCategory) return;
 
-    setIsSubmitting(true);
     try {
-      await onUpdateCategory(category.id, {
-        displayOrder: nextCategory.displayOrder,
-      });
-      await onUpdateCategory(nextCategory.id, {
-        displayOrder: category.displayOrder,
-      });
-    } finally {
-      setIsSubmitting(false);
+      // Update both categories in parallel for faster response
+      await Promise.all([
+        onUpdateCategory(category.id, {
+          displayOrder: nextCategory.displayOrder,
+        }),
+        onUpdateCategory(nextCategory.id, {
+          displayOrder: category.displayOrder,
+        }),
+      ]);
+    } catch (error) {
+      // Error handling is done in parent component
     }
   };
 

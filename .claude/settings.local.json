@@ -19,7 +19,8 @@
       "Bash(gh issue create:*)",
       "Bash(npm run:*)",
       "Bash(docker-compose exec:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(gh issue view:*)"
     ],
     "deny": [],
     "ask": []

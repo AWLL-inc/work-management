@@ -23,13 +23,15 @@ export function createCategoryColumns({
       accessorKey: "displayOrder",
       header: "Order",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-sm">{row.original.displayOrder}</span>
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-sm text-gray-900">
+            {row.original.displayOrder}
+          </span>
           <div className="flex flex-col gap-1">
             <Button
               variant="outline"
               size="sm"
-              className="h-5 w-5 p-0"
+              className="h-6 w-6 p-0 text-xs"
               onClick={() => onMoveUp(row.original)}
             >
               ↑
@@ -37,7 +39,7 @@ export function createCategoryColumns({
             <Button
               variant="outline"
               size="sm"
-              className="h-5 w-5 p-0"
+              className="h-6 w-6 p-0 text-xs"
               onClick={() => onMoveDown(row.original)}
             >
               ↓
@@ -50,7 +52,7 @@ export function createCategoryColumns({
       accessorKey: "name",
       header: "Name",
       cell: ({ row }) => (
-        <span className="font-medium">{row.original.name}</span>
+        <span className="font-medium text-gray-900">{row.original.name}</span>
       ),
     },
     {
@@ -79,6 +81,7 @@ export function createCategoryColumns({
           <Button
             variant="outline"
             size="sm"
+            className="h-8 px-3"
             onClick={() => onEdit(row.original)}
           >
             Edit
@@ -86,6 +89,7 @@ export function createCategoryColumns({
           <Button
             variant="outline"
             size="sm"
+            className="h-8 px-3"
             onClick={() => onDelete(row.original)}
             disabled={!row.original.isActive}
           >

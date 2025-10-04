@@ -18,7 +18,8 @@ docs/
 │   ├── 001-nextjs-vercel-architecture.md
 │   ├── 002-server-side-implementation.md
 │   ├── 003-database-integration.md
-│   └── 004-development-guidelines.md
+│   ├── 004-development-guidelines.md
+│   └── 005-ui-library-and-data-table.md
 ```
 
 ### Language Guidelines
@@ -29,7 +30,7 @@ docs/
 ## Architecture Decision Records (ADR)
 
 Architecture decisions are documented in `docs/adr/` using a structured format. When creating new ADRs:
-- Follow the existing format used in ADR-001 through ADR-004
+- Follow the existing format used in ADR-001 through ADR-005
 - Use sequential numbering: `001-`, `002-`, etc.
 - Write in Japanese as per documentation guidelines
 - Update the index in `docs/adr/README.md`
@@ -39,6 +40,7 @@ Architecture decisions are documented in `docs/adr/` using a structured format. 
 - **ADR-002**: Server-side Implementation Architecture - API design and authentication
 - **ADR-003**: Database Integration with Vercel Postgres - Data layer and ORM choices
 - **ADR-004**: Development Guidelines and Best Practices - Coding standards and workflow
+- **ADR-005**: UIライブラリとデータテーブルの選定 - UI components and data table library selection
 
 ### Creating New ADRs
 When making significant technical decisions, document them as ADRs:
@@ -91,6 +93,8 @@ npm run dev
 ### Frontend
 - **Framework**: Next.js 15 (App Router) with React 19
 - **Language**: TypeScript 5+ (strict mode)
+- **UI Components**: shadcn/ui + Radix UI
+- **Data Table**: TanStack Table v8
 - **Styling**: Tailwind CSS 4 with inline theme configuration
 - **Build Tool**: Turbopack
 
@@ -130,8 +134,9 @@ lib/                   # Shared utilities and configurations
 └── utils.ts          # Utility functions
 
 components/            # Reusable React components
-├── ui/               # Basic UI components (buttons, inputs)
-└── forms/            # Form-specific components
+├── ui/               # shadcn/ui components
+├── data-table/       # TanStack Table wrappers
+└── features/         # Feature-specific components
 
 drizzle/              # Database schema and migrations
 ├── migrations/       # Auto-generated migration files
@@ -278,9 +283,9 @@ Based on comprehensive API design principles:
 ## Component Architecture
 
 ### Frontend Component Strategy
-- **UI Primitives**: `components/ui/` - Basic reusable components (buttons, inputs, labels)
-- **Form Components**: `components/forms/` - Form-specific components with validation
-- **Feature Components**: `features/{domain}/components/` - Feature-specific components
+- **UI Primitives**: `components/ui/` - shadcn/ui components (buttons, inputs, labels, etc.)
+- **Data Tables**: `components/data-table/` - TanStack Table wrappers and utilities
+- **Feature Components**: `components/features/` - Feature-specific components
 - **Layout Components**: `components/layouts/` - Page and section layouts
 
 ### Component Development Patterns
@@ -578,9 +583,15 @@ When writing frontend specifications:
 - `test`: Test additions or updates
 - `chore`: Build process or auxiliary tool changes
 
-## Recent Updates (2024-10-03)
+## Recent Updates
 
-### Architecture Decision Records
+### 2024-10-04
+- **ADR-005**: UIライブラリとデータテーブルの選定
+  - shadcn/ui + Radix UI for UI components
+  - TanStack Table v8 for data grid functionality
+  - Complete free and open source stack
+
+### 2024-10-03
 - **ADR-001**: Next.js with Vercel Architecture - Core framework decisions
 - **ADR-002**: Server-side Implementation Architecture - API and authentication design
 - **ADR-003**: Database Integration with Vercel Postgres - Data layer implementation
@@ -589,6 +600,8 @@ When writing frontend specifications:
 ### Technology Stack Updates
 - **Next.js**: Version 15.5.4 with App Router and Turbopack
 - **React**: Version 19.1.0 (stable release)
+- **UI Components**: shadcn/ui + Radix UI
+- **Data Table**: TanStack Table v8
 - **TypeScript**: Strict mode with 100% coverage requirement
 - **Database**: Vercel Postgres with Drizzle ORM
 - **Testing**: Vitest for unit tests, Playwright for E2E testing

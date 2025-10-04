@@ -38,7 +38,7 @@
 - パフォーマンス最適化とセキュリティ対策
 
 ### [ADR-004: Development Guidelines and Best Practices](./004-development-guidelines.md)
-**Status**: Accepted  
+**Status**: Accepted
 **概要**: 開発プロセス、コーディング規約、テスト戦略
 
 **主要決定事項**:
@@ -48,12 +48,25 @@
 - 包括的なコードレビューガイドライン
 - パフォーマンスとセキュリティ基準
 
+### [ADR-005: UIライブラリとデータテーブルの選定](./005-ui-library-and-data-table.md)
+**Status**: Accepted
+**概要**: UIコンポーネントライブラリとデータテーブル/グリッドライブラリの技術選択
+
+**主要決定事項**:
+- shadcn/ui + Radix UI for base UI components
+- TanStack Table v8 for data grid/table functionality
+- Copy-and-paste approach for full customization
+- Headless UI architecture for future flexibility
+- 完全無料のMITライセンス
+
 ## 技術スタック概要
 
 ### Frontend
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript 5+ (strict mode)
 - **UI Library**: React 19
+- **UI Components**: shadcn/ui + Radix UI
+- **Data Table**: TanStack Table v8
 - **Styling**: Tailwind CSS 4
 - **Build Tool**: Turbopack
 
@@ -98,8 +111,9 @@ work-management/
 │   ├── validations.ts    # Zod schemas
 │   └── utils.ts          # Utility functions
 ├── components/            # Reusable React components
-│   ├── ui/               # Basic UI components
-│   └── forms/            # Form components
+│   ├── ui/               # shadcn/ui components
+│   ├── data-table/       # TanStack Table wrappers
+│   └── features/         # Feature-specific components
 ├── types/                # TypeScript type definitions
 ├── drizzle/              # Database schema and migrations
 │   ├── migrations/       # Generated migration files
@@ -205,6 +219,7 @@ npm run build
 ## 更新履歴
 
 - **2024-10-03**: ADR-001〜004の初期作成
+- **2024-10-04**: ADR-005追加（UIライブラリとデータテーブルの選定）
 - 今後の変更は各ADRファイルで管理
 
 ---

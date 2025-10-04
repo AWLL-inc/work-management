@@ -16,7 +16,9 @@
       "Bash(gh issue list:*)",
       "Bash(gh issue edit:*)",
       "Bash(npm install:*)",
-      "Bash(gh issue create:*)"
+      "Bash(gh issue create:*)",
+      "Bash(npm run:*)",
+      "Bash(docker-compose exec:*)"
     ],
     "deny": [],
     "ask": []

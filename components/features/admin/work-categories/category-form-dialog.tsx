@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 const categoryFormSchema = z.object({
   name: z.string().min(1, "Category name is required"),
   description: z.string().optional(),
-  displayOrder: z.coerce.number().int().min(0),
+  displayOrder: z.number().int().min(0),
   isActive: z.boolean(),
 });
 
@@ -118,7 +118,7 @@ export function CategoryFormDialog({
             <Input
               id="displayOrder"
               type="number"
-              {...register("displayOrder")}
+              {...register("displayOrder", { valueAsNumber: true })}
               className={errors.displayOrder ? "border-red-500" : ""}
             />
             {errors.displayOrder && (

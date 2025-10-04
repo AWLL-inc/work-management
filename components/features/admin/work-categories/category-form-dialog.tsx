@@ -19,7 +19,11 @@ import { Label } from "@/components/ui/label";
 const categoryFormSchema = z.object({
   name: z.string().min(1, "Category name is required"),
   description: z.string().optional(),
-  displayOrder: z.number().int().min(0),
+  displayOrder: z
+    .string()
+    .min(1, "Display order is required")
+    .regex(/^\d+$/, "Display order must be a positive number")
+    .transform((val) => Number.parseInt(val, 10)),
   isActive: z.boolean(),
 });
 
@@ -45,12 +49,12 @@ export function CategoryFormDialog({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CategoryFormData>({
+  } = useForm({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: "",
       description: "",
-      displayOrder: 0,
+      displayOrder: "0",
       isActive: true,
     },
   });
@@ -61,14 +65,14 @@ export function CategoryFormDialog({
       reset({
         name: category.name,
         description: category.description || "",
-        displayOrder: category.displayOrder,
+        displayOrder: String(category.displayOrder),
         isActive: category.isActive,
       });
     } else {
       reset({
         name: "",
         description: "",
-        displayOrder: 0,
+        displayOrder: "0",
         isActive: true,
       });
     }
@@ -117,9 +121,10 @@ export function CategoryFormDialog({
             <Label htmlFor="displayOrder">Display Order *</Label>
             <Input
               id="displayOrder"
-              type="number"
-              {...register("displayOrder", { valueAsNumber: true })}
+              type="text"
+              {...register("displayOrder")}
               className={errors.displayOrder ? "border-red-500" : ""}
+              placeholder="0"
             />
             {errors.displayOrder && (
               <p className="text-sm text-red-500">

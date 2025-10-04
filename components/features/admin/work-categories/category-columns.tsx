@@ -10,6 +10,7 @@ interface CategoryColumnsProps {
   onDelete: (category: WorkCategory) => void;
   onMoveUp: (category: WorkCategory) => void;
   onMoveDown: (category: WorkCategory) => void;
+  categories: WorkCategory[];
 }
 
 export function createCategoryColumns({
@@ -17,36 +18,47 @@ export function createCategoryColumns({
   onDelete,
   onMoveUp,
   onMoveDown,
+  categories,
 }: CategoryColumnsProps): ColumnDef<WorkCategory>[] {
   return [
     {
       accessorKey: "displayOrder",
       header: "Order",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-sm text-gray-900">
-            {row.original.displayOrder}
-          </span>
-          <div className="flex flex-col gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 w-6 p-0 text-xs"
-              onClick={() => onMoveUp(row.original)}
-            >
-              ↑
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 w-6 p-0 text-xs"
-              onClick={() => onMoveDown(row.original)}
-            >
-              ↓
-            </Button>
+      cell: ({ row }) => {
+        const currentIndex = categories.findIndex(
+          (c) => c.id === row.original.id
+        );
+        const isFirst = currentIndex === 0;
+        const isLast = currentIndex === categories.length - 1;
+
+        return (
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-sm text-gray-900">
+              {row.original.displayOrder}
+            </span>
+            <div className="flex flex-col gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 w-6 p-0 text-xs"
+                onClick={() => onMoveUp(row.original)}
+                disabled={isFirst}
+              >
+                ↑
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 w-6 p-0 text-xs"
+                onClick={() => onMoveDown(row.original)}
+                disabled={isLast}
+              >
+                ↓
+              </Button>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       accessorKey: "name",

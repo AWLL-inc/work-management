@@ -210,10 +210,8 @@ export async function updateWorkLog(
 /**
  * Delete a work log
  */
-export async function deleteWorkLog(id: string): Promise<boolean> {
-  const result = await db.delete(workLogs).where(eq(workLogs.id, id));
-
-  return result.rowCount ? result.rowCount > 0 : false;
+export async function deleteWorkLog(id: string): Promise<void> {
+  await db.delete(workLogs).where(eq(workLogs.id, id));
 }
 
 /**

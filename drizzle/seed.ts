@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { db } from "@/lib/db/connection";
-import { users } from "./schema";
+import { users, projects, workCategories } from "./schema";
 import { hashPassword } from "@/lib/auth-helpers";
 
 /**
- * Seed database with initial test users
+ * Seed database with initial test data
  * Run with: npm run db:seed
  */
 async function seed() {
@@ -46,6 +46,86 @@ async function seed() {
       console.log(
         `✓ Created user: ${createdUser.email} (${createdUser.role})`
       );
+    }
+
+    // Create sample projects
+    const sampleProjects = [
+      {
+        name: "Project Alpha",
+        description: "First sample project for testing",
+        isActive: true,
+      },
+      {
+        name: "Project Beta",
+        description: "Second sample project for testing",
+        isActive: true,
+      },
+      {
+        name: "Project Gamma",
+        description: "Third sample project for testing",
+        isActive: true,
+      },
+      {
+        name: "Archived Project",
+        description: "An archived project",
+        isActive: false,
+      },
+    ];
+
+    console.log("\nCreating sample projects...");
+    for (const project of sampleProjects) {
+      const [createdProject] = await db
+        .insert(projects)
+        .values(project)
+        .returning();
+
+      console.log(
+        `✓ Created project: ${createdProject.name} (${createdProject.isActive ? "active" : "inactive"})`
+      );
+    }
+
+    // Create work categories
+    const categories = [
+      {
+        name: "設計",
+        description: "Design and architecture work",
+        displayOrder: 1,
+        isActive: true,
+      },
+      {
+        name: "開発",
+        description: "Development and coding work",
+        displayOrder: 2,
+        isActive: true,
+      },
+      {
+        name: "テスト",
+        description: "Testing and QA work",
+        displayOrder: 3,
+        isActive: true,
+      },
+      {
+        name: "レビュー",
+        description: "Code review and documentation review",
+        displayOrder: 4,
+        isActive: true,
+      },
+      {
+        name: "会議",
+        description: "Meetings and discussions",
+        displayOrder: 5,
+        isActive: true,
+      },
+    ];
+
+    console.log("\nCreating work categories...");
+    for (const category of categories) {
+      const [createdCategory] = await db
+        .insert(workCategories)
+        .values(category)
+        .returning();
+
+      console.log(`✓ Created category: ${createdCategory.name}`);
     }
 
     console.log("\n✅ Seeding completed successfully!");

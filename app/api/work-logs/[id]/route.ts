@@ -93,7 +93,7 @@ export async function PUT(
     const validatedData = updateWorkLogSchema.parse(body);
 
     // Convert date string to Date object if provided
-    const updateData: any = { ...validatedData };
+    const updateData: Record<string, unknown> = { ...validatedData };
     if (validatedData.date) {
       updateData.date =
         typeof validatedData.date === "string"

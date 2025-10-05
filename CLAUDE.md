@@ -194,6 +194,24 @@ npm run test:e2e     # Run E2E tests with Playwright
 npm run test:coverage # Generate test coverage report
 ```
 
+### API Testing
+```bash
+# Test Projects API
+curl -X GET 'http://localhost:3000/api/projects?active=true'
+curl -X POST 'http://localhost:3000/api/projects' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"New Project","description":"Test","isActive":true}'
+
+# Test Work Categories API
+curl -X GET 'http://localhost:3000/api/work-categories?active=true'
+
+# Test Work Logs API
+curl -X GET 'http://localhost:3000/api/work-logs'
+curl -X POST 'http://localhost:3000/api/work-logs' \
+  -H 'Content-Type: application/json' \
+  -d '{"date":"2024-10-05","hours":"8.0","projectId":"uuid","categoryId":"uuid"}'
+```
+
 ## Environment Variables
 
 ### Required Variables
@@ -220,22 +238,33 @@ NODE_ENV=                 # development, test, production
 
 ### RESTful Endpoints
 ```
-GET    /api/users              # List users
-POST   /api/users              # Create user
-GET    /api/users/[id]         # Get user by ID
-PUT    /api/users/[id]         # Update user
-DELETE /api/users/[id]         # Delete user
-
-GET    /api/tasks              # List tasks
-POST   /api/tasks              # Create task
-GET    /api/tasks/[id]         # Get task by ID
-PUT    /api/tasks/[id]         # Update task
-DELETE /api/tasks/[id]         # Delete task
-
-GET    /api/projects           # List projects
-POST   /api/projects           # Create project
+# Projects Master
+GET    /api/projects           # List projects (query: ?active=true)
+POST   /api/projects           # Create project (admin only)
 GET    /api/projects/[id]      # Get project by ID
+PUT    /api/projects/[id]      # Update project (admin only)
+DELETE /api/projects/[id]      # Delete project - soft delete (admin only)
+
+# Work Categories Master
+GET    /api/work-categories    # List categories (query: ?active=true)
+POST   /api/work-categories    # Create category (admin only)
+GET    /api/work-categories/[id] # Get category by ID
+PUT    /api/work-categories/[id] # Update category (admin only)
+DELETE /api/work-categories/[id] # Delete category - soft delete (admin only)
+
+# Work Logs
+GET    /api/work-logs          # List work logs (user's own or all for admin)
+POST   /api/work-logs          # Create work log
+GET    /api/work-logs/[id]     # Get work log by ID
+PUT    /api/work-logs/[id]     # Update work log (own or admin)
+DELETE /api/work-logs/[id]     # Delete work log (own or admin)
 ```
+
+### API Documentation
+Detailed API specifications are available in the `docs/api/` directory:
+- [Projects API](./docs/api/projects.md) - Project master CRUD operations
+- [Work Categories API](./docs/api/work-categories.md) - Work category CRUD with ordering
+- [Work Logs API](./docs/api/work-logs.md) - Work log management with rich text
 
 ### Standard Response Format
 ```typescript

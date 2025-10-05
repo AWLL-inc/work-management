@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import {
   Select,
   SelectContent,
@@ -213,10 +213,10 @@ export function WorkLogFormDialog({
                 <FormItem>
                   <FormLabel>Details (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Enter work details"
-                      rows={4}
-                      {...field}
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Enter work details with rich formatting..."
                     />
                   </FormControl>
                   <FormMessage />

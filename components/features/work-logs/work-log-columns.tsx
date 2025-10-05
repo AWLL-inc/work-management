@@ -85,9 +85,13 @@ export function createWorkLogColumns({
       header: "Details",
       cell: ({ row }) => {
         const details = row.getValue("details") as string | null;
+        // Strip HTML tags for table display
+        const plainText = details
+          ? details.replace(/<[^>]*>/g, "").trim()
+          : "";
         return (
           <div className="text-sm text-gray-600 max-w-md truncate">
-            {details || "-"}
+            {plainText || "-"}
           </div>
         );
       },

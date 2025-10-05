@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build options
-    const options: any = {
+    const options: Record<string, unknown> = {
       page,
       limit,
     };

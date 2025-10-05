@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Integration tests for Work Logs API (Collection Routes)
@@ -15,9 +15,12 @@ vi.mock("@/lib/db/repositories/work-log-repository", () => ({
   createWorkLog: vi.fn(),
 }));
 
-import { auth } from "@/lib/auth";
 import { GET, POST } from "@/app/api/work-logs/route";
-import { getWorkLogs, createWorkLog } from "@/lib/db/repositories/work-log-repository";
+import { auth } from "@/lib/auth";
+import {
+  createWorkLog,
+  getWorkLogs,
+} from "@/lib/db/repositories/work-log-repository";
 
 describe("Work Logs API - Collection Routes", () => {
   const validProjectId = "550e8400-e29b-41d4-a716-446655440001";

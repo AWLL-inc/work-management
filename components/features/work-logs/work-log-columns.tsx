@@ -5,11 +5,6 @@ import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 
-interface WorkLogWithRelations extends WorkLog {
-  project?: Project;
-  category?: WorkCategory;
-}
-
 interface WorkLogColumnsOptions {
   onEdit: (workLog: WorkLog) => void;
   onDelete: (workLog: WorkLog) => void;

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Integration tests for Work Categories API (Collection Routes)
@@ -16,11 +16,11 @@ vi.mock("@/lib/db/repositories/work-category-repository", () => ({
   workCategoryNameExists: vi.fn(),
 }));
 
-import { auth } from "@/lib/auth";
 import { GET, POST } from "@/app/api/work-categories/route";
+import { auth } from "@/lib/auth";
 import {
-  getAllWorkCategories,
   createWorkCategory,
+  getAllWorkCategories,
   workCategoryNameExists,
 } from "@/lib/db/repositories/work-category-repository";
 
@@ -33,7 +33,9 @@ describe("Work Categories API - Collection Routes", () => {
     it("should return 401 if user is not authenticated", async () => {
       vi.mocked(auth).mockResolvedValue(null as any);
 
-      const request = new NextRequest("http://localhost:3000/api/work-categories");
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-categories",
+      );
       const response = await GET(request);
       const data = await response.json();
 
@@ -128,13 +130,16 @@ describe("Work Categories API - Collection Routes", () => {
     it("should return 401 if user is not authenticated", async () => {
       vi.mocked(auth).mockResolvedValue(null as any);
 
-      const request = new NextRequest("http://localhost:3000/api/work-categories", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "New Category",
-          description: "Test category",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-categories",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: "New Category",
+            description: "Test category",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -150,13 +155,16 @@ describe("Work Categories API - Collection Routes", () => {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/work-categories", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "New Category",
-          description: "Test category",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-categories",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: "New Category",
+            description: "Test category",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -186,13 +194,16 @@ describe("Work Categories API - Collection Routes", () => {
 
       vi.mocked(createWorkCategory).mockResolvedValue(mockCategory);
 
-      const request = new NextRequest("http://localhost:3000/api/work-categories", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "New Category",
-          description: "Test category",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-categories",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: "New Category",
+            description: "Test category",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -210,13 +221,16 @@ describe("Work Categories API - Collection Routes", () => {
 
       vi.mocked(workCategoryNameExists).mockResolvedValue(true);
 
-      const request = new NextRequest("http://localhost:3000/api/work-categories", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "Existing Category",
-          description: "Test category",
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-categories",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: "Existing Category",
+            description: "Test category",
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -232,12 +246,15 @@ describe("Work Categories API - Collection Routes", () => {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
 
-      const request = new NextRequest("http://localhost:3000/api/work-categories", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "", // Empty name should fail validation
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-categories",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: "", // Empty name should fail validation
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -267,13 +284,16 @@ describe("Work Categories API - Collection Routes", () => {
 
       vi.mocked(createWorkCategory).mockResolvedValue(mockCategory);
 
-      const request = new NextRequest("http://localhost:3000/api/work-categories", {
-        method: "POST",
-        body: JSON.stringify({
-          name: "Category",
-          // description, displayOrder, isActive not provided - should use defaults
-        }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-categories",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: "Category",
+            // description, displayOrder, isActive not provided - should use defaults
+          }),
+        },
+      );
 
       const response = await POST(request);
       const data = await response.json();

@@ -1,10 +1,10 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Project } from "@/drizzle/schema";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { Project } from "@/drizzle/schema";
 
 interface ProjectColumnsOptions {
   onEdit: (project: Project) => void;
@@ -74,7 +74,9 @@ export function createProjectColumns({
       },
       cell: ({ row }) => {
         const date = row.getValue("createdAt") as Date;
-        return <div className="text-sm">{new Date(date).toLocaleDateString()}</div>;
+        return (
+          <div className="text-sm">{new Date(date).toLocaleDateString()}</div>
+        );
       },
     },
     {
@@ -93,7 +95,9 @@ export function createProjectColumns({
       },
       cell: ({ row }) => {
         const date = row.getValue("updatedAt") as Date;
-        return <div className="text-sm">{new Date(date).toLocaleDateString()}</div>;
+        return (
+          <div className="text-sm">{new Date(date).toLocaleDateString()}</div>
+        );
       },
     },
     {

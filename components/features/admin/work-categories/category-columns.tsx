@@ -1,9 +1,9 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import type { WorkCategory } from "@/drizzle/schema";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { WorkCategory } from "@/drizzle/schema";
 
 interface CategoryColumnsProps {
   onEdit: (category: WorkCategory) => void;
@@ -26,7 +26,7 @@ export function createCategoryColumns({
       header: "Order",
       cell: ({ row }) => {
         const currentIndex = categories.findIndex(
-          (c) => c.id === row.original.id
+          (c) => c.id === row.original.id,
         );
         const isFirst = currentIndex === 0;
         const isLast = currentIndex === categories.length - 1;

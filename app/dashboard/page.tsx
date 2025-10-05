@@ -1,5 +1,5 @@
-import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { auth, signOut } from "@/lib/auth";
 
 /**
  * Dashboard Page (Protected)
@@ -53,8 +53,14 @@ export default async function DashboardPage() {
             </h1>
             <p className="text-muted-foreground mb-6">
               Authentication is working correctly. You are signed in as{" "}
-              <span className="font-semibold text-foreground">{session.user?.email}</span> with{" "}
-              <span className="font-semibold text-foreground">{session.user?.role}</span> role.
+              <span className="font-semibold text-foreground">
+                {session.user?.email}
+              </span>{" "}
+              with{" "}
+              <span className="font-semibold text-foreground">
+                {session.user?.role}
+              </span>{" "}
+              role.
             </p>
 
             <div className="bg-muted border-2 border-primary/10 rounded-md p-4">

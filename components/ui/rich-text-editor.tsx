@@ -1,21 +1,21 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
-import { Button } from "./button";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import {
   Bold,
   Italic,
+  Link2,
   List,
   ListOrdered,
-  Link2,
-  Undo,
   Redo,
+  Undo,
 } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "./button";
 
 interface RichTextEditorProps {
   value?: string;
@@ -86,7 +86,7 @@ export function RichTextEditor({
       className={cn(
         "border rounded-md overflow-hidden bg-white",
         disabled && "opacity-50 pointer-events-none",
-        className
+        className,
       )}
     >
       {/* Toolbar */}
@@ -98,7 +98,7 @@ export function RichTextEditor({
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={cn(
             "h-8 w-8 p-0",
-            editor.isActive("bold") && "bg-gray-200"
+            editor.isActive("bold") && "bg-gray-200",
           )}
           disabled={disabled}
         >
@@ -111,7 +111,7 @@ export function RichTextEditor({
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={cn(
             "h-8 w-8 p-0",
-            editor.isActive("italic") && "bg-gray-200"
+            editor.isActive("italic") && "bg-gray-200",
           )}
           disabled={disabled}
         >
@@ -125,7 +125,7 @@ export function RichTextEditor({
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={cn(
             "h-8 w-8 p-0",
-            editor.isActive("bulletList") && "bg-gray-200"
+            editor.isActive("bulletList") && "bg-gray-200",
           )}
           disabled={disabled}
         >
@@ -138,7 +138,7 @@ export function RichTextEditor({
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={cn(
             "h-8 w-8 p-0",
-            editor.isActive("orderedList") && "bg-gray-200"
+            editor.isActive("orderedList") && "bg-gray-200",
           )}
           disabled={disabled}
         >
@@ -152,7 +152,7 @@ export function RichTextEditor({
           onClick={setLink}
           className={cn(
             "h-8 w-8 p-0",
-            editor.isActive("link") && "bg-gray-200"
+            editor.isActive("link") && "bg-gray-200",
           )}
           disabled={disabled}
         >

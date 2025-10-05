@@ -1,13 +1,13 @@
 "use client";
 
-import { CategoryTable } from "@/components/features/admin/work-categories/category-table";
-import useSWR from "swr";
 import { toast } from "sonner";
+import useSWR from "swr";
+import { CategoryTable } from "@/components/features/admin/work-categories/category-table";
 import {
-  getWorkCategories,
   createWorkCategory,
-  updateWorkCategory,
   deleteWorkCategory,
+  getWorkCategories,
+  updateWorkCategory,
 } from "@/lib/api/work-categories";
 
 export default function WorkCategoriesPage() {
@@ -36,7 +36,7 @@ export default function WorkCategoriesPage() {
       mutate();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create category"
+        error instanceof Error ? error.message : "Failed to create category",
       );
       throw error;
     }
@@ -49,12 +49,12 @@ export default function WorkCategoriesPage() {
       description?: string | null;
       displayOrder?: number;
       isActive?: boolean;
-    }
+    },
   ) => {
     // Optimistic update: update UI immediately
     if (categories && data.displayOrder !== undefined) {
       const updatedCategories = categories.map((cat) =>
-        cat.id === id ? { ...cat, displayOrder: data.displayOrder! } : cat
+        cat.id === id ? { ...cat, displayOrder: data.displayOrder! } : cat,
       );
       mutate(updatedCategories, false);
     }
@@ -64,7 +64,7 @@ export default function WorkCategoriesPage() {
       mutate();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update category"
+        error instanceof Error ? error.message : "Failed to update category",
       );
       mutate(); // Revert on error
       throw error;
@@ -77,7 +77,7 @@ export default function WorkCategoriesPage() {
       mutate();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete category"
+        error instanceof Error ? error.message : "Failed to delete category",
       );
       throw error;
     }

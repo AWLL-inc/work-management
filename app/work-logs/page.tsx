@@ -1,16 +1,16 @@
 "use client";
 
-import { WorkLogTable } from "@/components/features/work-logs/work-log-table";
-import useSWR from "swr";
 import { toast } from "sonner";
-import {
-  getWorkLogs,
-  createWorkLog,
-  updateWorkLog,
-  deleteWorkLog,
-} from "@/lib/api/work-logs";
+import useSWR from "swr";
+import { WorkLogTable } from "@/components/features/work-logs/work-log-table";
 import { getProjects } from "@/lib/api/projects";
 import { getWorkCategories } from "@/lib/api/work-categories";
+import {
+  createWorkLog,
+  deleteWorkLog,
+  getWorkLogs,
+  updateWorkLog,
+} from "@/lib/api/work-logs";
 
 export default function WorkLogsPage() {
   const {
@@ -28,7 +28,7 @@ export default function WorkLogsPage() {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    }
+    },
   );
 
   const { data: categories, isLoading: isLoadingCategories } = useSWR(
@@ -37,7 +37,7 @@ export default function WorkLogsPage() {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    }
+    },
   );
 
   const handleCreateWorkLog = async (data: {
@@ -58,7 +58,7 @@ export default function WorkLogsPage() {
       mutateWorkLogs();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create work log"
+        error instanceof Error ? error.message : "Failed to create work log",
       );
       throw error;
     }
@@ -72,7 +72,7 @@ export default function WorkLogsPage() {
       projectId?: string;
       categoryId?: string;
       details?: string | null;
-    }
+    },
   ) => {
     try {
       await updateWorkLog(id, {
@@ -82,7 +82,7 @@ export default function WorkLogsPage() {
       mutateWorkLogs();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update work log"
+        error instanceof Error ? error.message : "Failed to update work log",
       );
       throw error;
     }
@@ -94,13 +94,14 @@ export default function WorkLogsPage() {
       mutateWorkLogs();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete work log"
+        error instanceof Error ? error.message : "Failed to delete work log",
       );
       throw error;
     }
   };
 
-  const isLoading = isLoadingWorkLogs || isLoadingProjects || isLoadingCategories;
+  const isLoading =
+    isLoadingWorkLogs || isLoadingProjects || isLoadingCategories;
 
   return (
     <div className="px-4 sm:px-0">

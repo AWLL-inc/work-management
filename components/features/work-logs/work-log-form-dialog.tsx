@@ -1,18 +1,25 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import type { WorkLog, Project, WorkCategory } from "@/drizzle/schema";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import {
@@ -22,14 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 
 const workLogFormSchema = z.object({
   date: z.string().min(1, "Date is required"),
@@ -37,7 +37,10 @@ const workLogFormSchema = z.object({
     .string()
     .min(1, "Hours is required")
     .regex(/^\d+(\.\d{1,2})?$/, "Hours must be a positive number")
-    .refine((val) => Number.parseFloat(val) > 0, "Hours must be greater than 0"),
+    .refine(
+      (val) => Number.parseFloat(val) > 0,
+      "Hours must be greater than 0",
+    ),
   projectId: z.string().min(1, "Project is required"),
   categoryId: z.string().min(1, "Category is required"),
   details: z.string().optional(),
@@ -110,7 +113,10 @@ export function WorkLogFormDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="date"

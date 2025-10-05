@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import {
-  getProjectById,
-  updateProject,
   deleteProject,
+  getProjectById,
   projectNameExists,
+  updateProject,
 } from "@/lib/db/repositories/project-repository";
 import { updateProjectSchema } from "@/lib/validations";
-import { ZodError } from "zod";
 
 // Use Node.js runtime for database operations
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export const runtime = "nodejs";
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check authentication
@@ -34,7 +34,7 @@ export async function PUT(
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -48,7 +48,7 @@ export async function PUT(
             message: "Admin role required",
           },
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -66,7 +66,7 @@ export async function PUT(
             message: "Invalid project ID format",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -81,7 +81,7 @@ export async function PUT(
             message: "Project not found",
           },
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -101,7 +101,7 @@ export async function PUT(
               message: "A project with this name already exists",
             },
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -114,7 +114,7 @@ export async function PUT(
         success: true,
         data: updatedProject,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(`[PUT /api/projects/${(await params).id}] Error:`, error);
@@ -129,7 +129,7 @@ export async function PUT(
             details: error.issues,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -141,7 +141,7 @@ export async function PUT(
           message: "An error occurred while updating the project",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -153,8 +153,8 @@ export async function PUT(
  * @requires Admin role
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check authentication
@@ -168,7 +168,7 @@ export async function DELETE(
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -182,7 +182,7 @@ export async function DELETE(
             message: "Admin role required",
           },
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -200,7 +200,7 @@ export async function DELETE(
             message: "Invalid project ID format",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -215,7 +215,7 @@ export async function DELETE(
             message: "Project not found",
           },
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -226,7 +226,7 @@ export async function DELETE(
       {
         success: true,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(`[DELETE /api/projects/${(await params).id}] Error:`, error);
@@ -239,7 +239,7 @@ export async function DELETE(
           message: "An error occurred while deleting the project",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

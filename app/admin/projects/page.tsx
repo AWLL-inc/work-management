@@ -1,13 +1,13 @@
 "use client";
 
-import { ProjectTable } from "@/components/features/admin/projects/project-table";
-import useSWR from "swr";
 import { toast } from "sonner";
+import useSWR from "swr";
+import { ProjectTable } from "@/components/features/admin/projects/project-table";
 import {
-  getProjects,
   createProject,
-  updateProject,
   deleteProject,
+  getProjects,
+  updateProject,
 } from "@/lib/api/projects";
 
 export default function ProjectsPage() {
@@ -34,7 +34,7 @@ export default function ProjectsPage() {
       mutate();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create project"
+        error instanceof Error ? error.message : "Failed to create project",
       );
       throw error;
     }
@@ -46,14 +46,14 @@ export default function ProjectsPage() {
       name?: string;
       description?: string | null;
       isActive?: boolean;
-    }
+    },
   ) => {
     try {
       await updateProject(id, data);
       mutate();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update project"
+        error instanceof Error ? error.message : "Failed to update project",
       );
       throw error;
     }
@@ -65,7 +65,7 @@ export default function ProjectsPage() {
       mutate();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete project"
+        error instanceof Error ? error.message : "Failed to delete project",
       );
       throw error;
     }

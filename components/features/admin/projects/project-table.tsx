@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { Project } from "@/drizzle/schema";
 import { DataTable } from "@/components/data-table/data-table";
-import { createProjectColumns } from "./project-columns";
-import { ProjectFormDialog } from "./project-form-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import type { Project } from "@/drizzle/schema";
+import { createProjectColumns } from "./project-columns";
+import { ProjectFormDialog } from "./project-form-dialog";
 
 interface ProjectTableProps {
   projects: Project[];
@@ -28,7 +28,7 @@ interface ProjectTableProps {
       name?: string;
       description?: string | null;
       isActive?: boolean;
-    }
+    },
   ) => Promise<void>;
   onDeleteProject: (id: string) => Promise<void>;
   isLoading: boolean;

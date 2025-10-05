@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import {
-  getWorkLogById,
-  updateWorkLog,
   deleteWorkLog,
+  getWorkLogById,
   isWorkLogOwner,
+  updateWorkLog,
 } from "@/lib/db/repositories/work-log-repository";
 import { updateWorkLogSchema } from "@/lib/validations";
-import { ZodError } from "zod";
 
 // Use Node.js runtime for database operations
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export const runtime = "nodejs";
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check authentication
@@ -34,7 +34,7 @@ export async function PUT(
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -52,7 +52,7 @@ export async function PUT(
             message: "Invalid work log ID format",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -67,7 +67,7 @@ export async function PUT(
             message: "Work log not found",
           },
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -83,7 +83,7 @@ export async function PUT(
               message: "You can only update your own work logs",
             },
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -109,7 +109,7 @@ export async function PUT(
         success: true,
         data: updatedLog,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(`[PUT /api/work-logs/${(await params).id}] Error:`, error);
@@ -124,7 +124,7 @@ export async function PUT(
             details: error.issues,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -136,7 +136,7 @@ export async function PUT(
           message: "An error occurred while updating the work log",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -148,8 +148,8 @@ export async function PUT(
  * @requires Ownership or Admin role
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check authentication
@@ -163,7 +163,7 @@ export async function DELETE(
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -181,7 +181,7 @@ export async function DELETE(
             message: "Invalid work log ID format",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -196,7 +196,7 @@ export async function DELETE(
             message: "Work log not found",
           },
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -212,7 +212,7 @@ export async function DELETE(
               message: "You can only delete your own work logs",
             },
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -224,13 +224,10 @@ export async function DELETE(
       {
         success: true,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
-    console.error(
-      `[DELETE /api/work-logs/${(await params).id}] Error:`,
-      error
-    );
+    console.error(`[DELETE /api/work-logs/${(await params).id}] Error:`, error);
 
     return NextResponse.json(
       {
@@ -240,7 +237,7 @@ export async function DELETE(
           message: "An error occurred while deleting the work log",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

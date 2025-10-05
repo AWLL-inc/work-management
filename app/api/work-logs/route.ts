@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { getWorkLogs, createWorkLog } from "@/lib/db/repositories/work-log-repository";
-import { createWorkLogSchema } from "@/lib/validations";
+import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { auth } from "@/lib/auth";
+import {
+  createWorkLog,
+  getWorkLogs,
+} from "@/lib/db/repositories/work-log-repository";
+import { createWorkLogSchema } from "@/lib/validations";
 
 // Use Node.js runtime for database operations
 export const runtime = "nodejs";
@@ -25,7 +28,7 @@ export async function GET(request: NextRequest) {
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -47,7 +50,7 @@ export async function GET(request: NextRequest) {
             message: "Invalid pagination parameters",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -82,7 +85,7 @@ export async function GET(request: NextRequest) {
         data,
         pagination,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("[GET /api/work-logs] Error:", error);
@@ -95,7 +98,7 @@ export async function GET(request: NextRequest) {
           message: "An error occurred while fetching work logs",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -118,7 +121,7 @@ export async function POST(request: NextRequest) {
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -147,7 +150,7 @@ export async function POST(request: NextRequest) {
         success: true,
         data: workLog,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("[POST /api/work-logs] Error:", error);
@@ -162,7 +165,7 @@ export async function POST(request: NextRequest) {
             details: error.issues,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -174,7 +177,7 @@ export async function POST(request: NextRequest) {
           message: "An error occurred while creating the work log",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

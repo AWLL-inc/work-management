@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { WorkLog, Project, WorkCategory } from "@/drizzle/schema";
 import { DataTable } from "@/components/data-table/data-table";
-import { createWorkLogColumns } from "./work-log-columns";
-import { WorkLogFormDialog } from "./work-log-form-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import { createWorkLogColumns } from "./work-log-columns";
+import { WorkLogFormDialog } from "./work-log-form-dialog";
 
 interface WorkLogTableProps {
   workLogs: WorkLog[];
@@ -34,7 +34,7 @@ interface WorkLogTableProps {
       projectId?: string;
       categoryId?: string;
       details?: string | null;
-    }
+    },
   ) => Promise<void>;
   onDeleteWorkLog: (id: string) => Promise<void>;
   isLoading: boolean;

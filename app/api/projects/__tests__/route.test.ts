@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { GET, POST } from "../route";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
+import { GET, POST } from "../route";
 
 // Mock the auth module
 vi.mock("@/lib/auth", () => ({
@@ -28,8 +28,8 @@ vi.mock("@/lib/validations", async () => {
 
 import { auth } from "@/lib/auth";
 import {
-  getAllProjects,
   createProject,
+  getAllProjects,
   projectNameExists,
 } from "@/lib/db/repositories/project-repository";
 import { listProjectsQuerySchema } from "@/lib/validations";
@@ -57,13 +57,15 @@ describe("GET /api/projects", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default mock implementation for listProjectsQuerySchema
-    vi.mocked(listProjectsQuerySchema.parse).mockImplementation((data: any) => ({
-      active: data.active === "true",
-    }));
+    vi.mocked(listProjectsQuerySchema.parse).mockImplementation(
+      (data: any) => ({
+        active: data.active === "true",
+      }),
+    );
   });
 
   it("should return 401 when user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as any);
 
     const request = new NextRequest("http://localhost:3000/api/projects");
     const response = await GET(request);
@@ -82,7 +84,7 @@ describe("GET /api/projects", () => {
         role: "user",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getAllProjects).mockResolvedValue(mockProjects);
 
     const request = new NextRequest("http://localhost:3000/api/projects");
@@ -106,11 +108,11 @@ describe("GET /api/projects", () => {
         role: "user",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getAllProjects).mockResolvedValue(activeProjects);
 
     const request = new NextRequest(
-      "http://localhost:3000/api/projects?active=true"
+      "http://localhost:3000/api/projects?active=true",
     );
     const response = await GET(request);
     const data = await response.json();
@@ -128,7 +130,7 @@ describe("GET /api/projects", () => {
         role: "user",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
 
     // Mock ZodError
     const zodError = new ZodError([
@@ -138,14 +140,14 @@ describe("GET /api/projects", () => {
         received: "string",
         path: ["active"],
         message: "Invalid query parameter",
-      },
+      } as any,
     ]);
     vi.mocked(listProjectsQuerySchema.parse).mockImplementation(() => {
       throw zodError;
     });
 
     const request = new NextRequest(
-      "http://localhost:3000/api/projects?active=invalid"
+      "http://localhost:3000/api/projects?active=invalid",
     );
     const response = await GET(request);
     const data = await response.json();
@@ -164,7 +166,7 @@ describe("GET /api/projects", () => {
         role: "user",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getAllProjects).mockRejectedValue(new Error("Database error"));
 
     const request = new NextRequest("http://localhost:3000/api/projects");
@@ -190,13 +192,15 @@ describe("POST /api/projects", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset mock for POST tests
-    vi.mocked(listProjectsQuerySchema.parse).mockImplementation((data: any) => ({
-      active: data.active === "true",
-    }));
+    vi.mocked(listProjectsQuerySchema.parse).mockImplementation(
+      (data: any) => ({
+        active: data.active === "true",
+      }),
+    );
   });
 
   it("should return 401 when user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as any);
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "POST",
@@ -221,7 +225,7 @@ describe("POST /api/projects", () => {
         role: "user",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "POST",
@@ -246,7 +250,7 @@ describe("POST /api/projects", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(projectNameExists).mockResolvedValue(false);
     vi.mocked(createProject).mockResolvedValue(mockProject);
 
@@ -282,7 +286,7 @@ describe("POST /api/projects", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "POST",
@@ -306,7 +310,7 @@ describe("POST /api/projects", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(projectNameExists).mockResolvedValue(true);
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
@@ -332,7 +336,7 @@ describe("POST /api/projects", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(projectNameExists).mockResolvedValue(false);
     vi.mocked(createProject).mockRejectedValue(new Error("Database error"));
 

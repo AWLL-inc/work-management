@@ -1,10 +1,10 @@
-import { db } from "@/lib/db/connection";
+import { and, asc, eq } from "drizzle-orm";
 import {
-  workCategories,
-  type WorkCategory,
   type NewWorkCategory,
+  type WorkCategory,
+  workCategories,
 } from "@/drizzle/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { db } from "@/lib/db/connection";
 
 /**
  * Work Category Repository
@@ -41,7 +41,7 @@ export async function getAllWorkCategories(options?: {
  * @returns Work category or undefined
  */
 export async function getWorkCategoryById(
-  id: string
+  id: string,
 ): Promise<WorkCategory | undefined> {
   const [category] = await db
     .select()
@@ -58,7 +58,7 @@ export async function getWorkCategoryById(
  * @returns Work category or undefined
  */
 export async function getWorkCategoryByName(
-  name: string
+  name: string,
 ): Promise<WorkCategory | undefined> {
   const [category] = await db
     .select()
@@ -75,12 +75,9 @@ export async function getWorkCategoryByName(
  * @returns Created work category
  */
 export async function createWorkCategory(
-  data: Omit<NewWorkCategory, "id" | "createdAt" | "updatedAt">
+  data: Omit<NewWorkCategory, "id" | "createdAt" | "updatedAt">,
 ): Promise<WorkCategory> {
-  const [category] = await db
-    .insert(workCategories)
-    .values(data)
-    .returning();
+  const [category] = await db.insert(workCategories).values(data).returning();
 
   return category;
 }
@@ -93,7 +90,7 @@ export async function createWorkCategory(
  */
 export async function updateWorkCategory(
   id: string,
-  data: Partial<Omit<NewWorkCategory, "id" | "createdAt" | "updatedAt">>
+  data: Partial<Omit<NewWorkCategory, "id" | "createdAt" | "updatedAt">>,
 ): Promise<WorkCategory | undefined> {
   const [category] = await db
     .update(workCategories)
@@ -113,7 +110,7 @@ export async function updateWorkCategory(
  * @returns Deleted work category or undefined
  */
 export async function deleteWorkCategory(
-  id: string
+  id: string,
 ): Promise<WorkCategory | undefined> {
   const [category] = await db
     .update(workCategories)
@@ -135,7 +132,7 @@ export async function deleteWorkCategory(
  */
 export async function workCategoryNameExists(
   name: string,
-  excludeId?: string
+  excludeId?: string,
 ): Promise<boolean> {
   const conditions = excludeId
     ? and(eq(workCategories.name, name), eq(workCategories.id, excludeId))

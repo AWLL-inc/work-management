@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { ZodError } from "zod";
 import {
   createProjectSchema,
-  updateProjectSchema,
   listProjectsQuerySchema,
+  updateProjectSchema,
 } from "@/lib/validations";
-import { ZodError } from "zod";
 
 describe("Project Validation Schemas", () => {
   describe("createProjectSchema", () => {

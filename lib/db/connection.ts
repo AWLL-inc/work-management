@@ -1,6 +1,6 @@
-import { drizzle as drizzleVercel } from "drizzle-orm/vercel-postgres";
-import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import { sql as vercelSql } from "@vercel/postgres";
+import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
+import { drizzle as drizzleVercel } from "drizzle-orm/vercel-postgres";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 
@@ -12,7 +12,8 @@ import * as schema from "@/drizzle/schema";
  */
 
 // Check if we're in Vercel environment or using Vercel Postgres
-const isVercel = process.env.VERCEL || process.env.POSTGRES_URL?.includes('vercel-storage');
+const isVercel =
+  process.env.VERCEL || process.env.POSTGRES_URL?.includes("vercel-storage");
 
 let db: ReturnType<typeof drizzleVercel> | ReturnType<typeof drizzlePostgres>;
 
@@ -25,7 +26,7 @@ if (isVercel) {
 
   if (!connectionString) {
     throw new Error(
-      "Database connection string not found. Please set POSTGRES_URL or DATABASE_URL environment variable."
+      "Database connection string not found. Please set POSTGRES_URL or DATABASE_URL environment variable.",
     );
   }
 

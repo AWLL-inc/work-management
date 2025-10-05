@@ -25,7 +25,7 @@ export interface UpdateWorkCategoryData {
 }
 
 export async function getWorkCategories(
-  activeOnly = false
+  activeOnly = false,
 ): Promise<WorkCategory[]> {
   const url = `/api/work-categories${activeOnly ? "?active=true" : ""}`;
   const response = await fetch(url);
@@ -44,7 +44,7 @@ export async function getWorkCategories(
 }
 
 export async function createWorkCategory(
-  data: CreateWorkCategoryData
+  data: CreateWorkCategoryData,
 ): Promise<WorkCategory> {
   const response = await fetch("/api/work-categories", {
     method: "POST",
@@ -70,7 +70,7 @@ export async function createWorkCategory(
 
 export async function updateWorkCategory(
   id: string,
-  data: UpdateWorkCategoryData
+  data: UpdateWorkCategoryData,
 ): Promise<WorkCategory> {
   const response = await fetch(`/api/work-categories/${id}`, {
     method: "PUT",

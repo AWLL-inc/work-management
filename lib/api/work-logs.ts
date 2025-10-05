@@ -67,7 +67,7 @@ export async function createWorkLog(data: CreateWorkLogData): Promise<WorkLog> {
 
 export async function updateWorkLog(
   id: string,
-  data: UpdateWorkLogData
+  data: UpdateWorkLogData,
 ): Promise<WorkLog> {
   const response = await fetch(`/api/work-logs/${id}`, {
     method: "PUT",

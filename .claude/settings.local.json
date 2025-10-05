@@ -28,7 +28,14 @@
       "Bash(gh issue close:*)",
       "Bash(yes n)",
       "Bash(npx shadcn@latest add textarea)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npm test:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx playwright:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git pull:*)",
+      "Bash(git mv:*)",
+      "Bash(npx biome check:*)"
     ],
     "deny": [],
     "ask": []

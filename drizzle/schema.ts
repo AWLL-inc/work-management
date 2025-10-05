@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, boolean, integer, varchar, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, boolean, integer, varchar, primaryKey, index } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 /**
@@ -71,7 +71,9 @@ export const projects = pgTable("projects", {
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
-});
+}, (table) => ({
+  isActiveIdx: index("projects_is_active_idx").on(table.isActive),
+}));
 
 // Work Categories Master Table
 export const workCategories = pgTable("work_categories", {
@@ -82,7 +84,9 @@ export const workCategories = pgTable("work_categories", {
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
-});
+}, (table) => ({
+  isActiveDisplayOrderIdx: index("work_categories_is_active_display_order_idx").on(table.isActive, table.displayOrder),
+}));
 
 // Work Logs Table
 export const workLogs = pgTable("work_logs", {
@@ -101,7 +105,11 @@ export const workLogs = pgTable("work_logs", {
   details: text("details"),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
-});
+}, (table) => ({
+  userIdDateIdx: index("work_logs_user_id_date_idx").on(table.userId, table.date),
+  projectIdIdx: index("work_logs_project_id_idx").on(table.projectId),
+  categoryIdIdx: index("work_logs_category_id_idx").on(table.categoryId),
+}));
 
 /**
  * Type exports for TypeScript

@@ -15,6 +15,13 @@
       "when": 1759578587798,
       "tag": "0001_fuzzy_cerise",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759628692271,
+      "tag": "0002_thin_bruce_banner",
+      "breakpoints": true
     }
   ]
 }

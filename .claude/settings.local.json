@@ -27,7 +27,8 @@
       "Bash(docker-compose up:*)",
       "Bash(gh issue close:*)",
       "Bash(yes n)",
-      "Bash(npx shadcn@latest add textarea)"
+      "Bash(npx shadcn@latest add textarea)",
+      "Bash(npx shadcn@latest add:*)"
     ],
     "deny": [],
     "ask": []

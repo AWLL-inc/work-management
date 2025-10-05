@@ -1,5 +1,7 @@
 # Work Management
 
+[![CI/CD Pipeline](https://github.com/AWLL-inc/work-management/actions/workflows/ci.yml/badge.svg)](https://github.com/AWLL-inc/work-management/actions/workflows/ci.yml)
+
 Modern work management application built with Next.js 15, featuring task management, user collaboration, and project organization capabilities.
 
 ## 🚀 Quick Start

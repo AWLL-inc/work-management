@@ -1,9 +1,9 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import type { WorkLog, Project, WorkCategory } from "@/drizzle/schema";
-import { Button } from "@/components/ui/button";
 import { ArrowUpDown, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 
 interface WorkLogWithRelations extends WorkLog {
   project?: Project;
@@ -40,7 +40,9 @@ export function createWorkLogColumns({
       },
       cell: ({ row }) => {
         const date = row.getValue("date") as Date;
-        return <div className="text-sm">{new Date(date).toLocaleDateString()}</div>;
+        return (
+          <div className="text-sm">{new Date(date).toLocaleDateString()}</div>
+        );
       },
     },
     {
@@ -86,9 +88,7 @@ export function createWorkLogColumns({
       cell: ({ row }) => {
         const details = row.getValue("details") as string | null;
         // Strip HTML tags for table display
-        const plainText = details
-          ? details.replace(/<[^>]*>/g, "").trim()
-          : "";
+        const plainText = details ? details.replace(/<[^>]*>/g, "").trim() : "";
         return (
           <div className="text-sm text-muted-foreground max-w-md truncate">
             {plainText || "-"}

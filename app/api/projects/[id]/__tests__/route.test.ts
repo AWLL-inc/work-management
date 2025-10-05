@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { PUT, DELETE } from "../route";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DELETE, PUT } from "../route";
 
 // Mock the auth module
 vi.mock("@/lib/auth", () => ({
@@ -17,10 +17,10 @@ vi.mock("@/lib/db/repositories/project-repository", () => ({
 
 import { auth } from "@/lib/auth";
 import {
-  getProjectById,
-  updateProject,
   deleteProject,
+  getProjectById,
   projectNameExists,
+  updateProject,
 } from "@/lib/db/repositories/project-repository";
 
 describe("PUT /api/projects/[id]", () => {
@@ -39,16 +39,18 @@ describe("PUT /api/projects/[id]", () => {
   });
 
   it("should return 401 when user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as any);
 
     const request = new NextRequest(
       `http://localhost:3000/api/projects/${validUuid}`,
       {
         method: "PUT",
         body: JSON.stringify({ name: "Updated Project" }),
-      }
+      },
     );
-    const response = await PUT(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -64,16 +66,18 @@ describe("PUT /api/projects/[id]", () => {
         role: "user",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
 
     const request = new NextRequest(
       `http://localhost:3000/api/projects/${validUuid}`,
       {
         method: "PUT",
         body: JSON.stringify({ name: "Updated Project" }),
-      }
+      },
     );
-    const response = await PUT(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(403);
@@ -89,7 +93,7 @@ describe("PUT /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
 
     const invalidId = "invalid-uuid";
     const request = new NextRequest(
@@ -97,9 +101,11 @@ describe("PUT /api/projects/[id]", () => {
       {
         method: "PUT",
         body: JSON.stringify({ name: "Updated Project" }),
-      }
+      },
     );
-    const response = await PUT(request, { params: Promise.resolve({ id: invalidId }) });
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: invalidId }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -115,7 +121,7 @@ describe("PUT /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getProjectById).mockResolvedValue(undefined);
 
     const request = new NextRequest(
@@ -123,9 +129,11 @@ describe("PUT /api/projects/[id]", () => {
       {
         method: "PUT",
         body: JSON.stringify({ name: "Updated Project" }),
-      }
+      },
     );
-    const response = await PUT(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -147,7 +155,7 @@ describe("PUT /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getProjectById).mockResolvedValue(mockProject);
     vi.mocked(projectNameExists).mockResolvedValue(false);
     vi.mocked(updateProject).mockResolvedValue(updatedProject);
@@ -157,9 +165,11 @@ describe("PUT /api/projects/[id]", () => {
       {
         method: "PUT",
         body: JSON.stringify({ name: "Updated Project" }),
-      }
+      },
     );
-    const response = await PUT(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -175,7 +185,7 @@ describe("PUT /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getProjectById).mockResolvedValue(mockProject);
     vi.mocked(projectNameExists).mockResolvedValue(true);
 
@@ -184,9 +194,11 @@ describe("PUT /api/projects/[id]", () => {
       {
         method: "PUT",
         body: JSON.stringify({ name: "Existing Project" }),
-      }
+      },
     );
-    const response = await PUT(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -202,7 +214,7 @@ describe("PUT /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getProjectById).mockResolvedValue(mockProject);
 
     const request = new NextRequest(
@@ -210,9 +222,11 @@ describe("PUT /api/projects/[id]", () => {
       {
         method: "PUT",
         body: JSON.stringify({ name: "" }), // Invalid: empty name
-      }
+      },
     );
-    const response = await PUT(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -228,7 +242,7 @@ describe("PUT /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getProjectById).mockRejectedValue(new Error("Database error"));
 
     const request = new NextRequest(
@@ -236,9 +250,11 @@ describe("PUT /api/projects/[id]", () => {
       {
         method: "PUT",
         body: JSON.stringify({ name: "Updated Project" }),
-      }
+      },
     );
-    const response = await PUT(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(500);
@@ -263,15 +279,17 @@ describe("DELETE /api/projects/[id]", () => {
   });
 
   it("should return 401 when user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null);
+    vi.mocked(auth).mockResolvedValue(null as any);
 
     const request = new NextRequest(
       `http://localhost:3000/api/projects/${validUuid}`,
       {
         method: "DELETE",
-      }
+      },
     );
-    const response = await DELETE(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -287,15 +305,17 @@ describe("DELETE /api/projects/[id]", () => {
         role: "user",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
 
     const request = new NextRequest(
       `http://localhost:3000/api/projects/${validUuid}`,
       {
         method: "DELETE",
-      }
+      },
     );
-    const response = await DELETE(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(403);
@@ -311,16 +331,18 @@ describe("DELETE /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
 
     const invalidId = "invalid-uuid";
     const request = new NextRequest(
       `http://localhost:3000/api/projects/${invalidId}`,
       {
         method: "DELETE",
-      }
+      },
     );
-    const response = await DELETE(request, { params: Promise.resolve({ id: invalidId }) });
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: invalidId }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -336,16 +358,18 @@ describe("DELETE /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getProjectById).mockResolvedValue(undefined);
 
     const request = new NextRequest(
       `http://localhost:3000/api/projects/${validUuid}`,
       {
         method: "DELETE",
-      }
+      },
     );
-    const response = await DELETE(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -367,7 +391,7 @@ describe("DELETE /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getProjectById).mockResolvedValue(mockProject);
     vi.mocked(deleteProject).mockResolvedValue(deletedProject);
 
@@ -375,9 +399,11 @@ describe("DELETE /api/projects/[id]", () => {
       `http://localhost:3000/api/projects/${validUuid}`,
       {
         method: "DELETE",
-      }
+      },
     );
-    const response = await DELETE(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -393,16 +419,18 @@ describe("DELETE /api/projects/[id]", () => {
         role: "admin",
       },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    });
+    } as any);
     vi.mocked(getProjectById).mockRejectedValue(new Error("Database error"));
 
     const request = new NextRequest(
       `http://localhost:3000/api/projects/${validUuid}`,
       {
         method: "DELETE",
-      }
+      },
     );
-    const response = await DELETE(request, { params: Promise.resolve({ id: validUuid }) });
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: validUuid }),
+    });
     const data = await response.json();
 
     expect(response.status).toBe(500);

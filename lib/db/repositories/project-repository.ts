@@ -1,6 +1,6 @@
+import { and, eq } from "drizzle-orm";
+import { type NewProject, type Project, projects } from "@/drizzle/schema";
 import { db } from "@/lib/db/connection";
-import { projects, type Project, type NewProject } from "@/drizzle/schema";
-import { eq, and } from "drizzle-orm";
 
 /**
  * Project Repository
@@ -49,7 +49,7 @@ export async function getProjectById(id: string): Promise<Project | undefined> {
  * @returns Project or undefined
  */
 export async function getProjectByName(
-  name: string
+  name: string,
 ): Promise<Project | undefined> {
   const [project] = await db
     .select()
@@ -66,12 +66,9 @@ export async function getProjectByName(
  * @returns Created project
  */
 export async function createProject(
-  data: Omit<NewProject, "id" | "createdAt" | "updatedAt">
+  data: Omit<NewProject, "id" | "createdAt" | "updatedAt">,
 ): Promise<Project> {
-  const [project] = await db
-    .insert(projects)
-    .values(data)
-    .returning();
+  const [project] = await db.insert(projects).values(data).returning();
 
   return project;
 }
@@ -84,7 +81,7 @@ export async function createProject(
  */
 export async function updateProject(
   id: string,
-  data: Partial<Omit<NewProject, "id" | "createdAt" | "updatedAt">>
+  data: Partial<Omit<NewProject, "id" | "createdAt" | "updatedAt">>,
 ): Promise<Project | undefined> {
   const [project] = await db
     .update(projects)
@@ -103,9 +100,7 @@ export async function updateProject(
  * @param id Project ID
  * @returns Deleted project or undefined
  */
-export async function deleteProject(
-  id: string
-): Promise<Project | undefined> {
+export async function deleteProject(id: string): Promise<Project | undefined> {
   const [project] = await db
     .update(projects)
     .set({
@@ -126,7 +121,7 @@ export async function deleteProject(
  */
 export async function projectNameExists(
   name: string,
-  excludeId?: string
+  excludeId?: string,
 ): Promise<boolean> {
   const conditions = excludeId
     ? and(eq(projects.name, name), eq(projects.id, excludeId))

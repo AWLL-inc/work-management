@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { cn } from "@/lib/utils";
 
 /**
@@ -58,7 +58,7 @@ describe("cn utility", () => {
 
     it("should preserve non-conflicting classes", () => {
       expect(cn("text-sm", "px-4", "py-2", "bg-blue-500")).toBe(
-        "text-sm px-4 py-2 bg-blue-500"
+        "text-sm px-4 py-2 bg-blue-500",
       );
     });
   });
@@ -128,7 +128,7 @@ describe("cn utility", () => {
       const result = cn(
         "base-class",
         isActive && "active-class",
-        isDisabled && "disabled-class"
+        isDisabled && "disabled-class",
       );
 
       expect(result).toBe("base-class active-class");

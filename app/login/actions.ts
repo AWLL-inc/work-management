@@ -1,7 +1,7 @@
 "use server";
 
-import { signIn } from "@/lib/auth";
 import { AuthError } from "next-auth";
+import { signIn } from "@/lib/auth";
 
 /**
  * Server action for handling login

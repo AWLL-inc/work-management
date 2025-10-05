@@ -1,9 +1,8 @@
 "use client";
 
+import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Home } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface BreadcrumbItem {
   label: string;
@@ -32,7 +31,9 @@ export function Breadcrumbs() {
   let currentPath = "";
   for (const segment of segments) {
     currentPath += `/${segment}`;
-    const label = routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+    const label =
+      routeLabels[segment] ||
+      segment.charAt(0).toUpperCase() + segment.slice(1);
     breadcrumbs.push({
       label,
       href: currentPath,

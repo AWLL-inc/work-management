@@ -1,4 +1,14 @@
-import { pgTable, text, timestamp, uuid, boolean, integer, varchar, primaryKey, index } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
 /**
@@ -21,25 +31,33 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
 });
 
-export const accounts = pgTable("accounts", {
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  type: varchar("type", { length: 255 }).$type<AdapterAccountType>().notNull(),
-  provider: varchar("provider", { length: 255 }).notNull(),
-  providerAccountId: varchar("provider_account_id", { length: 255 }).notNull(),
-  refreshToken: text("refresh_token"),
-  accessToken: text("access_token"),
-  expiresAt: integer("expires_at"),
-  tokenType: varchar("token_type", { length: 255 }),
-  scope: varchar("scope", { length: 255 }),
-  idToken: text("id_token"),
-  sessionState: varchar("session_state", { length: 255 }),
-}, (account) => ({
-  compoundKey: primaryKey({
-    columns: [account.provider, account.providerAccountId],
+export const accounts = pgTable(
+  "accounts",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: varchar("type", { length: 255 })
+      .$type<AdapterAccountType>()
+      .notNull(),
+    provider: varchar("provider", { length: 255 }).notNull(),
+    providerAccountId: varchar("provider_account_id", {
+      length: 255,
+    }).notNull(),
+    refreshToken: text("refresh_token"),
+    accessToken: text("access_token"),
+    expiresAt: integer("expires_at"),
+    tokenType: varchar("token_type", { length: 255 }),
+    scope: varchar("scope", { length: 255 }),
+    idToken: text("id_token"),
+    sessionState: varchar("session_state", { length: 255 }),
+  },
+  (account) => ({
+    compoundKey: primaryKey({
+      columns: [account.provider, account.providerAccountId],
+    }),
   }),
-}));
+);
 
 export const sessions = pgTable("sessions", {
   sessionToken: varchar("session_token", { length: 255 }).primaryKey(),
@@ -49,67 +67,88 @@ export const sessions = pgTable("sessions", {
   expires: timestamp("expires", { mode: "date" }).notNull(),
 });
 
-export const verificationTokens = pgTable("verification_tokens", {
-  identifier: varchar("identifier", { length: 255 }).notNull(),
-  token: varchar("token", { length: 255 }).notNull().unique(),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-}, (verificationToken) => ({
-  compoundKey: primaryKey({
-    columns: [verificationToken.identifier, verificationToken.token],
+export const verificationTokens = pgTable(
+  "verification_tokens",
+  {
+    identifier: varchar("identifier", { length: 255 }).notNull(),
+    token: varchar("token", { length: 255 }).notNull().unique(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (verificationToken) => ({
+    compoundKey: primaryKey({
+      columns: [verificationToken.identifier, verificationToken.token],
+    }),
   }),
-}));
+);
 
 /**
  * Work Management Tables
  */
 
 // Projects Master Table
-export const projects = pgTable("projects", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name", { length: 255 }).notNull().unique(),
-  description: text("description"),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
-}, (table) => ({
-  isActiveIdx: index("projects_is_active_idx").on(table.isActive),
-}));
+export const projects = pgTable(
+  "projects",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name", { length: 255 }).notNull().unique(),
+    description: text("description"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => ({
+    isActiveIdx: index("projects_is_active_idx").on(table.isActive),
+  }),
+);
 
 // Work Categories Master Table
-export const workCategories = pgTable("work_categories", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name", { length: 255 }).notNull().unique(),
-  description: text("description"),
-  displayOrder: integer("display_order").notNull().default(0),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
-}, (table) => ({
-  isActiveDisplayOrderIdx: index("work_categories_is_active_display_order_idx").on(table.isActive, table.displayOrder),
-}));
+export const workCategories = pgTable(
+  "work_categories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name", { length: 255 }).notNull().unique(),
+    description: text("description"),
+    displayOrder: integer("display_order").notNull().default(0),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => ({
+    isActiveDisplayOrderIdx: index(
+      "work_categories_is_active_display_order_idx",
+    ).on(table.isActive, table.displayOrder),
+  }),
+);
 
 // Work Logs Table
-export const workLogs = pgTable("work_logs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  date: timestamp("date", { mode: "date" }).notNull(),
-  hours: varchar("hours", { length: 10 }).notNull(), // Using varchar for decimal(5,2) compatibility
-  projectId: uuid("project_id")
-    .notNull()
-    .references(() => projects.id, { onDelete: "restrict" }),
-  categoryId: uuid("category_id")
-    .notNull()
-    .references(() => workCategories.id, { onDelete: "restrict" }),
-  details: text("details"),
-  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
-}, (table) => ({
-  userIdDateIdx: index("work_logs_user_id_date_idx").on(table.userId, table.date),
-  projectIdIdx: index("work_logs_project_id_idx").on(table.projectId),
-  categoryIdIdx: index("work_logs_category_id_idx").on(table.categoryId),
-}));
+export const workLogs = pgTable(
+  "work_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    date: timestamp("date", { mode: "date" }).notNull(),
+    hours: varchar("hours", { length: 10 }).notNull(), // Using varchar for decimal(5,2) compatibility
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "restrict" }),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => workCategories.id, { onDelete: "restrict" }),
+    details: text("details"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdDateIdx: index("work_logs_user_id_date_idx").on(
+      table.userId,
+      table.date,
+    ),
+    projectIdIdx: index("work_logs_project_id_idx").on(table.projectId),
+    categoryIdIdx: index("work_logs_category_id_idx").on(table.categoryId),
+  }),
+);
 
 /**
  * Type exports for TypeScript

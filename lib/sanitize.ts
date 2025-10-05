@@ -5,7 +5,7 @@
  * a library like DOMPurify for more comprehensive sanitization.
  */
 
-const ALLOWED_TAGS = [
+const _ALLOWED_TAGS = [
   "p",
   "br",
   "strong",
@@ -27,7 +27,7 @@ const ALLOWED_TAGS = [
   "pre",
 ];
 
-const ALLOWED_ATTRIBUTES = ["href", "class"];
+const _ALLOWED_ATTRIBUTES = ["href", "class"];
 
 /**
  * Basic HTML sanitization
@@ -37,7 +37,10 @@ export function sanitizeHtml(html: string): string {
   if (!html) return "";
 
   // Remove script tags and their content
-  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+  let sanitized = html.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    "",
+  );
 
   // Remove event handlers (onclick, onload, etc.)
   sanitized = sanitized.replace(/\son\w+\s*=\s*["'][^"']*["']/gi, "");

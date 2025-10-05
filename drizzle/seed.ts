@@ -1,8 +1,15 @@
 import "dotenv/config";
-import { db } from "@/lib/db/connection";
-import { users, projects, workCategories, workLogs, sessions, accounts, verificationTokens } from "./schema";
 import { hashPassword } from "@/lib/auth-helpers";
-import { sql } from "drizzle-orm";
+import { db } from "@/lib/db/connection";
+import {
+  accounts,
+  projects,
+  sessions,
+  users,
+  verificationTokens,
+  workCategories,
+  workLogs,
+} from "./schema";
 
 /**
  * Seed database with initial test data
@@ -66,14 +73,9 @@ async function seed() {
 
     console.log("Creating test users...");
     for (const user of testUsers) {
-      const [createdUser] = await db
-        .insert(users)
-        .values(user)
-        .returning();
+      const [createdUser] = await db.insert(users).values(user).returning();
 
-      console.log(
-        `✓ Created user: ${createdUser.email} (${createdUser.role})`
-      );
+      console.log(`✓ Created user: ${createdUser.email} (${createdUser.role})`);
     }
 
     // Create sample projects
@@ -108,7 +110,7 @@ async function seed() {
         .returning();
 
       console.log(
-        `✓ Created project: ${createdProject.name} (${createdProject.isActive ? "active" : "inactive"})`
+        `✓ Created project: ${createdProject.name} (${createdProject.isActive ? "active" : "inactive"})`,
       );
     }
 

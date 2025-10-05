@@ -1,13 +1,13 @@
-import { db } from "@/lib/db/connection";
+import { and, count, desc, eq, gte, lte } from "drizzle-orm";
 import {
-  workLogs,
+  type NewWorkLog,
   projects,
-  workCategories,
   users,
   type WorkLog,
-  type NewWorkLog,
+  workCategories,
+  workLogs,
 } from "@/drizzle/schema";
-import { eq, and, gte, lte, desc, count } from "drizzle-orm";
+import { db } from "@/lib/db/connection";
 
 /**
  * Work Log Repository
@@ -49,9 +49,7 @@ export interface PaginationResult {
 /**
  * Get work logs with filtering and pagination
  */
-export async function getWorkLogs(
-  options: GetWorkLogsOptions = {}
-): Promise<{
+export async function getWorkLogs(options: GetWorkLogsOptions = {}): Promise<{
   data: WorkLogWithRelations[];
   pagination: PaginationResult;
 }> {
@@ -140,7 +138,7 @@ export async function getWorkLogs(
  * Get work log by ID with relations
  */
 export async function getWorkLogById(
-  id: string
+  id: string,
 ): Promise<WorkLogWithRelations | undefined> {
   const [log] = await db
     .select({
@@ -181,7 +179,7 @@ export async function getWorkLogById(
  * Create a new work log
  */
 export async function createWorkLog(
-  data: Omit<NewWorkLog, "id" | "createdAt" | "updatedAt">
+  data: Omit<NewWorkLog, "id" | "createdAt" | "updatedAt">,
 ): Promise<WorkLog> {
   const [log] = await db.insert(workLogs).values(data).returning();
 
@@ -193,7 +191,7 @@ export async function createWorkLog(
  */
 export async function updateWorkLog(
   id: string,
-  data: Partial<Omit<NewWorkLog, "id" | "createdAt" | "updatedAt">>
+  data: Partial<Omit<NewWorkLog, "id" | "createdAt" | "updatedAt">>,
 ): Promise<WorkLog | undefined> {
   const [log] = await db
     .update(workLogs)
@@ -219,7 +217,7 @@ export async function deleteWorkLog(id: string): Promise<void> {
  */
 export async function isWorkLogOwner(
   workLogId: string,
-  userId: string
+  userId: string,
 ): Promise<boolean> {
   const [log] = await db
     .select({ userId: workLogs.userId })

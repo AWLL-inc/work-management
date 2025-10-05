@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import {
-  getAllWorkCategories,
   createWorkCategory,
+  getAllWorkCategories,
   workCategoryNameExists,
 } from "@/lib/db/repositories/work-category-repository";
 import {
   createWorkCategorySchema,
   listProjectsQuerySchema,
 } from "@/lib/validations";
-import { ZodError } from "zod";
 
 // Use Node.js runtime for database operations
 export const runtime = "nodejs";
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         success: true,
         data: categories,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("[GET /api/work-categories] Error:", error);
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
             details: error.issues,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
           message: "An error occurred while fetching work categories",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
             message: "Admin role required",
           },
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
             message: "A work category with this name already exists",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
         success: true,
         data: category,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("[POST /api/work-categories] Error:", error);
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
             details: error.issues,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
           message: "An error occurred while creating the work category",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

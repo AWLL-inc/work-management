@@ -1,5 +1,5 @@
-import NextAuth from "next-auth";
 import type { NextAuthConfig } from "next-auth";
+import NextAuth from "next-auth";
 
 /**
  * NextAuth.js v5 Edge-Compatible Configuration
@@ -36,8 +36,8 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
       const isOnWorkLogs = nextUrl.pathname.startsWith("/work-logs");
-      const isOnProtectedApi = ["/api/work-logs", "/api/projects"].some((route) =>
-        nextUrl.pathname.startsWith(route)
+      const isOnProtectedApi = ["/api/work-logs", "/api/projects"].some(
+        (route) => nextUrl.pathname.startsWith(route),
       );
 
       if (isOnDashboard || isOnWorkLogs || isOnProtectedApi) {

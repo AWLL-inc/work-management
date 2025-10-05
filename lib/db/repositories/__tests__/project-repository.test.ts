@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Project } from "@/drizzle/schema";
 import {
+  createProject,
+  deleteProject,
   getAllProjects,
   getProjectById,
   getProjectByName,
-  createProject,
-  updateProject,
-  deleteProject,
   projectNameExists,
+  updateProject,
 } from "../project-repository";
-import type { Project } from "@/drizzle/schema";
 
 // Mock the database connection
 vi.mock("@/lib/db/connection", () => ({

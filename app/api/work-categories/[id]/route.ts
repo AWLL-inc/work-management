@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import {
+  deleteWorkCategory,
   getWorkCategoryById,
   updateWorkCategory,
-  deleteWorkCategory,
   workCategoryNameExists,
 } from "@/lib/db/repositories/work-category-repository";
 import { updateWorkCategorySchema } from "@/lib/validations";
-import { ZodError } from "zod";
 
 // Use Node.js runtime for database operations
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export const runtime = "nodejs";
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check authentication
@@ -34,7 +34,7 @@ export async function PUT(
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -48,7 +48,7 @@ export async function PUT(
             message: "Admin role required",
           },
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -66,7 +66,7 @@ export async function PUT(
             message: "Invalid work category ID format",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -81,7 +81,7 @@ export async function PUT(
             message: "Work category not found",
           },
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -101,7 +101,7 @@ export async function PUT(
               message: "A work category with this name already exists",
             },
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -114,12 +114,12 @@ export async function PUT(
         success: true,
         data: updatedCategory,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(
       `[PUT /api/work-categories/${(await params).id}] Error:`,
-      error
+      error,
     );
 
     if (error instanceof ZodError) {
@@ -132,7 +132,7 @@ export async function PUT(
             details: error.issues,
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -144,7 +144,7 @@ export async function PUT(
           message: "An error occurred while updating the work category",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -156,8 +156,8 @@ export async function PUT(
  * @requires Admin role
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check authentication
@@ -171,7 +171,7 @@ export async function DELETE(
             message: "Authentication required",
           },
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -185,7 +185,7 @@ export async function DELETE(
             message: "Admin role required",
           },
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -203,7 +203,7 @@ export async function DELETE(
             message: "Invalid work category ID format",
           },
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -218,7 +218,7 @@ export async function DELETE(
             message: "Work category not found",
           },
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -229,12 +229,12 @@ export async function DELETE(
       {
         success: true,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(
       `[DELETE /api/work-categories/${(await params).id}] Error:`,
-      error
+      error,
     );
 
     return NextResponse.json(
@@ -245,7 +245,7 @@ export async function DELETE(
           message: "An error occurred while deleting the work category",
         },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

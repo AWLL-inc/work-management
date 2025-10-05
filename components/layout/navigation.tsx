@@ -1,17 +1,16 @@
 "use client";
 
+import {
+  ClipboardList,
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  Tags,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  ClipboardList,
-  Settings,
-  FolderKanban,
-  Tags,
-  LogOut
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface NavigationProps {
   userEmail?: string | null;
@@ -71,7 +70,9 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
             <div className="ml-8 flex space-x-1">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
+                const isActive =
+                  pathname === item.href ||
+                  pathname?.startsWith(`${item.href}/`);
 
                 return (
                   <Link
@@ -81,7 +82,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
                       "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors",
                       isActive
                         ? "bg-primary/10 text-primary border-b-2 border-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <Icon className="w-4 h-4 mr-2" />
@@ -96,7 +97,9 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
                   <div className="mx-2 my-2 w-px bg-border" />
                   {adminItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
+                    const isActive =
+                      pathname === item.href ||
+                      pathname?.startsWith(`${item.href}/`);
 
                     return (
                       <Link
@@ -106,7 +109,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
                           "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors",
                           isActive
                             ? "bg-primary/10 text-primary border-b-2 border-primary"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
                         )}
                       >
                         <Icon className="w-4 h-4 mr-2" />
@@ -122,9 +125,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
           {/* User Info */}
           <div className="flex items-center space-x-4">
             {userEmail && (
-              <span className="text-sm text-muted-foreground">
-                {userEmail}
-              </span>
+              <span className="text-sm text-muted-foreground">{userEmail}</span>
             )}
             <Button variant="ghost" size="sm" asChild>
               <Link href="/api/auth/signout">

@@ -64,7 +64,7 @@ export async function createProject(data: CreateProjectData): Promise<Project> {
 
 export async function updateProject(
   id: string,
-  data: UpdateProjectData
+  data: UpdateProjectData,
 ): Promise<Project> {
   const response = await fetch(`/api/projects/${id}`, {
     method: "PUT",

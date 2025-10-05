@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { WorkCategory } from "@/drizzle/schema";
 import { DataTable } from "@/components/data-table/data-table";
-import { createCategoryColumns } from "./category-columns";
-import { CategoryFormDialog } from "./category-form-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import type { WorkCategory } from "@/drizzle/schema";
+import { createCategoryColumns } from "./category-columns";
+import { CategoryFormDialog } from "./category-form-dialog";
 
 interface CategoryTableProps {
   categories: WorkCategory[];
@@ -30,7 +30,7 @@ interface CategoryTableProps {
       description?: string | null;
       displayOrder?: number;
       isActive?: boolean;
-    }
+    },
   ) => Promise<void>;
   onDeleteCategory: (id: string) => Promise<void>;
   isLoading: boolean;
@@ -46,7 +46,7 @@ export function CategoryTable({
   const [formOpen, setFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<WorkCategory | null>(
-    null
+    null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,7 +77,7 @@ export function CategoryTable({
           displayOrder: category.displayOrder,
         }),
       ]);
-    } catch (error) {
+    } catch (_error) {
       // Error handling is done in parent component
     }
   };
@@ -99,7 +99,7 @@ export function CategoryTable({
           displayOrder: category.displayOrder,
         }),
       ]);
-    } catch (error) {
+    } catch (_error) {
       // Error handling is done in parent component
     }
   };
@@ -150,7 +150,9 @@ export function CategoryTable({
       <div className="bg-card rounded-lg border-2 border-primary/20 p-6 shadow-sm">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Work Categories</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Work Categories
+            </h1>
             <p className="text-muted-foreground mt-1">
               Manage work category master data with custom ordering
             </p>

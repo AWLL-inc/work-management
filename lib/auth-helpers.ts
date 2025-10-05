@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
-import { db } from "@/lib/db/connection";
-import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import type { NewUser } from "@/drizzle/schema";
+import { users } from "@/drizzle/schema";
+import { db } from "@/lib/db/connection";
 
 /**
  * Authentication Helper Functions
@@ -26,7 +26,7 @@ export async function hashPassword(password: string): Promise<string> {
  */
 export async function verifyPassword(
   password: string,
-  hash: string
+  hash: string,
 ): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
@@ -37,7 +37,7 @@ export async function verifyPassword(
  * @returns Created user (without password hash)
  */
 export async function createUser(
-  userData: Omit<NewUser, "passwordHash"> & { password: string }
+  userData: Omit<NewUser, "passwordHash"> & { password: string },
 ) {
   const { password, ...rest } = userData;
 
@@ -79,11 +79,7 @@ export async function getUserByEmail(email: string) {
  * @returns User or null
  */
 export async function getUserById(id: string) {
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, id))
-    .limit(1);
+  const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
 
   return user || null;
 }
@@ -96,7 +92,7 @@ export async function getUserById(id: string) {
  */
 export function hasRole(
   userRole: string,
-  requiredRole: "admin" | "manager" | "user"
+  requiredRole: "admin" | "manager" | "user",
 ): boolean {
   const roleHierarchy = {
     admin: 3,

@@ -35,7 +35,11 @@
       "Bash(gh pr create:*)",
       "Bash(git pull:*)",
       "Bash(git mv:*)",
-      "Bash(npx biome check:*)"
+      "Bash(npx biome check:*)",
+      "Bash(if [ -d \"C:/src/work-management/app/api/work-logs/[id]/__tests__\" ])",
+      "Bash(then ls \"C:/src/work-management/app/api/work-logs/[id]/__tests__\")",
+      "Bash(else echo \"Directory does not exist\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

@@ -32,12 +32,40 @@ describe("PUT /api/work-logs/[id]", () => {
     id: validUuid,
     userId: "user-id",
     date: new Date("2024-10-05"),
-    hours: 8,
+    hours: "8.0",
     projectId: validProjectId,
     categoryId: validCategoryId,
     details: "Daily work",
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
+    project: {
+      id: validProjectId,
+      name: "Test Project",
+      description: null,
+      isActive: true,
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
+    category: {
+      id: validCategoryId,
+      name: "Development",
+      description: null,
+      displayOrder: 0,
+      isActive: true,
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
+    user: {
+      id: "user-id",
+      name: "Test User",
+      email: "user@example.com",
+      role: "user" as const,
+      emailVerified: null,
+      image: null,
+      passwordHash: null,
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
   };
 
   beforeEach(() => {
@@ -152,7 +180,7 @@ describe("PUT /api/work-logs/[id]", () => {
   it("should allow user to update their own work log", async () => {
     const updatedWorkLog = {
       ...mockWorkLog,
-      hours: 7.5,
+      hours: "7.5",
       updatedAt: new Date(),
     };
 
@@ -182,13 +210,13 @@ describe("PUT /api/work-logs/[id]", () => {
 
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.data.hours).toBe(7.5);
+    expect(data.data.hours).toBe("7.5");
   });
 
   it("should allow admin to update any work log", async () => {
     const updatedWorkLog = {
       ...mockWorkLog,
-      hours: 7.5,
+      hours: "7.5",
       updatedAt: new Date(),
     };
 
@@ -217,7 +245,7 @@ describe("PUT /api/work-logs/[id]", () => {
 
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
-    expect(data.data.hours).toBe(7.5);
+    expect(data.data.hours).toBe("7.5");
     // Admin should not need ownership check
     expect(isWorkLogOwner).not.toHaveBeenCalled();
   });
@@ -289,12 +317,40 @@ describe("DELETE /api/work-logs/[id]", () => {
     id: validUuid,
     userId: "user-id",
     date: new Date("2024-10-05"),
-    hours: 8,
+    hours: "8.0",
     projectId: validProjectId,
     categoryId: validCategoryId,
     details: "Daily work",
     createdAt: new Date("2024-01-01"),
     updatedAt: new Date("2024-01-01"),
+    project: {
+      id: validProjectId,
+      name: "Test Project",
+      description: null,
+      isActive: true,
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
+    category: {
+      id: validCategoryId,
+      name: "Development",
+      description: null,
+      displayOrder: 0,
+      isActive: true,
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
+    user: {
+      id: "user-id",
+      name: "Test User",
+      email: "user@example.com",
+      role: "user" as const,
+      emailVerified: null,
+      image: null,
+      passwordHash: null,
+      createdAt: new Date("2024-01-01"),
+      updatedAt: new Date("2024-01-01"),
+    },
   };
 
   beforeEach(() => {

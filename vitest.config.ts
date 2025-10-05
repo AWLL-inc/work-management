@@ -8,6 +8,12 @@ export default defineConfig({
     environment: "happy-dom",
     globals: true,
     setupFiles: [],
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/tests/e2e/**", // Exclude Playwright E2E tests
+      "**/*.spec.ts", // Exclude Playwright spec files
+    ],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

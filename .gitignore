@@ -30,6 +30,11 @@ yarn-error.log*
 .env.docker
 .env.docker.prod
 
+# test artifacts
+/playwright-report/
+/test-results/
+/coverage/
+
 # vercel
 .vercel
 

@@ -54,7 +54,7 @@ export default function WorkCategoriesPage() {
     // Optimistic update: update UI immediately
     if (categories && data.displayOrder !== undefined) {
       const updatedCategories = categories.map((cat) =>
-        cat.id === id ? { ...cat, displayOrder: data.displayOrder! } : cat,
+        cat.id === id ? { ...cat, displayOrder: data.displayOrder } : cat,
       );
       mutate(updatedCategories, false);
     }

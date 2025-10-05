@@ -25,7 +25,9 @@
       "Bash(docker-compose restart:*)",
       "Bash(docker-compose:*)",
       "Bash(docker-compose up:*)",
-      "Bash(gh issue close:*)"
+      "Bash(gh issue close:*)",
+      "Bash(yes n)",
+      "Bash(npx shadcn@latest add textarea)"
     ],
     "deny": [],
     "ask": []

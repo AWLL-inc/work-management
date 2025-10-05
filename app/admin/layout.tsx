@@ -29,6 +29,12 @@ export default async function AdminLayout({
               </div>
               <div className="ml-6 flex space-x-8">
                 <a
+                  href="/admin/projects"
+                  className="border-b-2 border-transparent hover:border-gray-300 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
+                >
+                  Projects
+                </a>
+                <a
                   href="/admin/work-categories"
                   className="border-b-2 border-transparent hover:border-gray-300 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
                 >

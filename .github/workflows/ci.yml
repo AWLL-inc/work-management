@@ -1,0 +1,164 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, develop]
+
+# Cancel in-progress runs for the same workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # Job 1: Quality Checks (Type-checking, Linting, Build)
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
+        env:
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret-key-for-ci-pipeline-minimum-32-characters-long' }}
+          NEXTAUTH_URL: http://localhost:3000
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL_TEST || 'postgresql://test:test@localhost:5432/test' }}
+          POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING_TEST || 'postgresql://test:test@localhost:5432/test' }}
+
+  # Job 2: Unit & Integration Tests
+  test:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+        env:
+          NODE_ENV: test
+          NEXTAUTH_SECRET: test-secret-key-for-ci-pipeline-minimum-32-characters-long
+          NEXTAUTH_URL: http://localhost:3000
+          POSTGRES_URL: postgresql://test:test@localhost:5432/test
+          POSTGRES_URL_NON_POOLING: postgresql://test:test@localhost:5432/test
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  # Job 3: End-to-End Tests
+  e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application for E2E tests
+        run: npm run build
+        env:
+          NEXTAUTH_SECRET: test-secret-key-for-ci-pipeline-minimum-32-characters-long
+          NEXTAUTH_URL: http://localhost:3000
+          POSTGRES_URL: postgresql://test:test@localhost:5432/test
+          POSTGRES_URL_NON_POOLING: postgresql://test:test@localhost:5432/test
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        env:
+          NEXTAUTH_SECRET: test-secret-key-for-ci-pipeline-minimum-32-characters-long
+          NEXTAUTH_URL: http://localhost:3000
+          POSTGRES_URL: postgresql://test:test@localhost:5432/test
+          POSTGRES_URL_NON_POOLING: postgresql://test:test@localhost:5432/test
+          PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # Job 4: Deployment (only on main branch)
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: [quality-checks, test, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+        if: env.VERCEL_TOKEN != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Notify deployment success
+        if: success()
+        run: echo "✅ Deployment to Vercel successful!"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: echo "❌ Deployment to Vercel failed!"

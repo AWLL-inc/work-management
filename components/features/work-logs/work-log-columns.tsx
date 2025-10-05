@@ -90,7 +90,7 @@ export function createWorkLogColumns({
           ? details.replace(/<[^>]*>/g, "").trim()
           : "";
         return (
-          <div className="text-sm text-gray-600 max-w-md truncate">
+          <div className="text-sm text-muted-foreground max-w-md truncate">
             {plainText || "-"}
           </div>
         );

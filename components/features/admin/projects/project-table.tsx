@@ -95,7 +95,7 @@ export function ProjectTable({
 
   return (
     <div className="space-y-6">
-      <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+      <div className="bg-card rounded-lg border-2 border-primary/20 p-6 shadow-sm">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Projects</h1>
@@ -104,6 +104,7 @@ export function ProjectTable({
             </p>
           </div>
           <Button
+            variant="outline"
             size="lg"
             onClick={() => {
               setSelectedProject(null);

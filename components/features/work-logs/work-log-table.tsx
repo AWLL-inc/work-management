@@ -107,7 +107,7 @@ export function WorkLogTable({
 
   return (
     <div className="space-y-6">
-      <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+      <div className="bg-card rounded-lg border-2 border-primary/20 p-6 shadow-sm">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Work Logs</h1>
@@ -116,6 +116,7 @@ export function WorkLogTable({
             </p>
           </div>
           <Button
+            variant="outline"
             size="lg"
             onClick={() => {
               setSelectedWorkLog(null);

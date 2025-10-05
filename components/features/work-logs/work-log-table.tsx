@@ -106,17 +106,25 @@ export function WorkLogTable({
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Work Logs</h2>
-        <Button
-          onClick={() => {
-            setSelectedWorkLog(null);
-            setFormOpen(true);
-          }}
-        >
-          Add Work Log
-        </Button>
+    <div className="space-y-6">
+      <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Work Logs</h1>
+            <p className="text-muted-foreground mt-1">
+              Track and manage your daily work hours
+            </p>
+          </div>
+          <Button
+            size="lg"
+            onClick={() => {
+              setSelectedWorkLog(null);
+              setFormOpen(true);
+            }}
+          >
+            Add Work Log
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

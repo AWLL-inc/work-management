@@ -146,17 +146,25 @@ export function CategoryTable({
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Work Categories</h2>
-        <Button
-          onClick={() => {
-            setSelectedCategory(null);
-            setFormOpen(true);
-          }}
-        >
-          Add Category
-        </Button>
+    <div className="space-y-6">
+      <div className="bg-card rounded-lg border border-border p-6 shadow-sm">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Work Categories</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage work category master data with custom ordering
+            </p>
+          </div>
+          <Button
+            size="lg"
+            onClick={() => {
+              setSelectedCategory(null);
+              setFormOpen(true);
+            }}
+          >
+            Add Category
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

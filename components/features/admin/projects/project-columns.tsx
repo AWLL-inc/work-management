@@ -52,7 +52,7 @@ export function createProjectColumns({
       cell: ({ row }) => {
         const isActive = row.getValue("isActive") as boolean;
         return (
-          <Badge variant={isActive ? "default" : "secondary"}>
+          <Badge variant={isActive ? "success" : "secondary"}>
             {isActive ? "Active" : "Inactive"}
           </Badge>
         );

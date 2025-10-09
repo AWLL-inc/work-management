@@ -39,7 +39,9 @@
       "Bash(if [ -d \"C:/src/work-management/app/api/work-logs/[id]/__tests__\" ])",
       "Bash(then ls \"C:/src/work-management/app/api/work-logs/[id]/__tests__\")",
       "Bash(else echo \"Directory does not exist\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(docker exec:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

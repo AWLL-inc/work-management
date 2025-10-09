@@ -44,6 +44,8 @@
     "@tiptap/react": "^3.6.5",
     "@tiptap/starter-kit": "^3.6.5",
     "@vercel/postgres": "^0.10.0",
+    "ag-grid-community": "^34.2.0",
+    "ag-grid-react": "^34.2.0",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

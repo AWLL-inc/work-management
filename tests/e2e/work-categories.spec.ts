@@ -12,7 +12,7 @@ test.describe("Work Categories Management", () => {
     await page.fill('input[name="email"]', "admin@example.com");
     await page.fill('input[name="password"]', "admin123");
     await page.click('button[type="submit"]');
-    await page.waitForURL("/dashboard");
+    await page.waitForURL("/work-logs");
   }
 
   // Helper function to login as regular user
@@ -21,7 +21,7 @@ test.describe("Work Categories Management", () => {
     await page.fill('input[name="email"]', "user@example.com");
     await page.fill('input[name="password"]', "user123");
     await page.click('button[type="submit"]');
-    await page.waitForURL("/dashboard");
+    await page.waitForURL("/work-logs");
   }
 
   test.beforeEach(async ({ page }) => {

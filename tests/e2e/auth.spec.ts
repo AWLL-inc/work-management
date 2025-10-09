@@ -25,10 +25,10 @@ test.describe("Authentication Flows", () => {
       await page.click('button[type="submit"]');
 
       // Wait for navigation to dashboard
-      await page.waitForURL("/dashboard");
+      await page.waitForURL("/work-logs");
 
       // Verify we're on the dashboard
-      await expect(page).toHaveURL("/dashboard");
+      await expect(page).toHaveURL("/work-logs");
 
       // Verify user information is displayed
       await expect(page.locator("text=user@example.com")).toBeVisible();
@@ -42,7 +42,7 @@ test.describe("Authentication Flows", () => {
       await page.fill('input[name="password"]', "admin123");
       await page.click('button[type="submit"]');
 
-      await page.waitForURL("/dashboard");
+      await page.waitForURL("/work-logs");
 
       // Verify admin role is displayed
       await expect(page.locator("text=admin@example.com")).toBeVisible();
@@ -95,7 +95,7 @@ test.describe("Authentication Flows", () => {
       await page.fill('input[name="email"]', "user@example.com");
       await page.fill('input[name="password"]', "user123");
       await page.click('button[type="submit"]');
-      await page.waitForURL("/dashboard");
+      await page.waitForURL("/work-logs");
 
       // Then logout
       await page.click('button[type="submit"]:has-text("Sign out")');
@@ -113,13 +113,13 @@ test.describe("Authentication Flows", () => {
       await page.fill('input[name="email"]', "user@example.com");
       await page.fill('input[name="password"]', "user123");
       await page.click('button[type="submit"]');
-      await page.waitForURL("/dashboard");
+      await page.waitForURL("/work-logs");
 
       // Reload the page
       await page.reload();
 
       // Should still be logged in
-      await expect(page).toHaveURL("/dashboard");
+      await expect(page).toHaveURL("/work-logs");
       await expect(page.locator("text=user@example.com")).toBeVisible();
     });
 
@@ -129,34 +129,34 @@ test.describe("Authentication Flows", () => {
       await page.fill('input[name="email"]', "user@example.com");
       await page.fill('input[name="password"]', "user123");
       await page.click('button[type="submit"]');
-      await page.waitForURL("/dashboard");
+      await page.waitForURL("/work-logs");
 
       // Navigate to another page (if exists)
-      await page.goto("/dashboard");
+      await page.goto("/work-logs");
 
       // Should still be logged in
-      await expect(page).toHaveURL("/dashboard");
+      await expect(page).toHaveURL("/work-logs");
       await expect(page.locator("text=user@example.com")).toBeVisible();
     });
   });
 
   test.describe("Protected Route Redirection", () => {
-    test("should redirect to login when accessing dashboard without authentication", async ({
+    test("should redirect to login when accessing work-logs without authentication", async ({
       page,
     }) => {
-      // Try to access dashboard directly without logging in
-      await page.goto("/dashboard");
+      // Try to access work-logs directly without logging in
+      await page.goto("/work-logs");
 
       // Should redirect to login page
       await page.waitForURL("/login");
       await expect(page).toHaveURL("/login");
     });
 
-    test("should redirect to dashboard after login from protected route", async ({
+    test("should redirect to work-logs after login from protected route", async ({
       page,
     }) => {
-      // Try to access dashboard (will redirect to login)
-      await page.goto("/dashboard");
+      // Try to access work-logs (will redirect to login)
+      await page.goto("/work-logs");
       await page.waitForURL("/login");
 
       // Login
@@ -164,9 +164,9 @@ test.describe("Authentication Flows", () => {
       await page.fill('input[name="password"]', "user123");
       await page.click('button[type="submit"]');
 
-      // Should redirect back to dashboard
-      await page.waitForURL("/dashboard");
-      await expect(page).toHaveURL("/dashboard");
+      // Should redirect back to work-logs
+      await page.waitForURL("/work-logs");
+      await expect(page).toHaveURL("/work-logs");
     });
   });
 

@@ -10,7 +10,6 @@ interface BreadcrumbItem {
 }
 
 const routeLabels: Record<string, string> = {
-  dashboard: "Dashboard",
   "work-logs": "Work Logs",
   admin: "Admin",
   projects: "Projects",
@@ -43,7 +42,7 @@ export function Breadcrumbs() {
   return (
     <nav className="flex items-center space-x-2 text-sm text-muted-foreground py-3 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <Link
-        href="/dashboard"
+        href="/work-logs"
         className="hover:text-foreground transition-colors flex items-center"
       >
         <Home className="w-4 h-4" />

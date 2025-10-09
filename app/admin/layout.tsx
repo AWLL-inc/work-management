@@ -17,7 +17,7 @@ export default async function AdminLayout({
 
   // Check admin role
   if (session.user.role !== "admin") {
-    redirect("/dashboard");
+    redirect("/work-logs");
   }
 
   return (

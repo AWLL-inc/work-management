@@ -41,7 +41,9 @@
       "Bash(else echo \"Directory does not exist\")",
       "Bash(fi)",
       "Bash(docker exec:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

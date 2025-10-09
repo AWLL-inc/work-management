@@ -34,19 +34,19 @@ export const authConfig: NextAuthConfig = {
     },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
       const isOnWorkLogs = nextUrl.pathname.startsWith("/work-logs");
+      const isOnAdmin = nextUrl.pathname.startsWith("/admin");
       const isOnProtectedApi = ["/api/work-logs", "/api/projects"].some(
         (route) => nextUrl.pathname.startsWith(route),
       );
 
-      if (isOnDashboard || isOnWorkLogs || isOnProtectedApi) {
+      if (isOnWorkLogs || isOnAdmin || isOnProtectedApi) {
         if (isLoggedIn) return true;
         return false; // Redirect unauthenticated users to login page
       }
 
       if (isLoggedIn && nextUrl.pathname === "/login") {
-        return Response.redirect(new URL("/dashboard", nextUrl));
+        return Response.redirect(new URL("/work-logs", nextUrl));
       }
 
       return true;

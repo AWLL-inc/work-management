@@ -19,12 +19,6 @@ interface NavigationProps {
 
 const navigationItems = [
   {
-    name: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    roles: ["user", "manager", "admin"],
-  },
-  {
     name: "Work Logs",
     href: "/work-logs",
     icon: ClipboardList,
@@ -56,7 +50,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
           <div className="flex">
             {/* Logo/Brand */}
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/dashboard" className="flex items-center space-x-2">
+              <Link href="/work-logs" className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <ClipboardList className="w-5 h-5 text-primary-foreground" />
                 </div>

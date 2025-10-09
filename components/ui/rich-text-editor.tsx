@@ -13,7 +13,7 @@ import {
   Redo,
   Undo,
 } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
@@ -32,6 +32,12 @@ export function RichTextEditor({
   className,
   disabled = false,
 }: RichTextEditorProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -47,6 +53,7 @@ export function RichTextEditor({
     ],
     content: value || "",
     editable: !disabled,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       onChange?.(html);
@@ -77,8 +84,18 @@ export function RichTextEditor({
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }, [editor]);
 
-  if (!editor) {
-    return null;
+  if (!isMounted || !editor) {
+    return (
+      <div
+        className={cn(
+          "border rounded-md overflow-hidden bg-white min-h-[200px] flex items-center justify-center",
+          disabled && "opacity-50 pointer-events-none",
+          className,
+        )}
+      >
+        <div className="text-gray-500">Loading editor...</div>
+      </div>
+    );
   }
 
   return (

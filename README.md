@@ -171,7 +171,7 @@ npm run test:coverage           # Coverage report
 **設定要件**:
 ```bash
 # GitHub Secrets に設定が必要
-ANTHROPIC_API_KEY=sk-ant-api03-...
+CLAUDE_CODE_OAUTH_TOKEN=<your-claude-code-oauth-token>
 ```
 
 **レビュー機能**:

@@ -33,16 +33,17 @@ export async function signInAction(
           return {
             error: "メールアドレスまたはパスワードが正しくありません",
           };
-        default:
+        default: {
           // Handle other error types like Configuration, AccessDenied, etc.
-          if ((error as any).type === "Configuration") {
+          const errorType = (error as { type?: string }).type;
+          if (errorType === "Configuration") {
             console.error("Auth configuration error:", error);
             return {
               error:
                 "システムエラーが発生しました。管理者にお問い合わせください。",
             };
           }
-          if ((error as any).type === "AccessDenied") {
+          if (errorType === "AccessDenied") {
             return {
               error:
                 "アクセスが拒否されました。アカウントが無効化されている可能性があります。",
@@ -53,6 +54,7 @@ export async function signInAction(
           return {
             error: "認証中にエラーが発生しました。もう一度お試しください。",
           };
+        }
       }
     }
 

@@ -49,15 +49,15 @@
 - パフォーマンスとセキュリティ基準
 
 ### [ADR-005: UIライブラリとデータテーブルの選定](./005-ui-library-and-data-table.md)
-**Status**: Accepted
+**Status**: Accepted (Updated 2025-01-10)
 **概要**: UIコンポーネントライブラリとデータテーブル/グリッドライブラリの技術選択
 
 **主要決定事項**:
 - shadcn/ui + Radix UI for base UI components
-- TanStack Table v8 for data grid/table functionality
-- Copy-and-paste approach for full customization
-- Headless UI architecture for future flexibility
-- 完全無料のMITライセンス
+- **AG Grid Community Edition** for main data operations (Updated)
+- shadcn/ui Data Table for simple lists and reports
+- 用途に応じた使い分けアプローチ
+- Excel風の直感的操作とインライン編集機能
 
 ### [ADR-006: デザインシステムとUIガイドライン](./006-design-system-guidelines.md)
 **Status**: Accepted
@@ -77,7 +77,7 @@
 - **Language**: TypeScript 5+ (strict mode)
 - **UI Library**: React 19
 - **UI Components**: shadcn/ui + Radix UI
-- **Data Table**: TanStack Table v8
+- **Data Table**: AG Grid Community Edition + shadcn/ui Data Table
 - **Styling**: Tailwind CSS 4
 - **Build Tool**: Turbopack
 
@@ -123,7 +123,8 @@ work-management/
 │   └── utils.ts          # Utility functions
 ├── components/            # Reusable React components
 │   ├── ui/               # shadcn/ui components
-│   ├── data-table/       # TanStack Table wrappers
+│   ├── data-table/       # TanStack Table wrappers (reports)
+│   ├── ag-grid/          # AG Grid shared components
 │   └── features/         # Feature-specific components
 ├── types/                # TypeScript type definitions
 ├── drizzle/              # Database schema and migrations
@@ -232,6 +233,7 @@ npm run build
 - **2024-10-03**: ADR-001〜004の初期作成
 - **2024-10-04**: ADR-005追加（UIライブラリとデータテーブルの選定）
 - **2024-10-05**: ADR-006追加（デザインシステムとUIガイドライン）
+- **2025-01-10**: ADR-005更新（AG Grid Community Edition採用）
 - 今後の変更は各ADRファイルで管理
 
 ---

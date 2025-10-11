@@ -14,6 +14,7 @@ import type {
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -69,6 +70,7 @@ export function AGGridWorkLogTable({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inlineEditingEnabled, setInlineEditingEnabled] = useState(false);
 
   // Create project and category lookup maps
   const projectsMap = useMemo(() => {
@@ -123,12 +125,17 @@ export function AGGridWorkLogTable({
   }, []);
 
   // Column definitions
-  const columnDefs: ColDef[] = useMemo(
-    () => [
+  const columnDefs: ColDef[] = useMemo(() => {
+    const columns: ColDef[] = [
       {
         headerName: "Date",
         field: "date",
         width: 120,
+        editable: inlineEditingEnabled,
+        cellEditor: "agDateCellEditor",
+        cellEditorParams: {
+          format: "yyyy-mm-dd",
+        },
         valueFormatter: (params) => {
           if (!params.value) return "";
           return new Date(params.value).toLocaleDateString();
@@ -139,7 +146,7 @@ export function AGGridWorkLogTable({
         headerName: "Hours",
         field: "hours",
         width: 100,
-        editable: true,
+        editable: inlineEditingEnabled,
         cellEditor: "agTextCellEditor",
         cellEditorParams: {
           maxLength: 5,
@@ -147,21 +154,47 @@ export function AGGridWorkLogTable({
       },
       {
         headerName: "Project",
-        field: "projectName",
+        field: inlineEditingEnabled ? "projectId" : "projectName",
         width: 200,
+        editable: inlineEditingEnabled,
+        cellEditor: inlineEditingEnabled ? "agSelectCellEditor" : undefined,
+        cellEditorParams: inlineEditingEnabled
+          ? {
+              values: projects.filter((p) => p.isActive).map((p) => p.id),
+            }
+          : undefined,
+        valueFormatter: (params) => {
+          if (inlineEditingEnabled) {
+            return projectsMap.get(params.value) || "Unknown";
+          }
+          return params.value;
+        },
         filter: true,
       },
       {
         headerName: "Category",
-        field: "categoryName",
+        field: inlineEditingEnabled ? "categoryId" : "categoryName",
         width: 180,
+        editable: inlineEditingEnabled,
+        cellEditor: inlineEditingEnabled ? "agSelectCellEditor" : undefined,
+        cellEditorParams: inlineEditingEnabled
+          ? {
+              values: categories.filter((c) => c.isActive).map((c) => c.id),
+            }
+          : undefined,
+        valueFormatter: (params) => {
+          if (inlineEditingEnabled) {
+            return categoriesMap.get(params.value) || "Unknown";
+          }
+          return params.value;
+        },
         filter: true,
       },
       {
         headerName: "Details",
         field: "details",
         flex: 1,
-        editable: true,
+        editable: inlineEditingEnabled,
         cellEditor: "agLargeTextCellEditor",
         cellEditorParams: {
           maxLength: 1000,
@@ -169,17 +202,29 @@ export function AGGridWorkLogTable({
         },
         tooltipField: "details",
       },
-      {
+    ];
+
+    // Add Actions column only when inline editing is disabled
+    if (!inlineEditingEnabled) {
+      columns.push({
         headerName: "Actions",
         cellRenderer: ActionsCellRenderer,
         width: 150,
         sortable: false,
         filter: false,
         pinned: "right",
-      },
-    ],
-    [ActionsCellRenderer],
-  );
+      });
+    }
+
+    return columns;
+  }, [
+    inlineEditingEnabled,
+    projects,
+    categories,
+    projectsMap,
+    categoriesMap,
+    ActionsCellRenderer,
+  ]);
 
   // Default column properties
   const defaultColDef: ColDef = useMemo(
@@ -199,15 +244,18 @@ export function AGGridWorkLogTable({
       if (newValue === oldValue) return;
 
       const field = colDef.field;
-      if (field === "hours" || field === "details") {
-        try {
-          await onUpdateWorkLog(data.id, {
-            [field]: newValue,
-          });
-        } catch (_error) {
-          // Revert the change if update fails
+      if (!field) return;
+
+      try {
+        await onUpdateWorkLog(data.id, {
+          [field]: newValue,
+        });
+      } catch (_error) {
+        // Revert the change if update fails
+        if (event.node && field) {
           event.node.setDataValue(field, oldValue);
         }
+        toast.error(`${colDef.headerName}の更新に失敗しました`);
       }
     },
     [onUpdateWorkLog],
@@ -263,16 +311,27 @@ export function AGGridWorkLogTable({
               Enhanced spreadsheet-like interface for work log management
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => {
-              setSelectedWorkLog(null);
-              setFormOpen(true);
-            }}
-          >
-            Add Work Log
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant={inlineEditingEnabled ? "default" : "outline"}
+              size="lg"
+              onClick={() => setInlineEditingEnabled(!inlineEditingEnabled)}
+            >
+              {inlineEditingEnabled
+                ? "インライン編集を無効にする"
+                : "インライン編集を有効にする"}
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => {
+                setSelectedWorkLog(null);
+                setFormOpen(true);
+              }}
+            >
+              Add Work Log
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -291,6 +350,8 @@ export function AGGridWorkLogTable({
             rowSelection="single"
             animateRows={true}
             suppressRowClickSelection={true}
+            singleClickEdit={inlineEditingEnabled}
+            stopEditingWhenCellsLoseFocus={true}
           />
         </div>
       )}

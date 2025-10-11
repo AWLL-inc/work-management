@@ -8,7 +8,7 @@ import { expect, test } from "@playwright/test";
 test.describe("Projects Management", () => {
   // Helper function to login as admin
   async function loginAsAdmin(page: any) {
-    await page.goto("/login");
+    await page.goto("/auth/signin");
     await page.fill('input[name="email"]', "admin@example.com");
     await page.fill('input[name="password"]', "admin123");
     await page.click('button[type="submit"]');
@@ -17,7 +17,7 @@ test.describe("Projects Management", () => {
 
   // Helper function to login as regular user
   async function loginAsUser(page: any) {
-    await page.goto("/login");
+    await page.goto("/auth/signin");
     await page.fill('input[name="email"]', "user@example.com");
     await page.fill('input[name="password"]', "user123");
     await page.click('button[type="submit"]');

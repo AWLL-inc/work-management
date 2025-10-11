@@ -1,11 +1,12 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 
 function ErrorContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const error = searchParams.get("error");
 
   const getErrorMessage = (error: string | null) => {
@@ -52,7 +53,7 @@ function ErrorContent() {
             <div className="space-y-4">
               <Button
                 onClick={() => {
-                  window.location.href = "/auth/signin";
+                  router.push("/auth/signin");
                 }}
                 className="w-full"
               >

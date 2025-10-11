@@ -1,9 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 
 export default function SignOutPage() {
+  const router = useRouter();
   const handleSignOut = async () => {
     await signOut({
       callbackUrl: "/auth/signin",
@@ -25,7 +27,7 @@ export default function SignOutPage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => window.history.back()}
+                onClick={() => router.back()}
                 className="w-full"
               >
                 キャンセル

@@ -1,6 +1,15 @@
-import { AuthError } from "next-auth";
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
-import { signInAction } from "../actions";
+
+// Mock next-auth completely to avoid module resolution issues
+vi.mock("next-auth", () => ({
+  AuthError: class AuthError extends Error {
+    type: string;
+    constructor(message: string) {
+      super(message);
+      this.type = message;
+    }
+  },
+}));
 
 // Mock the dependencies
 vi.mock("@/lib/auth", () => ({
@@ -10,6 +19,12 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/lib/utils", () => ({
   validateCallbackUrl: vi.fn((url: string) => url),
 }));
+
+// Import AuthError after mocking
+const { AuthError } = await import("next-auth");
+
+// Import the action after all mocks are in place
+const { signInAction } = await import("../actions");
 
 const mockSignIn = vi.mocked(await import("@/lib/auth")).signIn as Mock;
 

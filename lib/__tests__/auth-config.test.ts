@@ -8,20 +8,13 @@ vi.mock("next-auth", () => ({
 }));
 
 describe("auth-config DISABLE_AUTH functionality", () => {
-  const originalEnv = { ...process.env };
-
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset environment
-    Object.keys(process.env).forEach((key) => {
-      if (key.startsWith("NODE_ENV") || key.startsWith("DISABLE_AUTH")) {
-        delete process.env[key];
-      }
-    });
+    vi.unstubAllEnvs();
   });
 
   afterEach(() => {
-    process.env = { ...originalEnv };
+    vi.unstubAllEnvs();
   });
 
   describe("authorized callback", () => {
@@ -29,14 +22,8 @@ describe("auth-config DISABLE_AUTH functionality", () => {
     // Since the auth-config.ts exports the configuration, we need to test the authorized function
 
     it("should bypass auth in development mode when DISABLE_AUTH=true", async () => {
-      Object.defineProperty(process.env, "NODE_ENV", {
-        value: "development",
-        writable: true,
-      });
-      Object.defineProperty(process.env, "DISABLE_AUTH", {
-        value: "true",
-        writable: true,
-      });
+      vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("DISABLE_AUTH", "true");
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");
@@ -57,14 +44,8 @@ describe("auth-config DISABLE_AUTH functionality", () => {
     });
 
     it("should enforce auth in production even if DISABLE_AUTH=true", async () => {
-      Object.defineProperty(process.env, "NODE_ENV", {
-        value: "production",
-        writable: true,
-      });
-      Object.defineProperty(process.env, "DISABLE_AUTH", {
-        value: "true",
-        writable: true,
-      });
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("DISABLE_AUTH", "true");
 
       // Mock console.error to verify it's called
       const consoleSpy = vi
@@ -97,14 +78,8 @@ describe("auth-config DISABLE_AUTH functionality", () => {
     });
 
     it("should enforce auth in development when DISABLE_AUTH=false", async () => {
-      Object.defineProperty(process.env, "NODE_ENV", {
-        value: "development",
-        writable: true,
-      });
-      Object.defineProperty(process.env, "DISABLE_AUTH", {
-        value: "false",
-        writable: true,
-      });
+      vi.stubEnv("NODE_ENV", "development");
+      vi.stubEnv("DISABLE_AUTH", "false");
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");
@@ -125,14 +100,8 @@ describe("auth-config DISABLE_AUTH functionality", () => {
     });
 
     it("should allow authenticated user to access protected routes", async () => {
-      Object.defineProperty(process.env, "NODE_ENV", {
-        value: "production",
-        writable: true,
-      });
-      Object.defineProperty(process.env, "DISABLE_AUTH", {
-        value: "false",
-        writable: true,
-      });
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("DISABLE_AUTH", "false");
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");
@@ -155,14 +124,8 @@ describe("auth-config DISABLE_AUTH functionality", () => {
     });
 
     it("should redirect unauthenticated users from protected routes", async () => {
-      Object.defineProperty(process.env, "NODE_ENV", {
-        value: "production",
-        writable: true,
-      });
-      Object.defineProperty(process.env, "DISABLE_AUTH", {
-        value: "false",
-        writable: true,
-      });
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("DISABLE_AUTH", "false");
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");
@@ -186,14 +149,8 @@ describe("auth-config DISABLE_AUTH functionality", () => {
     });
 
     it("should allow access to auth pages for unauthenticated users", async () => {
-      Object.defineProperty(process.env, "NODE_ENV", {
-        value: "production",
-        writable: true,
-      });
-      Object.defineProperty(process.env, "DISABLE_AUTH", {
-        value: "false",
-        writable: true,
-      });
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("DISABLE_AUTH", "false");
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");
@@ -214,14 +171,8 @@ describe("auth-config DISABLE_AUTH functionality", () => {
     });
 
     it("should redirect authenticated users away from auth pages", async () => {
-      Object.defineProperty(process.env, "NODE_ENV", {
-        value: "production",
-        writable: true,
-      });
-      Object.defineProperty(process.env, "DISABLE_AUTH", {
-        value: "false",
-        writable: true,
-      });
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("DISABLE_AUTH", "false");
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");

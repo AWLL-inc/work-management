@@ -17,8 +17,13 @@ export function validateCallbackUrl(url: string): string {
       return url;
     }
 
+    // プロトコルが含まれていない場合（絶対URLでない場合）は無効とする
+    if (!url.includes("://")) {
+      return "/";
+    }
+
     // 絶対URLの場合、同一オリジンのみ許可
-    const callbackUrl = new URL(url, process.env.NEXTAUTH_URL);
+    const callbackUrl = new URL(url);
     const appUrl = new URL(process.env.NEXTAUTH_URL || "");
 
     if (callbackUrl.origin === appUrl.origin) {

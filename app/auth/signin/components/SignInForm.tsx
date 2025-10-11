@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,28 +20,20 @@ export default function SignInForm() {
   const searchParams = useSearchParams();
   const rawCallbackUrl = searchParams.get("callbackUrl") || "/";
   const callbackUrl = validateCallbackUrl(rawCallbackUrl);
-  const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
-    setPending(true);
-    setError("");
-
-    // Add callbackUrl to form data
-    formData.append("callbackUrl", callbackUrl);
-
-    const result = await signInAction(formData);
-
-    if (result?.error) {
-      setError(result.error);
-      setPending(false);
-    }
-  }
+  const [state, formAction, isPending] = useActionState(
+    async (_prevState: unknown, formData: FormData) => {
+      // Add callbackUrl to form data
+      formData.append("callbackUrl", callbackUrl);
+      return await signInAction(formData);
+    },
+    null,
+  );
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-md border">
-      <form action={handleSubmit} className="space-y-6">
-        {error && (
+      <form action={formAction} className="space-y-6">
+        {state?.error && (
           <div
             role="alert"
             aria-live="polite"
@@ -49,7 +41,7 @@ export default function SignInForm() {
             id="error-message"
             className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded"
           >
-            {error}
+            {state.error}
           </div>
         )}
 
@@ -62,11 +54,11 @@ export default function SignInForm() {
               type="email"
               autoComplete="email"
               required
-              disabled={pending}
+              disabled={isPending}
               placeholder="user@example.com"
               className="mt-1"
-              aria-describedby={error ? "error-message" : undefined}
-              aria-invalid={error ? "true" : "false"}
+              aria-describedby={state?.error ? "error-message" : undefined}
+              aria-invalid={state?.error ? "true" : "false"}
             />
           </div>
 
@@ -78,16 +70,16 @@ export default function SignInForm() {
               type="password"
               autoComplete="current-password"
               required
-              disabled={pending}
+              disabled={isPending}
               placeholder="••••••••"
               className="mt-1"
-              aria-describedby={error ? "error-message" : undefined}
-              aria-invalid={error ? "true" : "false"}
+              aria-describedby={state?.error ? "error-message" : undefined}
+              aria-invalid={state?.error ? "true" : "false"}
             />
           </div>
         </div>
 
-        <SubmitButton pending={pending} />
+        <SubmitButton pending={isPending} />
 
         <div className="mt-4 text-xs text-gray-600">
           <p className="font-semibold">テストアカウント:</p>

@@ -60,9 +60,9 @@ test.describe("Authentication Flows", () => {
       await expect(page).toHaveURL("/auth/signin");
 
       // Should show error message
-      await expect(
-        page.locator("text=/invalid credentials|incorrect/i"),
-      ).toBeVisible();
+      await expect(page.getByRole("alert")).toContainText(
+        "メールアドレスまたはパスワードが正しくありません",
+      );
     });
 
     test("should show error with missing email", async ({ page }) => {

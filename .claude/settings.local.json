@@ -47,7 +47,12 @@
       "Bash(docker volume prune:*)",
       "Bash(echo:*)",
       "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "mcp__serena__execute_shell_command",
+      "mcp__serena__activate_project",
+      "mcp__serena__read_file",
+      "mcp__serena__replace_regex",
+      "mcp__serena__search_for_pattern"
     ],
     "deny": [],
     "ask": []

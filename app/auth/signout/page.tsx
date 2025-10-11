@@ -1,17 +1,6 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import SignOutButton from "./components/SignOutButton";
 
 export default function SignOutPage() {
-  const router = useRouter();
-  const handleSignOut = async () => {
-    await signOut({
-      callbackUrl: "/auth/signin",
-    });
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-6">
@@ -21,18 +10,7 @@ export default function SignOutPage() {
               サインアウト
             </h2>
             <p className="text-gray-600 mb-6">本当にサインアウトしますか？</p>
-            <div className="space-y-4">
-              <Button onClick={handleSignOut} className="w-full">
-                サインアウト
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => router.back()}
-                className="w-full"
-              >
-                キャンセル
-              </Button>
-            </div>
+            <SignOutButton />
           </div>
         </div>
       </div>

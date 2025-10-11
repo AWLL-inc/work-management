@@ -11,7 +11,7 @@ export interface ApiResponse<T> {
 }
 
 export interface CreateWorkLogData {
-  date: Date;
+  date: string | Date;
   hours: string;
   projectId: string;
   categoryId: string;
@@ -19,7 +19,7 @@ export interface CreateWorkLogData {
 }
 
 export interface UpdateWorkLogData {
-  date?: Date;
+  date?: string | Date;
   hours?: string;
   projectId?: string;
   categoryId?: string;

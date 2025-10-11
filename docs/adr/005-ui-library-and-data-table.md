@@ -1,7 +1,7 @@
 # ADR-005: UIライブラリとデータテーブルの選定
 
 ## Status
-Accepted
+Superseded by Update 2025-01-10
 
 ## Context
 work-managementプロジェクトにおいて、以下の要件を満たすUIコンポーネントライブラリとデータテーブル/グリッドライブラリを選定する必要がある：
@@ -218,4 +218,91 @@ npm install @tanstack/react-table
 ---
 
 **作成日**: 2024-10-04
-**最終更新**: 2024-10-04
+**最終更新**: 2025-01-10
+
+---
+
+## Update 2025-01-10: AG Grid採用への変更
+
+### Status
+Accepted
+
+### Updated Decision
+以下の技術スタックに変更する：
+
+#### ベースUIライブラリ
+**shadcn/ui + Radix UI**（変更なし）
+
+#### データテーブル/グリッド
+**AG Grid Community Edition** + **shadcn/ui Data Table**（併用）
+
+### 変更理由
+実際の開発・運用を通じて以下の課題とニーズが判明：
+
+1. **ユーザビリティの向上**
+   - Excel風の直感的な操作が必要
+   - インライン編集機能の重要性
+   - キーボードナビゲーションの必要性
+
+2. **開発効率の向上**
+   - AG Gridのバッテリー込み機能により開発工数削減
+   - 豊富な機能がそのまま利用可能
+   - メンテナンスコストの削減
+
+3. **実装の現実性**
+   - TanStack TableでExcel風の機能実装には大きな工数が必要
+   - AG Grid Community Editionで十分な機能が無料利用可能
+   - 現在両方の実装が存在し、AG Gridの方が評価が高い
+
+### 新しい実装方針
+
+#### データテーブル使い分け
+- **AG Grid**: メインの工数管理、複雑なデータ操作が必要な画面
+- **shadcn/ui Data Table**: シンプルな一覧表示、レポート画面
+
+#### 実装アプローチ
+1. **メイン機能（Work Logs）**: AG Gridを標準とする
+2. **管理機能（Projects, Categories）**: 用途に応じて選択
+3. **レポート機能**: shadcn/ui Data Tableを継続使用
+
+### Updated Directory Structure
+```
+components/
+├── ui/                    # shadcn/uiベースコンポーネント
+├── data-table/           # TanStack Tableラッパー（レポート用）
+├── ag-grid/              # AG Grid共通コンポーネント
+│   ├── ag-grid-theme.css
+│   └── grid-utils.ts
+└── features/             # 機能別コンポーネント
+    ├── work-logs/
+    │   ├── ag-grid-work-log-table.tsx    # メイン
+    │   └── work-log-table.tsx            # バックアップ
+    └── admin/
+        ├── projects/
+        └── work-categories/
+```
+
+### Installation Updates
+```bash
+# AG Grid Community
+npm install ag-grid-community ag-grid-react
+
+# 既存のshadcn/ui + TanStack Tableは維持
+npm install @tanstack/react-table
+```
+
+### Benefits of Updated Decision
+1. **ユーザー体験の向上**: Excel風の直感的操作
+2. **開発効率**: 機能豊富なAG Gridで実装工数削減
+3. **柔軟性**: 用途に応じて両ライブラリを使い分け
+4. **将来性**: Community Editionの範囲で十分、必要時にEnterprise移行可能
+
+### Migration Strategy
+1. **Phase 1**: Work LogsでAG Gridを標準化
+2. **Phase 2**: 他の複雑なデータ操作画面をAG Gridに移行
+3. **Phase 3**: シンプルな画面はshadcn/ui Data Tableを維持
+
+### 学習リソース
+- [AG Grid Community Documentation](https://www.ag-grid.com/documentation/)
+- [AG Grid React Integration](https://www.ag-grid.com/react-data-grid/)
+- [AG Grid Community vs Enterprise](https://www.ag-grid.com/license-pricing/)

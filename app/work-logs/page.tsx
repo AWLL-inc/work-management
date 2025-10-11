@@ -54,7 +54,7 @@ export default function WorkLogsPage() {
   }) => {
     try {
       await createWorkLog({
-        date: new Date(data.date),
+        date: data.date,
         hours: data.hours,
         projectId: data.projectId,
         categoryId: data.categoryId,
@@ -80,10 +80,7 @@ export default function WorkLogsPage() {
     },
   ) => {
     try {
-      await updateWorkLog(id, {
-        ...data,
-        date: data.date ? new Date(data.date) : undefined,
-      });
+      await updateWorkLog(id, data);
       mutateWorkLogs();
     } catch (error) {
       toast.error(

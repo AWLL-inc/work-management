@@ -85,20 +85,20 @@ export function AGGridWorkLogTable({
   const rowData: WorkLogGridRow[] = useMemo(() => {
     return workLogs.map((workLog) => ({
       ...workLog,
-      projectName: projectsMap.get(workLog.projectId) || "Unknown Project",
-      categoryName: categoriesMap.get(workLog.categoryId) || "Unknown Category",
+      projectName: projectsMap.get(workLog.projectId) || "Unknown",
+      categoryName: categoriesMap.get(workLog.categoryId) || "Unknown",
     }));
   }, [workLogs, projectsMap, categoriesMap]);
 
-  // Cell renderer for actions
-  const ActionsCellRenderer = useCallback((props: { data: WorkLog }) => {
+  // Actions cell renderer
+  const ActionsCellRenderer = useCallback((params: any) => {
     const onEdit = () => {
-      setSelectedWorkLog(props.data);
+      setSelectedWorkLog(params.data);
       setFormOpen(true);
     };
 
     const onDelete = () => {
-      setSelectedWorkLog(props.data);
+      setSelectedWorkLog(params.data);
       setDeleteDialogOpen(true);
     };
 
@@ -184,10 +184,10 @@ export function AGGridWorkLogTable({
   );
 
   // Default column properties
-  const defaultColDef = useMemo(
+  const defaultColDef: ColDef = useMemo(
     () => ({
-      resizable: true,
       sortable: true,
+      resizable: true,
       filter: false,
     }),
     [],
@@ -222,8 +222,8 @@ export function AGGridWorkLogTable({
     categoryId: string;
     details?: string;
   }) => {
-    setIsSubmitting(true);
     try {
+      setIsSubmitting(true);
       if (selectedWorkLog) {
         await onUpdateWorkLog(selectedWorkLog.id, data);
       } else {
@@ -236,11 +236,11 @@ export function AGGridWorkLogTable({
     }
   };
 
-  const handleConfirmDelete = async () => {
+  const handleDelete = async () => {
     if (!selectedWorkLog) return;
 
-    setIsSubmitting(true);
     try {
+      setIsSubmitting(true);
       await onDeleteWorkLog(selectedWorkLog.id);
       setDeleteDialogOpen(false);
       setSelectedWorkLog(null);
@@ -256,12 +256,12 @@ export function AGGridWorkLogTable({
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-lg border-2 border-primary/20 p-6 shadow-sm">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Work Logs (AG Grid)
-            </h1>
-            <p className="text-muted-foreground mt-1">
+            <h2 className="text-2xl font-bold text-primary mb-2">
+              Work Logs Management
+            </h2>
+            <p className="text-muted-foreground">
               Enhanced spreadsheet-like interface for work log management
             </p>
           </div>
@@ -279,7 +279,7 @@ export function AGGridWorkLogTable({
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8">Loading...</div>
+        <div className="text-center py-8">Loading work logs...</div>
       ) : (
         <div className="ag-theme-quartz h-[600px] w-full border rounded-lg">
           <AgGridReact
@@ -292,22 +292,22 @@ export function AGGridWorkLogTable({
             onCellEditingStopped={onCellEditingStopped}
             rowSelection="single"
             animateRows={true}
-            enableCellTextSelection={true}
-            ensureDomOrder={true}
             suppressRowClickSelection={true}
-            getRowId={(params) => params.data.id}
           />
         </div>
       )}
 
       <WorkLogFormDialog
         open={formOpen}
-        onOpenChange={setFormOpen}
-        workLog={selectedWorkLog}
+        onClose={() => {
+          setFormOpen(false);
+          setSelectedWorkLog(null);
+        }}
         onSubmit={handleFormSubmit}
-        isSubmitting={isSubmitting}
         projects={projects}
         categories={categories}
+        workLog={selectedWorkLog}
+        isSubmitting={isSubmitting}
       />
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -315,20 +315,20 @@ export function AGGridWorkLogTable({
           <DialogHeader>
             <DialogTitle>Delete Work Log</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this work log entry?
+              Are you sure you want to delete this work log? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
-              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              onClick={handleConfirmDelete}
+              onClick={handleDelete}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Deleting..." : "Delete"}

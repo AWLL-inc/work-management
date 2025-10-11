@@ -1,39 +1,27 @@
 name: Claude Code Review
 
-# ADR-0013準拠：CI/CDでのAI支援コードレビュー実装
+# This workflow implements AI-assisted code review as defined in ADR-0013
+# See: docs/adr/adr-0013-cicd-strategy-and-github-actions.md
+
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
-  workflow_dispatch: # 手動実行可能
-
-env:
-  # デバッグモード（必要に応じて調整）
-  CLAUDE_DEBUG: false
+    types: [opened, synchronize]
 
 jobs:
   claude-review:
-    name: AI Code Review
     runs-on: ubuntu-latest
-    # 必要な権限を明示的に設定
     permissions:
       contents: read
       pull-requests: write
       issues: read
-      id-token: write
-
-    # 条件: ドラフトPRはスキップ
-    if: github.event.pull_request.draft != true
-
     steps:
-    # リポジトリのチェックアウト（浅いクローン）
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}
-        fetch-depth: 2 # diffに必要な最小限の履歴
+        fetch-depth: 0
 
-    # 以前のClaude Codeコメントをクリーンアップ
-    - name: Clean Previous Claude Comments
+    # Delete previous Claude Code comments to prevent accumulation
+    - name: Delete previous Claude comments
       uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -44,30 +32,24 @@ jobs:
             issue_number: context.issue.number
           });
 
-          // Claude Codeまたはプログレス追跡コメントを特定
+          // Find comments from github-actions bot that contain AI review content
           const claudeComments = comments.filter(comment =>
             comment.user.login === 'github-actions[bot]' &&
             (comment.body.includes('🤖 AI Code Review') ||
-             comment.body.includes('⏳ Claude Code is reviewing') ||
              comment.body.includes('Claude Code Review'))
           );
 
-          // 全ての前回コメントを削除
+          // Delete all previous Claude comments
           for (const comment of claudeComments) {
-            try {
-              await github.rest.issues.deleteComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: comment.id
-              });
-              console.log(`Deleted comment ${comment.id}`);
-            } catch (error) {
-              console.log(`Failed to delete comment ${comment.id}: ${error.message}`);
-            }
+            await github.rest.issues.deleteComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: comment.id
+            });
           }
 
-    # Issue番号の抽出（強化版）
-    - name: Extract Referenced Issues
+    # Extract issue numbers from PR title and description
+    - name: Extract issue numbers
       id: extract_issues
       uses: actions/github-script@v7
       with:
@@ -77,50 +59,32 @@ jobs:
           const prBody = context.payload.pull_request.body || '';
           const prText = `${prTitle}\n${prBody}`;
 
-          // Issue番号の抽出（複数パターン対応）
-          const patterns = [
-            /#(\d+)/g,           // #123
-            /issue\s+(\d+)/gi,   // Issue 123
-            /closes?\s+#?(\d+)/gi, // closes #123
-            /fixes?\s+#?(\d+)/gi,  // fixes #123
-            /resolves?\s+#?(\d+)/gi // resolves #123
-          ];
+          // Extract issue numbers (#123 format)
+          const issueMatches = prText.match(/#\d+/g) || [];
+          const issueNumbers = issueMatches.map(match => match.substring(1));
 
-          const issueNumbers = new Set();
-
-          patterns.forEach(pattern => {
-            let match;
-            while ((match = pattern.exec(prText)) !== null) {
-              issueNumbers.add(match[1]);
-            }
+          // Extract commit messages to find issue references there too
+          const { data: commits } = await github.rest.pulls.listCommits({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number
           });
 
-          // コミットメッセージからも抽出
-          try {
-            const { data: commits } = await github.rest.pulls.listCommits({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.issue.number
-            });
-
-            for (const commit of commits) {
-              patterns.forEach(pattern => {
-                let match;
-                while ((match = pattern.exec(commit.commit.message)) !== null) {
-                  issueNumbers.add(match[1]);
-                }
-              });
+          for (const commit of commits) {
+            const commitMatches = commit.commit.message.match(/#\d+/g) || [];
+            for (const match of commitMatches) {
+              const num = match.substring(1);
+              if (!issueNumbers.includes(num)) {
+                issueNumbers.push(num);
+              }
             }
-          } catch (error) {
-            console.log('Failed to fetch commits:', error.message);
           }
 
-          const result = Array.from(issueNumbers);
-          console.log('Extracted issue numbers:', result);
-          return result;
+          console.log('Found issue numbers:', issueNumbers);
+          return issueNumbers;
 
-    # Issue詳細情報の取得
-    - name: Fetch Issue Details
+    # Fetch issue content for each referenced issue
+    - name: Fetch issue content
       id: fetch_issues
       uses: actions/github-script@v7
       with:
@@ -137,237 +101,161 @@ jobs:
                 issue_number: parseInt(issueNumber)
               });
 
+              // Extract PBI, User Story, and AC from issue body
+              const body = issue.body || '';
               issues.push({
                 number: issueNumber,
                 title: issue.title,
-                body: issue.body || '',
-                labels: issue.labels.map(l => l.name),
-                state: issue.state,
-                assignees: issue.assignees.map(a => a.login),
-                milestone: issue.milestone?.title || null
+                body: body,
+                labels: issue.labels.map(l => l.name)
               });
-
-              console.log(`Fetched issue #${issueNumber}: ${issue.title}`);
             } catch (error) {
-              console.log(`Could not fetch issue #${issueNumber}: ${error.message}`);
+              console.log(`Could not fetch issue #${issueNumber}:`, error.message);
             }
           }
 
           return issues;
 
-    # MCPサーバー設定ファイルの作成
-    - name: Create MCP Configuration
-      run: |
-        cat > /tmp/mcp-config.json << 'EOF'
-        {
-          "mcpServers": {
-            "github_inline_comment": {
-              "command": "npx",
-              "args": ["-y", "@modelcontextprotocol/server-github"],
-              "env": {
-                "GITHUB_TOKEN": "${{ secrets.GITHUB_TOKEN }}",
-                "GITHUB_REPOSITORY": "${{ github.repository }}",
-                "GITHUB_PR_NUMBER": "${{ github.event.pull_request.number }}"
-              }
-            }
-          }
-        }
-        EOF
-
-    # Claude Code Review実行（GitHub App統合）
-    - name: Run Claude Code Review
-      uses: anthropics/claude-code-action@v1
+    # Run Claude code review
+    - uses: anthropics/claude-code-action@beta
       with:
+        claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        track_progress: true # プログレス追跡を有効化
+        direct_prompt: |
+          Please conduct a comprehensive code review of the pull request changes, following the Work Management Service project standards and architecture decisions.
 
-        # 詳細な設定（claude_args使用）
-        claude_args: |
-          --max-turns 25
-          --model claude-sonnet-4-5-20250929
-          --mcp-config /tmp/mcp-config.json
-          --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git:*),Read,Glob,Grep"
-          --system-prompt "あなたは経験豊富なソフトウェア開発チームのシニアエンジニアです。コードレビューを通じてチーム全体の技術力向上とプロダクト品質向上に貢献することが使命です。建設的で教育的なフィードバックを心がけ、改善提案は具体的なコード例と共に提示してください。"
+          **CRITICAL: Issue Specification Compliance Check**
+          Referenced Issues: ${{ steps.fetch_issues.outputs.result }}
 
-        # 最適化されたプロンプト
-        prompt: |
-          ## 📋 Claude Code Review タスク
+          If there are referenced issues above, you MUST:
+          1. Extract the PBI (Product Backlog Item), User Story, and AC (Acceptance Criteria) from each issue
+          2. Verify that the implementation strictly adheres to the specifications in the issues
+          3. Check that all acceptance criteria are met
+          4. Identify any deviations from the specified requirements
+          5. Ensure the implementation matches the intent described in the User Story
 
-          **リポジトリ**: ${{ github.repository }}
-          **PR番号**: #${{ github.event.pull_request.number }}
-          **PRタイトル**: ${{ github.event.pull_request.title }}
-          **作成者**: @${{ github.event.pull_request.user.login }}
+          Include a dedicated section in your review for "Issue Specification Compliance" where you:
+          - List each referenced issue with its PBI and User Story
+          - Check each acceptance criterion and mark it as ✅ (met) or ❌ (not met)
+          - Explain any gaps or deviations found
 
-          **参照Issue情報**:
-          ${{ steps.fetch_issues.outputs.result }}
+          Start by creating a task list of review items you will check, then show progress as you complete each task (e.g., ✅ for completed, 🔄 for in progress).
 
-          ---
+          First, provide a brief summary of what this PR is trying to achieve based on the changes you see.
 
-          ## 🎯 レビュー実行プロセス
+          **Project-Specific Coding Standards Check:**
 
-          **STEP 1**: PRの変更内容を把握
-          - `gh pr diff` でPRの差分を確認
-          - 変更されたファイルの種類と規模を把握
-          - 変更の意図と影響範囲を理解
+          Frontend (TypeScript/React/Next.js):
+          - Verify utilization of TypeScript 5+ + React 19 + Next.js 15 latest features
+          - Component placement rules: Single route only→app/{route}/_components/, Multiple routes & specific domain→features/{domain}/components/, App-wide→components/
+          - Naming conventions: Components use PascalCase, non-components use camelCase, directories use PascalCase for components and kebab-case for others
+          - Proper use of Server Components (default) vs Client Components ('use client')
+          - Verify React 19 new features usage (useOptimistic, useActionState, use())
+          - Confirm shadcn/ui component usage (ui/ directory must not be edited directly)
+          - Consistent API communication via TanStack Query
+          - Verify Tailwind CSS + CSS variables usage
+          - Proper use of cn() utility for conditional classes
+          - Format and lint according to Biome configuration
+          - Security: Input validation with zod, verify NEXT_PUBLIC_ prefix for environment variables
 
-          **STEP 2**: Issue仕様準拠チェック（参照Issueがある場合）
-          - PBI（Product Backlog Item）の確認
-          - User Storyの理解
-          - Acceptance Criteria（AC）の検証
-          - 実装内容とIssue仕様の整合性チェック
+          **Architecture Decision Records (ADR) Compliance:**
+          Please check compliance with the following ADRs:
+          - ADR-001: Next.js with Vercel Architecture
+          - ADR-002: Server-side Implementation Architecture
+          - ADR-003: Database Integration with Vercel Postgres
+          - ADR-004: Development Guidelines and Best Practices
+          - ADR-005: UI Library and Data Table Selection
 
-          **STEP 3**: プロジェクト基準準拠チェック
+          **API Design Standards Verification:**
+          - Response format: Success→{success: true, data: {...}}, Error→{success: false, error: {code, message, details}}
+          - Pagination: page/limit parameters, response includes {page, limit, total, totalPages}
+          - Date format: ISO 8601 with timezone
+          - HTTP status codes: GET/PUT/PATCH→200, POST→201, DELETE→204, Errors→400/404/500
 
-          ### Frontend (TypeScript/React/Next.js 15)
-          - **最新機能活用**: TypeScript 5.8 + React 19 + Next.js 15
-          - **コンポーネント配置**: app/{route}/_components/ (単一ルート), features/{domain}/components/ (複数ルート), components/ (全体)
-          - **命名規則**: コンポーネント=PascalCase, それ以外=camelCase, ディレクトリ=PascalCase(コンポーネント)/kebab-case(その他)
-          - **Server/Client Components**: デフォルト=Server, 必要時のみ'use client'
-          - **React 19新機能**: useOptimistic, useActionState, use()の適切な使用
-          - **shadcn/ui v2.5**: ui/ディレクトリの直接編集禁止
-          - **API通信**: TanStack Query経由
-          - **スタイリング**: Tailwind CSS v4 + CSS変数（OKLCH色空間）
-          - **セキュリティ**: Zod入力検証, NEXT_PUBLIC_プレフィックス確認
+          **Quality Check Items:**
+          - Test existence and coverage (Frontend: Vitest/Playwright)
+          - Performance impact (unnecessary re-renders, N+1 queries)
+          - Security vulnerabilities (XSS, SQL injection, CSRF)
+          - Proper error handling
+          - Documentation updates (JSDoc/TSDoc)
 
-          ### Backend (Go 1.24.5)
-          - **DDD 4層アーキテクチャ**: Domain(エンティティのみ), Repository(インターフェース), Usecase(1ファイル1ユースケース), Infrastructure
-          - **ファイル配置**: internal/domain/, internal/repository/, internal/usecase/, internal/infrastructure/
-          - **命名規則**: MixedCaps(camelCase), snake_case禁止
-          - **フレームワーク**: Gin + Ent（他のORM/フレームワーク混在禁止）
-          - **エラーハンドリング**: fmt.Errorf("%w")でラップ, errors.Is/As対応
-          - **コンテキスト**: 第一引数, goroutineリーク防止
-          - **DTO**: presentation/http/handler/{domain}/dto.go, {Action}{Resource}Request/Response
-          - **ログ**: log/slog推奨, 構造化ログ
-          - **セキュリティ**: プレースホルダー使用, 機密情報ログ禁止, GOFIPS140準拠
+          **Output Format:**
+          1. PR Summary - Brief overview of what this PR implements/changes
+          2. Overall Code Quality Assessment
+          3. Standards Compliance Status
+          4. Issues by Severity (Critical/High/Medium/Low)
+          5. Specific Improvement Suggestions with Code Examples
+          6. Positive Feedback for Well-Written Code
 
-          **STEP 4**: ADR準拠チェック
-          - ADR-0001: Monorepoアーキテクチャ
-          - ADR-0002: バックエンドフレームワーク（Gin + Ent）
-          - ADR-0004: バックエンド層アーキテクチャ
-          - ADR-0005: APIページネーション戦略
-          - ADR-0006: フロントエンド依存関係2025
-          - ADR-0007: React Compiler採用
-          - ADR-0008: Zod-i18n統一エラーハンドリング
-          - ADR-0009: コンポーネントディレクトリ構造
-          - ADR-0010: ドメインエンティティ構造体タグなし
-          - ADR-0011: バックエンドエラーハンドリング戦略
-          - ADR-0012: API仕様とコード生成戦略
-          - ADR-0013: CI/CD戦略とGitHub Actionsワークフロー
+          **IMPORTANT: Include the task list with progress indicators at the beginning of your review to show what you're checking and your progress.**
 
-          **STEP 5**: API設計基準検証
-          - レスポンス形式: 成功→{data, meta}, エラー→{error: {code, message, timestamp}}
-          - ページネーション: page/limitパラメータ（pageSizeは禁止）
-          - 日付形式: ISO 8601 + タイムゾーン
-          - 小数値: 精度保持のためString型
-          - HTTPステータス: GET/PUT/PATCH→200, POST→201, DELETE→204
+          Please provide constructive and practical feedback while strictly adhering to the project's standards and architecture decisions.
 
-          **STEP 6**: 品質チェック
-          - テスト: Frontend(Vitest/Playwright), Backend(*_test.go)
-          - パフォーマンス: 不要な再レンダリング, N+1クエリ
-          - セキュリティ: XSS, SQLインジェクション, CSRF
-          - エラーハンドリング: 適切な例外処理
-          - ドキュメント: JSDoc/TSDoc, Goコメント
+          **IMPORTANT: Please write all your review comments and feedback in Japanese (日本語で記載してください).**
 
-          ---
+          **CRITICAL: When including code examples, ensure proper markdown formatting:**
+          - Use triple backticks with language identifier for code blocks
+          - Ensure code blocks are properly closed
+          - Avoid nested code blocks in lists
+          - If showing code in a list item, indent the code block properly
 
-          ## 📊 出力形式
+          **Format your response with the following structure:**
 
-          ### PRの概要コメント (gh pr comment)
-          ```
           # 🤖 AI Code Review
 
-          ## 📋 レビューサマリー
-          [1-2行でPRの概要]
+          ## 📋 タスクリスト
+          (Generate a task list based on what needs to be reviewed for this specific PR. Mark completed items with [x])
 
-          **総合スコア**: [点数]/10
+          ## 📊 レビューサマリー
+          [1-2 line summary of what this PR achieves]
+
+          **スコア:** [score]/10
 
           ## 🔍 主要な発見事項
-          - 発見事項1
-          - 発見事項2
-          - 発見事項3
+          - Finding 1
+          - Finding 2
+          - Finding 3
 
-          ## 🎯 Issue仕様準拠チェック
-          [参照Issueがある場合の詳細チェック結果]
+          <details open>
+          <summary>🎯 <b>Issue仕様準拠チェック</b></summary>
 
-          ## 🚨 重要度別の問題点
+          [If issues are referenced, provide detailed compliance check here]
 
-          ### 🔴 Critical
-          [重要な問題]
+          </details>
 
-          ### 🟡 High
-          [高優先度の問題]
+          <details open>
+          <summary>📄 <b>詳細なレビュー結果</b></summary>
 
-          ### 🟠 Medium
-          [中優先度の問題]
+          [Detailed review content organized by sections]
 
-          ### 🟢 Low/Suggestion
-          [軽微な問題・提案]
+          ### 重要度別の問題点
 
-          ## 💡 改善提案
-          [具体的な改善案をコード例と共に]
+          #### 🔴 Critical
+          [List critical issues]
 
-          ## 👏 良かった点
-          [良いコードの例や評価すべき点]
+          #### 🟡 High
+          [List high priority issues]
 
-          **生成日時**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          **Claude Model**: claude-sonnet-4-5-20250929
+          #### 🟠 Medium
+          [List medium priority issues]
+
+          #### 🟢 Low
+          [List low priority issues]
+
+          </details>
+
+          <details open>
+          <summary>💡 <b>改善提案</b></summary>
+
+          [Specific improvement suggestions]
+
+          **Code examples should use proper markdown syntax:**
+          ```language
+          // code here
           ```
 
-          ### 個別コード箇所への指摘 (inline comment)
-          - 具体的な問題がある箇所に `mcp__github_inline_comment__create_inline_comment` を使用
-          - ファイルパス、行番号、コメント内容を指定
-          - 建設的で具体的な改善提案を含める
-
-          ---
-
-          ## ⚠️ 重要な注意事項
-
-          1. **必ず日本語で出力してください**
-          2. **GitHubのMarkdown記法を正しく使用してください**
-          3. **コードブロックは\`\`\`言語名で囲んでください**
-          4. **建設的で教育的なトーンを心がけてください**
-          5. **具体的な改善案をコード例と共に提示してください**
-          6. **良い点も積極的に評価してください**
-
-          ## 🚀 レビュー開始
-
-          上記のプロセスに従って、詳細なコードレビューを実施してください。
-          まず、PRの内容を把握するために `gh pr diff` を実行し、その後段階的にレビューを進めてください。
-
-        # タイムアウト設定（大規模なPR対応）
-        timeout_minutes: 30
-
-    # レビュー失敗時の通知
-    - name: Notify Review Failure
-      if: failure()
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `## ❌ Claude Code Review Failed
-
-          レビュープロセス中にエラーが発生しました。
-
-          **エラー詳細**:
-          - Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          - Commit: ${{ github.event.pull_request.head.sha }}
-
-          手動でレビューを確認するか、しばらく後に再実行してください。
-
-          *Generated by Claude Code CI/CD*`
-          });
-
-    # サマリー出力
-    - name: Review Summary
-      if: always()
-      run: |
-        echo "## Claude Code Review Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **PR**: #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Runtime**: $(date -u)" >> $GITHUB_STEP_SUMMARY
-        echo "- **Claude Model**: claude-sonnet-4-5-20250929" >> $GITHUB_STEP_SUMMARY
+          </details>
+        # Timeout setting (extended for detailed code review)
+        timeout_minutes: 20
+        # Claude 4 model to use (using Sonnet 4)
+        anthropic_model: "claude-sonnet-4-5-20250929"

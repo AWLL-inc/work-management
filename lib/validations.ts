@@ -76,7 +76,7 @@ export const updateWorkCategorySchema = z.object({
 
 // Create work log schema
 export const createWorkLogSchema = z.object({
-  date: z.string().datetime().or(z.date()),
+  date: z.string().date().or(z.string().datetime()).or(z.date()),
   hours: z
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, "Hours must be a valid decimal number")
@@ -92,7 +92,7 @@ export const createWorkLogSchema = z.object({
 
 // Update work log schema
 export const updateWorkLogSchema = z.object({
-  date: z.string().datetime().or(z.date()).optional(),
+  date: z.string().date().or(z.string().datetime()).or(z.date()).optional(),
   hours: z
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, "Hours must be a valid decimal number")

@@ -15,7 +15,7 @@ test.describe("Authentication Flows", () => {
     test("should successfully login with valid credentials", async ({
       page,
     }) => {
-      await page.goto("/login");
+      await page.goto("/auth/signin");
 
       // Fill in the login form
       await page.fill('input[name="email"]', "user@example.com");
@@ -36,7 +36,7 @@ test.describe("Authentication Flows", () => {
     });
 
     test("should successfully login as admin", async ({ page }) => {
-      await page.goto("/login");
+      await page.goto("/auth/signin");
 
       await page.fill('input[name="email"]', "admin@example.com");
       await page.fill('input[name="password"]', "admin123");
@@ -50,23 +50,23 @@ test.describe("Authentication Flows", () => {
     });
 
     test("should show error with invalid credentials", async ({ page }) => {
-      await page.goto("/login");
+      await page.goto("/auth/signin");
 
       await page.fill('input[name="email"]', "invalid@example.com");
       await page.fill('input[name="password"]', "wrongpassword");
       await page.click('button[type="submit"]');
 
       // Should stay on login page
-      await expect(page).toHaveURL("/login");
+      await expect(page).toHaveURL("/auth/signin");
 
       // Should show error message
-      await expect(
-        page.locator("text=/invalid credentials|incorrect/i"),
-      ).toBeVisible();
+      await expect(page.getByRole("alert")).toContainText(
+        "メールアドレスまたはパスワードが正しくありません",
+      );
     });
 
     test("should show error with missing email", async ({ page }) => {
-      await page.goto("/login");
+      await page.goto("/auth/signin");
 
       // Try to submit without email (HTML5 validation should catch this)
       await page.fill('input[name="password"]', "password123");
@@ -77,7 +77,7 @@ test.describe("Authentication Flows", () => {
     });
 
     test("should show error with missing password", async ({ page }) => {
-      await page.goto("/login");
+      await page.goto("/auth/signin");
 
       // Try to submit without password (HTML5 validation should catch this)
       await page.fill('input[name="email"]', "user@example.com");
@@ -91,7 +91,7 @@ test.describe("Authentication Flows", () => {
   test.describe("Logout Flow", () => {
     test("should successfully logout", async ({ page }) => {
       // First, login
-      await page.goto("/login");
+      await page.goto("/auth/signin");
       await page.fill('input[name="email"]', "user@example.com");
       await page.fill('input[name="password"]', "user123");
       await page.click('button[type="submit"]');
@@ -101,15 +101,15 @@ test.describe("Authentication Flows", () => {
       await page.click('button[type="submit"]:has-text("Sign out")');
 
       // Should redirect to login page
-      await page.waitForURL("/login");
-      await expect(page).toHaveURL("/login");
+      await page.waitForURL("/auth/signin");
+      await expect(page).toHaveURL("/auth/signin");
     });
   });
 
   test.describe("Session Persistence", () => {
     test("should maintain session across page reloads", async ({ page }) => {
       // Login
-      await page.goto("/login");
+      await page.goto("/auth/signin");
       await page.fill('input[name="email"]', "user@example.com");
       await page.fill('input[name="password"]', "user123");
       await page.click('button[type="submit"]');
@@ -125,7 +125,7 @@ test.describe("Authentication Flows", () => {
 
     test("should maintain session across navigation", async ({ page }) => {
       // Login
-      await page.goto("/login");
+      await page.goto("/auth/signin");
       await page.fill('input[name="email"]', "user@example.com");
       await page.fill('input[name="password"]', "user123");
       await page.click('button[type="submit"]');
@@ -148,8 +148,8 @@ test.describe("Authentication Flows", () => {
       await page.goto("/work-logs");
 
       // Should redirect to login page
-      await page.waitForURL("/login");
-      await expect(page).toHaveURL("/login");
+      await page.waitForURL("/auth/signin");
+      await expect(page).toHaveURL("/auth/signin");
     });
 
     test("should redirect to work-logs after login from protected route", async ({
@@ -157,7 +157,7 @@ test.describe("Authentication Flows", () => {
     }) => {
       // Try to access work-logs (will redirect to login)
       await page.goto("/work-logs");
-      await page.waitForURL("/login");
+      await page.waitForURL("/auth/signin");
 
       // Login
       await page.fill('input[name="email"]', "user@example.com");
@@ -172,7 +172,7 @@ test.describe("Authentication Flows", () => {
 
   test.describe("Login Page Elements", () => {
     test("should display login form elements", async ({ page }) => {
-      await page.goto("/login");
+      await page.goto("/auth/signin");
 
       // Check page title
       await expect(page.locator("h2")).toContainText("Work Management");
@@ -188,7 +188,7 @@ test.describe("Authentication Flows", () => {
     });
 
     test("should have proper input types", async ({ page }) => {
-      await page.goto("/login");
+      await page.goto("/auth/signin");
 
       // Email input should have type="email"
       await expect(page.locator('input[name="email"]')).toHaveAttribute(
@@ -206,7 +206,7 @@ test.describe("Authentication Flows", () => {
 
   test.describe("Loading States", () => {
     test("should show loading state while submitting", async ({ page }) => {
-      await page.goto("/login");
+      await page.goto("/auth/signin");
 
       await page.fill('input[name="email"]', "user@example.com");
       await page.fill('input[name="password"]', "user123");

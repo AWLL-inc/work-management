@@ -70,7 +70,19 @@ export function AGGridWorkLogTable({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [inlineEditingEnabled, setInlineEditingEnabled] = useState(false);
+  const [batchEditingEnabled, setBatchEditingEnabled] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<
+    Map<
+      string,
+      Partial<{
+        date?: string;
+        hours?: string;
+        projectId?: string;
+        categoryId?: string;
+        details?: string | null;
+      }>
+    >
+  >(new Map());
 
   // Create project and category lookup maps
   const projectsMap = useMemo(() => {
@@ -131,7 +143,7 @@ export function AGGridWorkLogTable({
         headerName: "Date",
         field: "date",
         width: 120,
-        editable: inlineEditingEnabled,
+        editable: batchEditingEnabled,
         cellEditor: "agDateCellEditor",
         cellEditorParams: {
           format: "yyyy-mm-dd",
@@ -146,7 +158,7 @@ export function AGGridWorkLogTable({
         headerName: "Hours",
         field: "hours",
         width: 100,
-        editable: inlineEditingEnabled,
+        editable: batchEditingEnabled,
         cellEditor: "agTextCellEditor",
         cellEditorParams: {
           maxLength: 5,
@@ -154,17 +166,17 @@ export function AGGridWorkLogTable({
       },
       {
         headerName: "Project",
-        field: inlineEditingEnabled ? "projectId" : "projectName",
+        field: batchEditingEnabled ? "projectId" : "projectName",
         width: 200,
-        editable: inlineEditingEnabled,
-        cellEditor: inlineEditingEnabled ? "agSelectCellEditor" : undefined,
-        cellEditorParams: inlineEditingEnabled
+        editable: batchEditingEnabled,
+        cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
+        cellEditorParams: batchEditingEnabled
           ? {
               values: projects.filter((p) => p.isActive).map((p) => p.id),
             }
           : undefined,
         valueFormatter: (params) => {
-          if (inlineEditingEnabled) {
+          if (batchEditingEnabled) {
             return projectsMap.get(params.value) || "Unknown";
           }
           return params.value;
@@ -173,17 +185,17 @@ export function AGGridWorkLogTable({
       },
       {
         headerName: "Category",
-        field: inlineEditingEnabled ? "categoryId" : "categoryName",
+        field: batchEditingEnabled ? "categoryId" : "categoryName",
         width: 180,
-        editable: inlineEditingEnabled,
-        cellEditor: inlineEditingEnabled ? "agSelectCellEditor" : undefined,
-        cellEditorParams: inlineEditingEnabled
+        editable: batchEditingEnabled,
+        cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
+        cellEditorParams: batchEditingEnabled
           ? {
               values: categories.filter((c) => c.isActive).map((c) => c.id),
             }
           : undefined,
         valueFormatter: (params) => {
-          if (inlineEditingEnabled) {
+          if (batchEditingEnabled) {
             return categoriesMap.get(params.value) || "Unknown";
           }
           return params.value;
@@ -194,7 +206,7 @@ export function AGGridWorkLogTable({
         headerName: "Details",
         field: "details",
         flex: 1,
-        editable: inlineEditingEnabled,
+        editable: batchEditingEnabled,
         cellEditor: "agLargeTextCellEditor",
         cellEditorParams: {
           maxLength: 1000,
@@ -204,8 +216,8 @@ export function AGGridWorkLogTable({
       },
     ];
 
-    // Add Actions column only when inline editing is disabled
-    if (!inlineEditingEnabled) {
+    // Add Actions column only when batch editing is disabled
+    if (!batchEditingEnabled) {
       columns.push({
         headerName: "Actions",
         cellRenderer: ActionsCellRenderer,
@@ -218,7 +230,7 @@ export function AGGridWorkLogTable({
 
     return columns;
   }, [
-    inlineEditingEnabled,
+    batchEditingEnabled,
     projects,
     categories,
     projectsMap,
@@ -236,30 +248,27 @@ export function AGGridWorkLogTable({
     [],
   );
 
-  // Handle cell editing
-  const onCellEditingStopped = useCallback(
-    async (event: CellEditingStoppedEvent) => {
-      const { data, colDef, newValue, oldValue } = event;
+  // Handle cell editing - store changes instead of immediate save
+  const onCellEditingStopped = useCallback((event: CellEditingStoppedEvent) => {
+    const { data, colDef, newValue, oldValue } = event;
 
-      if (newValue === oldValue) return;
+    if (newValue === oldValue) return;
 
-      const field = colDef.field;
-      if (!field) return;
+    const field = colDef.field;
+    if (!field) return;
 
-      try {
-        await onUpdateWorkLog(data.id, {
-          [field]: newValue,
-        });
-      } catch (_error) {
-        // Revert the change if update fails
-        if (event.node && field) {
-          event.node.setDataValue(field, oldValue);
-        }
-        toast.error(`${colDef.headerName}の更新に失敗しました`);
-      }
-    },
-    [onUpdateWorkLog],
-  );
+    // Store the change in pending changes
+    setPendingChanges((prev) => {
+      const newChanges = new Map(prev);
+      const workLogId = data.id;
+      const existingChanges = newChanges.get(workLogId) || {};
+      newChanges.set(workLogId, {
+        ...existingChanges,
+        [field]: newValue,
+      });
+      return newChanges;
+    });
+  }, []);
 
   const handleFormSubmit = async (data: {
     date: string;
@@ -295,6 +304,55 @@ export function AGGridWorkLogTable({
     }
   };
 
+  // Handle batch save
+  const handleBatchSave = useCallback(async () => {
+    if (pendingChanges.size === 0) {
+      toast.info("保存する変更がありません");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const errors: string[] = [];
+
+    try {
+      // Save all pending changes
+      await Promise.all(
+        Array.from(pendingChanges.entries()).map(
+          async ([workLogId, changes]) => {
+            try {
+              await onUpdateWorkLog(workLogId, changes);
+            } catch (_error) {
+              errors.push(`ID: ${workLogId} の更新に失敗しました`);
+            }
+          },
+        ),
+      );
+
+      if (errors.length === 0) {
+        toast.success(`${pendingChanges.size}件の変更を保存しました`);
+        setPendingChanges(new Map());
+      } else {
+        toast.error(`${errors.length}件の更新に失敗しました`);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [pendingChanges, onUpdateWorkLog]);
+
+  // Handle cancel batch editing
+  const handleCancelBatchEditing = useCallback(() => {
+    if (pendingChanges.size > 0) {
+      if (
+        window.confirm("未保存の変更があります。破棄してもよろしいですか？")
+      ) {
+        setPendingChanges(new Map());
+        setBatchEditingEnabled(false);
+      }
+    } else {
+      setBatchEditingEnabled(false);
+    }
+  }, [pendingChanges.size]);
+
   const onGridReady = useCallback((params: GridReadyEvent) => {
     params.api.sizeColumnsToFit();
   }, []);
@@ -312,25 +370,48 @@ export function AGGridWorkLogTable({
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant={inlineEditingEnabled ? "default" : "outline"}
-              size="lg"
-              onClick={() => setInlineEditingEnabled(!inlineEditingEnabled)}
-            >
-              {inlineEditingEnabled
-                ? "インライン編集を無効にする"
-                : "インライン編集を有効にする"}
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => {
-                setSelectedWorkLog(null);
-                setFormOpen(true);
-              }}
-            >
-              Add Work Log
-            </Button>
+            {!batchEditingEnabled ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setBatchEditingEnabled(true)}
+                >
+                  一括編集
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    setSelectedWorkLog(null);
+                    setFormOpen(true);
+                  }}
+                >
+                  Add Work Log
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={handleBatchSave}
+                  disabled={isSubmitting || pendingChanges.size === 0}
+                >
+                  {isSubmitting
+                    ? "保存中..."
+                    : `保存 (${pendingChanges.size}件)`}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleCancelBatchEditing}
+                  disabled={isSubmitting}
+                >
+                  キャンセル
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -350,7 +431,7 @@ export function AGGridWorkLogTable({
             rowSelection="single"
             animateRows={true}
             suppressRowClickSelection={true}
-            singleClickEdit={inlineEditingEnabled}
+            singleClickEdit={batchEditingEnabled}
             stopEditingWhenCellsLoseFocus={true}
           />
         </div>

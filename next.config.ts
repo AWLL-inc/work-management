@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   // This creates a minimal .next/standalone directory
   output: "standalone",
 
+  // Transpile CSS from external packages
+  transpilePackages: ["ag-grid-community", "ag-grid-react"],
+
   // Experimental features
   experimental: {
     // Enable server actions

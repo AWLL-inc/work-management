@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
+import { AGGridWorkLogTable } from "@/components/features/work-logs/ag-grid-work-log-table";
 import { WorkLogTable } from "@/components/features/work-logs/work-log-table";
+import { Button } from "@/components/ui/button";
 import { getProjects } from "@/lib/api/projects";
 import { getWorkCategories } from "@/lib/api/work-categories";
 import {
@@ -13,6 +16,8 @@ import {
 } from "@/lib/api/work-logs";
 
 export default function WorkLogsPage() {
+  const [useAGGrid, setUseAGGrid] = useState(true);
+
   const {
     data: workLogs,
     isLoading: isLoadingWorkLogs,
@@ -105,15 +110,37 @@ export default function WorkLogsPage() {
 
   return (
     <div className="px-4 sm:px-0">
-      <WorkLogTable
-        workLogs={workLogs || []}
-        projects={projects || []}
-        categories={categories || []}
-        onCreateWorkLog={handleCreateWorkLog}
-        onUpdateWorkLog={handleUpdateWorkLog}
-        onDeleteWorkLog={handleDeleteWorkLog}
-        isLoading={isLoading}
-      />
+      <div className="mb-4 flex justify-end">
+        <Button
+          variant={useAGGrid ? "default" : "outline"}
+          onClick={() => setUseAGGrid(!useAGGrid)}
+          className="mb-4"
+        >
+          {useAGGrid ? "Switch to Standard Table" : "Switch to AG Grid"}
+        </Button>
+      </div>
+
+      {useAGGrid ? (
+        <AGGridWorkLogTable
+          workLogs={workLogs || []}
+          projects={projects || []}
+          categories={categories || []}
+          onCreateWorkLog={handleCreateWorkLog}
+          onUpdateWorkLog={handleUpdateWorkLog}
+          onDeleteWorkLog={handleDeleteWorkLog}
+          isLoading={isLoading}
+        />
+      ) : (
+        <WorkLogTable
+          workLogs={workLogs || []}
+          projects={projects || []}
+          categories={categories || []}
+          onCreateWorkLog={handleCreateWorkLog}
+          onUpdateWorkLog={handleUpdateWorkLog}
+          onDeleteWorkLog={handleDeleteWorkLog}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }

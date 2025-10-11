@@ -13,12 +13,11 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      # Mount source code for hot reload
+      # Mount source code for hot reload (exclude node_modules and .next)
       - .:/app
-      # Prevent node_modules from being overwritten
-      - /app/node_modules
-      # Prevent .next from being overwritten
-      - /app/.next
+      # Use named volumes to completely isolate dependencies
+      - node_modules_volume:/app/node_modules
+      - next_build_volume:/app/.next
     environment:
       # Database connection (uses db service)
       - POSTGRES_URL=postgres://postgres:postgres@db:5432/work_management
@@ -29,6 +28,8 @@ services:
       # Development settings
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
+      # Authentication settings for development
+      - DISABLE_AUTH=true
     depends_on:
       db:
         condition: service_healthy
@@ -69,6 +70,10 @@ services:
 # ============================================
 volumes:
   postgres_data:
+    driver: local
+  node_modules_volume:
+    driver: local
+  next_build_volume:
     driver: local
 
 # ============================================

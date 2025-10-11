@@ -39,7 +39,15 @@
       "Bash(if [ -d \"C:/src/work-management/app/api/work-logs/[id]/__tests__\" ])",
       "Bash(then ls \"C:/src/work-management/app/api/work-logs/[id]/__tests__\")",
       "Bash(else echo \"Directory does not exist\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(docker exec:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(docker volume prune:*)",
+      "Bash(echo:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs"
     ],
     "deny": [],
     "ask": []

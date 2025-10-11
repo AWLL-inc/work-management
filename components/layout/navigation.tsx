@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ClipboardList,
-  FolderKanban,
-  LayoutDashboard,
-  LogOut,
-  Tags,
-} from "lucide-react";
+import { ClipboardList, FolderKanban, LogOut, Tags } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";

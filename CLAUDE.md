@@ -226,6 +226,9 @@ NEXTAUTH_URL=             # Application URL (auto-detected in Vercel)
 
 # Optional
 NODE_ENV=                 # development, test, production
+
+# Development Settings
+DISABLE_AUTH=false        # Set to "true" to disable authentication in development mode
 ```
 
 ### Environment Setup

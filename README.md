@@ -90,7 +90,7 @@ npm run dev
 - **Linting/Formatting**: Biome
 - **Testing**: Vitest (unit), Playwright (E2E)
 - **Docker**: Multi-stage builds for dev/prod
-- **CI/CD**: GitHub Actions + Vercel
+- **CI/CD**: GitHub Actions + Vercel + Claude Code Review
 
 ## 📁 Project Structure
 
@@ -153,6 +153,36 @@ npm run test                    # Run unit tests
 npm run test:watch              # Watch mode
 npm run test:e2e                # E2E tests
 npm run test:coverage           # Coverage report
+```
+
+## 🤖 AI Code Review (Claude Code)
+
+### 自動レビュー機能
+
+プルリクエストが作成されると、自動的に Claude Code によるコードレビューが実行されます。
+
+**レビュー対象**:
+- TypeScript/React/Next.js 15 のコーディング基準
+- プロジェクト固有のADR準拠チェック
+- セキュリティとパフォーマンスの検証
+- Issue仕様との整合性確認
+
+**設定要件**:
+```bash
+# GitHub Secrets に設定が必要
+ANTHROPIC_API_KEY=sk-ant-api03-...
+```
+
+**レビュー機能**:
+- 📊 PR概要コメント（総合スコア付き）
+- 💬 インラインコメント（具体的な改善提案）
+- 🎯 Issue仕様準拠チェック
+- 📋 ADR準拠検証
+
+**手動実行**:
+```bash
+# GitHub Actions から手動でトリガー可能
+# Actions タブ → "Claude Code Review" → "Run workflow"
 ```
 
 ## 📚 Documentation

@@ -26,8 +26,8 @@ export default async function WorkLogsLayout({
       redirect("/login");
     }
 
-    userEmail = session.user.email;
-    userRole = session.user.role;
+    userEmail = session.user.email || "test@example.com";
+    userRole = session.user.role || "user";
   }
 
   return (

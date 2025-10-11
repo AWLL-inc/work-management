@@ -299,9 +299,11 @@ export function AGGridWorkLogTable({
 
       <WorkLogFormDialog
         open={formOpen}
-        onClose={() => {
-          setFormOpen(false);
-          setSelectedWorkLog(null);
+        onOpenChange={(open) => {
+          setFormOpen(open);
+          if (!open) {
+            setSelectedWorkLog(null);
+          }
         }}
         onSubmit={handleFormSubmit}
         projects={projects}

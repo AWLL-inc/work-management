@@ -172,7 +172,6 @@ npm run test:coverage           # Coverage report
 ```bash
 # GitHub Secrets に設定が必要
 CLAUDE_CODE_OAUTH_TOKEN=<your-claude-code-oauth-token>
-```
 
 **レビュー機能**:
 - 📊 PR概要コメント（総合スコア付き）

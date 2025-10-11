@@ -43,7 +43,9 @@
       "Bash(docker exec:*)",
       "Bash(grep:*)",
       "Bash(find:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(docker volume prune:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,6 +1,10 @@
 "use client";
 
 import { AgGridReact } from "ag-grid-react";
+import {
+  ModuleRegistry,
+  AllCommunityModule,
+} from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import type {
@@ -8,6 +12,9 @@ import type {
   ColDef,
   GridReadyEvent,
 } from "ag-grid-community";
+
+// Register AG Grid modules
+ModuleRegistry.registerModules([AllCommunityModule]);
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -276,6 +283,8 @@ export function AGGridWorkLogTable({
       ) : (
         <div className="ag-theme-quartz h-[600px] w-full border rounded-lg">
           <AgGridReact
+            className="h-full w-full"
+            theme="legacy"
             rowData={rowData}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}

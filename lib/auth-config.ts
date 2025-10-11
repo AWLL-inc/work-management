@@ -33,6 +33,15 @@ export const authConfig: NextAuthConfig = {
       return session;
     },
     authorized({ auth, request: { nextUrl } }) {
+      // Check if authentication is disabled for development
+      const isDevelopmentMode = process.env.NODE_ENV === "development";
+      const isAuthDisabled = process.env.DISABLE_AUTH === "true";
+
+      if (isDevelopmentMode && isAuthDisabled) {
+        // Skip authentication in development mode when DISABLE_AUTH=true
+        return true;
+      }
+
       const isLoggedIn = !!auth?.user;
       const isOnWorkLogs = nextUrl.pathname.startsWith("/work-logs");
       const isOnAdmin = nextUrl.pathname.startsWith("/admin");

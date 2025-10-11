@@ -16,7 +16,7 @@ import {
 } from "@/lib/api/work-logs";
 
 export default function WorkLogsPage() {
-  const [useAGGrid, setUseAGGrid] = useState(false);
+  const [useAGGrid, setUseAGGrid] = useState(true);
 
   const {
     data: workLogs,

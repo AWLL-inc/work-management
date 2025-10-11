@@ -8,16 +8,31 @@ export default async function WorkLogsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  // Check if authentication is disabled for development
+  const isDevelopmentMode = process.env.NODE_ENV === "development";
+  const isAuthDisabled = process.env.DISABLE_AUTH === "true";
 
-  // Check authentication
-  if (!session?.user) {
-    redirect("/login");
+  let session = null;
+  let userEmail = "test@example.com";
+  let userRole = "user";
+
+  if (isDevelopmentMode && isAuthDisabled) {
+    // Skip authentication in development mode when DISABLE_AUTH=true
+  } else {
+    session = await auth();
+
+    // Check authentication
+    if (!session?.user) {
+      redirect("/login");
+    }
+
+    userEmail = session.user.email;
+    userRole = session.user.role;
   }
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <Navigation userEmail={session.user.email} userRole={session.user.role} />
+      <Navigation userEmail={userEmail} userRole={userRole} />
       <Breadcrumbs />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">{children}</main>
     </div>

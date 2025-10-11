@@ -1,6 +1,7 @@
 # Work Management
 
 [![CI/CD Pipeline](https://github.com/AWLL-inc/work-management/actions/workflows/ci.yml/badge.svg)](https://github.com/AWLL-inc/work-management/actions/workflows/ci.yml)
+[![Claude Code Review](https://github.com/AWLL-inc/work-management/actions/workflows/claude-code-review.yml/badge.svg)](https://github.com/AWLL-inc/work-management/actions/workflows/claude-code-review.yml)
 
 Modern work management application built with Next.js 15, featuring task management, user collaboration, and project organization capabilities.
 
@@ -169,8 +170,8 @@ npm run test:coverage           # Coverage report
 
 **設定要件**:
 ```bash
-# GitHub Secrets に設定が必要
-ANTHROPIC_API_KEY=sk-ant-api03-...
+# GitHub App インストール済み（自動認証）
+# 追加の設定は不要
 ```
 
 **レビュー機能**:

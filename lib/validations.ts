@@ -81,7 +81,10 @@ export const createWorkLogSchema = z.object({
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, "Hours must be a valid decimal number")
     .refine((val) => parseFloat(val) > 0, "Hours must be greater than 0")
-    .refine((val) => parseFloat(val) <= 168, "Hours cannot exceed 168 (1 week)"),
+    .refine(
+      (val) => parseFloat(val) <= 168,
+      "Hours cannot exceed 168 (1 week)",
+    ),
   projectId: z.string().uuid("Invalid project ID"),
   categoryId: z.string().uuid("Invalid category ID"),
   details: z.string().optional().nullable(),

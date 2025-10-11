@@ -1,10 +1,7 @@
 "use client";
 
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import {
-  ModuleRegistry,
-  AllCommunityModule,
-} from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import type {
@@ -15,6 +12,7 @@ import type {
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
+
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,7 +89,7 @@ export function AGGridWorkLogTable({
   }, [workLogs, projectsMap, categoriesMap]);
 
   // Actions cell renderer
-  const ActionsCellRenderer = useCallback((params: any) => {
+  const ActionsCellRenderer = useCallback((params: { data: WorkLog }) => {
     const onEdit = () => {
       setSelectedWorkLog(params.data);
       setFormOpen(true);

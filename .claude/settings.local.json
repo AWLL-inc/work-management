@@ -45,7 +45,9 @@
       "Bash(find:*)",
       "Bash(npm uninstall:*)",
       "Bash(docker volume prune:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs"
     ],
     "deny": [],
     "ask": []

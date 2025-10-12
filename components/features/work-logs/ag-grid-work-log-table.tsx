@@ -209,16 +209,10 @@ export function AGGridWorkLogTable({
             return oldValue;
           }
 
-          // 形式チェック
-          if (!WORK_LOG_CONSTRAINTS.DATE.FORMAT.test(newValue)) {
-            toast.error("日付はYYYY-MM-DD形式で入力してください");
-            return oldValue;
-          }
-
-          // 有効性チェック
-          const date = new Date(newValue);
-          if (Number.isNaN(date.getTime())) {
-            toast.error("有効な日付を入力してください");
+          // 既存のparseDateユーティリティを使用
+          const date = parseDate(newValue);
+          if (!date) {
+            toast.error("有効な日付をYYYY-MM-DD形式で入力してください");
             return oldValue;
           }
 

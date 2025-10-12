@@ -108,6 +108,11 @@ export async function handleApiResponseNoData(
     throw await extractErrorFromResponse(response, errorMessage);
   }
 
+  // 204 No Contentの場合はJSONパースをスキップ
+  if (response.status === 204) {
+    return;
+  }
+
   const result: ApiResponse<never> = await response.json();
   if (!result.success) {
     throw new ApiError(

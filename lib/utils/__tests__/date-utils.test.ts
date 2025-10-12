@@ -46,7 +46,8 @@ describe("Date Utilities", () => {
       expect(result).toBeInstanceOf(Date);
 
       // JST (UTC+9) での検証 - parseDate は JST として解釈する
-      const jstDate = new Date(result!.getTime() + 9 * 60 * 60 * 1000);
+      expect(result).toBeInstanceOf(Date);
+      const jstDate = new Date(result.getTime() + 9 * 60 * 60 * 1000);
       expect(jstDate.getUTCFullYear()).toBe(2024);
       expect(jstDate.getUTCMonth()).toBe(0); // January is 0
       expect(jstDate.getUTCDate()).toBe(15);
@@ -69,7 +70,8 @@ describe("Date Utilities", () => {
       expect(result).toBeInstanceOf(Date);
 
       // JST (UTC+9) での検証 - parseDate は JST として解釈する
-      const jstDate = new Date(result!.getTime() + 9 * 60 * 60 * 1000);
+      expect(result).toBeInstanceOf(Date);
+      const jstDate = new Date(result.getTime() + 9 * 60 * 60 * 1000);
       expect(jstDate.getUTCMonth()).toBe(1); // February
       expect(jstDate.getUTCDate()).toBe(29);
     });

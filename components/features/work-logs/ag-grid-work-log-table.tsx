@@ -9,6 +9,7 @@ import type {
   CellEditingStoppedEvent,
   ColDef,
   GridReadyEvent,
+  RowClassParams,
 } from "ag-grid-community";
 
 // Register AG Grid modules
@@ -44,6 +45,24 @@ interface CellValidationResult {
   valid: boolean;
   message?: string;
 }
+
+// Type guard helper functions for Promise.allSettled results
+type BatchUpdateResult =
+  | { success: true; workLogId: string }
+  | { success: false; workLogId: string; error: string };
+
+const isSuccessResult = (
+  r: PromiseSettledResult<BatchUpdateResult>,
+): r is PromiseFulfilledResult<{ success: true; workLogId: string }> =>
+  r.status === "fulfilled" && r.value.success;
+
+const isFailureResult = (
+  r: PromiseSettledResult<BatchUpdateResult>,
+): r is PromiseFulfilledResult<{
+  success: false;
+  workLogId: string;
+  error: string;
+}> => r.status === "fulfilled" && !r.value.success;
 
 const validateHours = (value: string): CellValidationResult => {
   if (!value) {
@@ -136,6 +155,11 @@ export function AGGridWorkLogTable({
       }>
     >
   >(new Map());
+
+  // Track failed work log IDs for visual highlighting
+  const [failedWorkLogIds, setFailedWorkLogIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   // AG Grid reference for direct API access
   const gridRef = useRef<AgGridReact>(null);
@@ -382,6 +406,17 @@ export function AGGridWorkLogTable({
     [],
   );
 
+  // Row class function for highlighting failed records
+  const getRowClass = useCallback(
+    (params: RowClassParams) => {
+      if (failedWorkLogIds.has(params.data.id)) {
+        return "ag-row-error";
+      }
+      return "";
+    },
+    [failedWorkLogIds],
+  );
+
   // Handle cell editing - store changes instead of immediate save
   const onCellEditingStopped = useCallback((event: CellEditingStoppedEvent) => {
     const { data, colDef, newValue, oldValue } = event;
@@ -469,15 +504,11 @@ export function AGGridWorkLogTable({
       );
 
       const succeeded = results.filter(
-        (
-          r,
-        ): r is PromiseFulfilledResult<{ success: true; workLogId: string }> =>
+        (r): r is PromiseFulfilledResult<{ success: true; workLogId: string }> =>
           r.status === "fulfilled" && r.value.success,
       );
       const failed = results.filter(
-        (
-          r,
-        ): r is PromiseFulfilledResult<{
+        (r): r is PromiseFulfilledResult<{
           success: false;
           workLogId: string;
           error: string;
@@ -487,13 +518,17 @@ export function AGGridWorkLogTable({
       if (failed.length === 0) {
         toast.success(`${succeeded.length}件の変更を保存しました`);
         setPendingChanges(new Map());
+        setFailedWorkLogIds(new Set()); // Clear any previous failures
         setBatchEditingEnabled(false);
       } else if (succeeded.length > 0) {
         // 失敗したレコードを視覚的にハイライト
         const failedIds = failed.map((f) => f.value.workLogId);
+        setFailedWorkLogIds(new Set(failedIds));
 
-        // 失敗したレコードのログ表示（将来的にはUIでのハイライト実装予定）
-        console.warn("Failed work log IDs:", failedIds);
+        // 開発環境でのみログ表示
+        if (process.env.NODE_ENV === "development") {
+          console.warn("Failed work log IDs:", failedIds);
+        }
 
         // より具体的なエラーメッセージ
         const failedDetails = failed
@@ -514,6 +549,9 @@ export function AGGridWorkLogTable({
         });
         setPendingChanges(newPendingChanges);
       } else {
+        // 全て失敗した場合
+        const failedIds = failed.map((f) => f.value.workLogId);
+        setFailedWorkLogIds(new Set(failedIds));
         toast.error(`全ての更新に失敗しました (${failed.length}件)`);
       }
     } finally {
@@ -532,6 +570,7 @@ export function AGGridWorkLogTable({
 
   const handleConfirmCancel = () => {
     setPendingChanges(new Map());
+    setFailedWorkLogIds(new Set()); // Clear failed work log highlights
     setBatchEditingEnabled(false);
     setCancelDialogOpen(false);
   };
@@ -612,6 +651,7 @@ export function AGGridWorkLogTable({
             rowData={rowData}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
+            getRowClass={getRowClass}
             onGridReady={onGridReady}
             onCellEditingStopped={onCellEditingStopped}
             rowSelection="single"

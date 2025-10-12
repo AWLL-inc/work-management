@@ -1,6 +1,9 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+// JST (Japan Standard Time) timezone offset in milliseconds (UTC+9)
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -55,7 +58,7 @@ export function formatDateForDisplay(
     }
 
     // JST (UTC+9) での表示
-    const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+    const jstDate = new Date(date.getTime() + JST_OFFSET_MS);
     const year = jstDate.getUTCFullYear();
     const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
     const day = String(jstDate.getUTCDate()).padStart(2, "0");
@@ -89,7 +92,7 @@ export function parseDate(value: string): Date | null {
   }
 
   // Verify the input components match (accounting for JST)
-  const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const jstDate = new Date(date.getTime() + JST_OFFSET_MS);
   if (
     jstDate.getUTCFullYear() !== inputYear ||
     jstDate.getUTCMonth() + 1 !== inputMonth ||

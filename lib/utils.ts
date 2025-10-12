@@ -37,3 +37,43 @@ export function validateCallbackUrl(url: string): string {
     return "/";
   }
 }
+
+/**
+ * Format date value for display in YYYY/MM/DD format
+ * @param value - Date string, Date object, or null/undefined value
+ * @returns Formatted date string in YYYY/MM/DD format or original value as string
+ */
+export function formatDateForDisplay(
+  value: string | Date | null | undefined,
+): string {
+  if (!value) return "";
+
+  try {
+    const date = typeof value === "string" ? new Date(value) : value;
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}/${month}/${day}`;
+  } catch {
+    return String(value);
+  }
+}
+
+/**
+ * Parse date string and return Date object or null
+ * @param value - Date string in YYYY-MM-DD format
+ * @returns Date object if valid, null otherwise
+ */
+export function parseDate(value: string): Date | null {
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  if (!datePattern.test(value)) {
+    return null;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}

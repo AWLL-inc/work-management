@@ -6,6 +6,24 @@ import { z } from "zod";
  */
 
 /**
+ * Common validation constraints shared between frontend and backend
+ */
+export const WORK_LOG_CONSTRAINTS = {
+  HOURS: {
+    MIN: 0,
+    MAX: 168,
+    MAX_LENGTH: 5,
+    PATTERN: /^\d+(\.\d{1,2})?$/,
+  },
+  DETAILS: {
+    MAX_LENGTH: 1000,
+  },
+  DATE: {
+    FORMAT: /^\d{4}-\d{2}-\d{2}$/,
+  },
+} as const;
+
+/**
  * Project Validation Schemas
  */
 
@@ -79,15 +97,28 @@ export const createWorkLogSchema = z.object({
   date: z.string().date().or(z.string().datetime()).or(z.date()),
   hours: z
     .string()
-    .regex(/^\d+(\.\d{1,2})?$/, "Hours must be a valid decimal number")
-    .refine((val) => parseFloat(val) > 0, "Hours must be greater than 0")
+    .regex(
+      WORK_LOG_CONSTRAINTS.HOURS.PATTERN,
+      "Hours must be a valid decimal number",
+    )
     .refine(
-      (val) => parseFloat(val) <= 168,
+      (val) => parseFloat(val) > WORK_LOG_CONSTRAINTS.HOURS.MIN,
+      "Hours must be greater than 0",
+    )
+    .refine(
+      (val) => parseFloat(val) <= WORK_LOG_CONSTRAINTS.HOURS.MAX,
       "Hours cannot exceed 168 (1 week)",
     ),
   projectId: z.string().uuid("Invalid project ID"),
   categoryId: z.string().uuid("Invalid category ID"),
-  details: z.string().optional().nullable(),
+  details: z
+    .string()
+    .max(
+      WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH,
+      "Details must be 1000 characters or less",
+    )
+    .optional()
+    .nullable(),
 });
 
 // Update work log schema
@@ -95,13 +126,29 @@ export const updateWorkLogSchema = z.object({
   date: z.string().date().or(z.string().datetime()).or(z.date()).optional(),
   hours: z
     .string()
-    .regex(/^\d+(\.\d{1,2})?$/, "Hours must be a valid decimal number")
-    .refine((val) => parseFloat(val) > 0, "Hours must be greater than 0")
-    .refine((val) => parseFloat(val) <= 168, "Hours cannot exceed 168 (1 week)")
+    .regex(
+      WORK_LOG_CONSTRAINTS.HOURS.PATTERN,
+      "Hours must be a valid decimal number",
+    )
+    .refine(
+      (val) => parseFloat(val) > WORK_LOG_CONSTRAINTS.HOURS.MIN,
+      "Hours must be greater than 0",
+    )
+    .refine(
+      (val) => parseFloat(val) <= WORK_LOG_CONSTRAINTS.HOURS.MAX,
+      "Hours cannot exceed 168 (1 week)",
+    )
     .optional(),
   projectId: z.string().uuid("Invalid project ID").optional(),
   categoryId: z.string().uuid("Invalid category ID").optional(),
-  details: z.string().optional().nullable(),
+  details: z
+    .string()
+    .max(
+      WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH,
+      "Details must be 1000 characters or less",
+    )
+    .optional()
+    .nullable(),
 });
 
 /**

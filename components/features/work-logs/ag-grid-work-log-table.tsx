@@ -25,23 +25,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import { formatDateForDisplay } from "@/lib/utils";
+import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
-
-// Validation constants
-const WORK_LOG_VALIDATION = {
-  HOURS: {
-    MIN: 0,
-    MAX: 168,
-    MAX_LENGTH: 5,
-    PATTERN: /^\d+(\.\d{1,2})?$/,
-  },
-  DETAILS: {
-    MAX_LENGTH: 1000,
-  },
-  DATE: {
-    FORMAT: /^\d{4}-\d{2}-\d{2}$/,
-  },
-} as const;
 
 // Column width constants
 const COLUMN_WIDTHS = {
@@ -62,17 +48,17 @@ const validateHours = (value: string): CellValidationResult => {
   if (!value) {
     return { valid: false, message: "時間を入力してください" };
   }
-  if (!WORK_LOG_VALIDATION.HOURS.PATTERN.test(value)) {
+  if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
     return {
       valid: false,
       message: "数値で入力してください（例: 8 または 8.5）",
     };
   }
   const hours = parseFloat(value);
-  if (hours <= WORK_LOG_VALIDATION.HOURS.MIN) {
+  if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
     return { valid: false, message: "0より大きい値を入力してください" };
   }
-  if (hours > WORK_LOG_VALIDATION.HOURS.MAX) {
+  if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
     return { valid: false, message: "168以下で入力してください" };
   }
   return { valid: true };
@@ -82,7 +68,7 @@ const validateDate = (value: string): CellValidationResult => {
   if (!value) {
     return { valid: false, message: "日付を入力してください" };
   }
-  if (!WORK_LOG_VALIDATION.DATE.FORMAT.test(value)) {
+  if (!WORK_LOG_CONSTRAINTS.DATE.FORMAT.test(value)) {
     return { valid: false, message: "YYYY-MM-DD形式で入力してください" };
   }
   const date = new Date(value);
@@ -214,33 +200,12 @@ export function AGGridWorkLogTable({
         cellEditorParams: {
           format: "yyyy-mm-dd",
         },
-        valueFormatter: (params) => {
-          if (!params.value) return "";
-
-          if (
-            typeof params.value === "string" &&
-            WORK_LOG_VALIDATION.DATE.FORMAT.test(params.value)
-          ) {
-            const [year, month, day] = params.value.split("-");
-            return `${year}/${month}/${day}`;
-          }
-
-          // 日付オブジェクトの場合はYYYY-MM-DD形式に変換
-          try {
-            const date = new Date(params.value);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const day = String(date.getDate()).padStart(2, "0");
-            return `${year}/${month}/${day}`;
-          } catch (_e) {
-            return String(params.value);
-          }
-        },
+        valueFormatter: (params) => formatDateForDisplay(params.value),
         valueParser: (params) => {
           // Return the value exactly as provided by the editor
           if (
             params.newValue &&
-            WORK_LOG_VALIDATION.DATE.FORMAT.test(params.newValue)
+            WORK_LOG_CONSTRAINTS.DATE.FORMAT.test(params.newValue)
           ) {
             return params.newValue;
           }
@@ -267,7 +232,7 @@ export function AGGridWorkLogTable({
         editable: batchEditingEnabled,
         cellEditor: "agTextCellEditor",
         cellEditorParams: {
-          maxLength: WORK_LOG_VALIDATION.HOURS.MAX_LENGTH,
+          maxLength: WORK_LOG_CONSTRAINTS.HOURS.MAX_LENGTH,
         },
         valueParser: (params) => {
           const value = params.newValue;
@@ -277,18 +242,18 @@ export function AGGridWorkLogTable({
             return params.oldValue;
           }
 
-          if (!WORK_LOG_VALIDATION.HOURS.PATTERN.test(value)) {
+          if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
             toast.error("時間は数値で入力してください（例: 8 または 8.5）");
             return params.oldValue;
           }
 
           const hours = parseFloat(value);
-          if (hours <= WORK_LOG_VALIDATION.HOURS.MIN) {
+          if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
             toast.error("時間は0より大きい値を入力してください");
             return params.oldValue;
           }
 
-          if (hours > WORK_LOG_VALIDATION.HOURS.MAX) {
+          if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
             toast.error("時間は168以下で入力してください");
             return params.oldValue;
           }
@@ -351,7 +316,7 @@ export function AGGridWorkLogTable({
         editable: batchEditingEnabled,
         cellEditor: "agTextCellEditor",
         cellEditorParams: {
-          maxLength: WORK_LOG_VALIDATION.DETAILS.MAX_LENGTH,
+          maxLength: WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH,
         },
         tooltipField: "details",
         wrapText: true,
@@ -491,10 +456,16 @@ export function AGGridWorkLogTable({
       );
 
       const succeeded = results.filter(
-        (r) => r.status === "fulfilled" && r.value.success,
+        (
+          r,
+        ): r is PromiseFulfilledResult<{ success: true; workLogId: string }> =>
+          r.status === "fulfilled" && r.value.success,
       );
       const failed = results.filter(
-        (r) => r.status === "fulfilled" && !r.value.success,
+        (
+          r,
+        ): r is PromiseFulfilledResult<{ success: false; workLogId: string }> =>
+          r.status === "fulfilled" && !r.value.success,
       );
 
       if (failed.length === 0) {
@@ -508,9 +479,7 @@ export function AGGridWorkLogTable({
         // Remove only successful changes from pending
         const newPendingChanges = new Map(pendingChanges);
         succeeded.forEach((r) => {
-          if (r.status === "fulfilled") {
-            newPendingChanges.delete(r.value.workLogId);
-          }
+          newPendingChanges.delete(r.value.workLogId);
         });
         setPendingChanges(newPendingChanges);
       } else {

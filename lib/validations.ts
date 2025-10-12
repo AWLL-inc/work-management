@@ -189,7 +189,7 @@ export const validateWorkLogField = {
     }
     return { valid: true };
   },
-  
+
   date: (value: string): FieldValidationResult => {
     if (!value) {
       return { valid: false, message: "日付を入力してください" };
@@ -211,7 +211,7 @@ export const batchUpdateWorkLogsSchema = z.array(
   z.object({
     id: z.string().uuid(),
     data: updateWorkLogSchema,
-  })
+  }),
 );
 
 /**
@@ -219,4 +219,6 @@ export const batchUpdateWorkLogsSchema = z.array(
  */
 export type CreateWorkLogInput = z.infer<typeof createWorkLogSchema>;
 export type UpdateWorkLogInput = z.infer<typeof updateWorkLogSchema>;
-export type BatchUpdateWorkLogsInput = z.infer<typeof batchUpdateWorkLogsSchema>;
+export type BatchUpdateWorkLogsInput = z.infer<
+  typeof batchUpdateWorkLogsSchema
+>;

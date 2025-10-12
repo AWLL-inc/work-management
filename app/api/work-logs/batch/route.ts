@@ -39,7 +39,7 @@ export async function PUT(request: NextRequest) {
     // Check permissions for each work log
     if (session.user.role !== "admin") {
       const ownershipChecks = await Promise.all(
-        updates.map(({ id }) => isWorkLogOwner(id, session.user.id))
+        updates.map(({ id }) => isWorkLogOwner(id, session.user.id)),
       );
 
       if (ownershipChecks.some((isOwner) => !isOwner)) {
@@ -59,9 +59,10 @@ export async function PUT(request: NextRequest) {
     // Transform the update data
     const batchUpdates = updates.map(({ id, data }) => {
       const updateData: Record<string, unknown> = {};
-      
+
       if (data.date !== undefined) {
-        updateData.date = typeof data.date === "string" ? new Date(data.date) : data.date;
+        updateData.date =
+          typeof data.date === "string" ? new Date(data.date) : data.date;
       }
       if (data.hours !== undefined) {
         updateData.hours = data.hours;

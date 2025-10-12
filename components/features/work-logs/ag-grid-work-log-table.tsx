@@ -468,10 +468,12 @@ export function AGGridWorkLogTable({
 
     try {
       // バッチAPIエンドポイントを使用してトランザクション内で一括更新
-      const updates = Array.from(pendingChanges.entries()).map(([id, data]) => ({
-        id,
-        data,
-      }));
+      const updates = Array.from(pendingChanges.entries()).map(
+        ([id, data]) => ({
+          id,
+          data,
+        }),
+      );
 
       const response = await fetch("/api/work-logs/batch", {
         method: "PUT",
@@ -484,7 +486,7 @@ export function AGGridWorkLogTable({
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         toast.success(`${pendingChanges.size}件の変更を保存しました`);
         setPendingChanges(new Map());

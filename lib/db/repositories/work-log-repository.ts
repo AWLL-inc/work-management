@@ -241,7 +241,7 @@ export async function batchUpdateWorkLogs(
 ): Promise<WorkLog[]> {
   return await db.transaction(async (tx) => {
     const results: WorkLog[] = [];
-    
+
     for (const { id, data } of updates) {
       const [updated] = await tx
         .update(workLogs)
@@ -251,12 +251,12 @@ export async function batchUpdateWorkLogs(
         })
         .where(eq(workLogs.id, id))
         .returning();
-      
+
       if (updated) {
         results.push(updated);
       }
     }
-    
+
     return results;
   });
 }

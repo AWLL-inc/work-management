@@ -45,8 +45,10 @@ describe("Date Utilities", () => {
       const result = parseDate("2024-01-15");
       expect(result).toBeInstanceOf(Date);
 
+      // TypeScript type guard - result is not null after assertion
+      if (result === null) return;
+
       // JST (UTC+9) での検証 - parseDate は JST として解釈する
-      expect(result).toBeInstanceOf(Date);
       const jstDate = new Date(result.getTime() + 9 * 60 * 60 * 1000);
       expect(jstDate.getUTCFullYear()).toBe(2024);
       expect(jstDate.getUTCMonth()).toBe(0); // January is 0
@@ -69,8 +71,10 @@ describe("Date Utilities", () => {
       const result = parseDate("2024-02-29");
       expect(result).toBeInstanceOf(Date);
 
+      // TypeScript type guard - result is not null after assertion
+      if (result === null) return;
+
       // JST (UTC+9) での検証 - parseDate は JST として解釈する
-      expect(result).toBeInstanceOf(Date);
       const jstDate = new Date(result.getTime() + 9 * 60 * 60 * 1000);
       expect(jstDate.getUTCMonth()).toBe(1); // February
       expect(jstDate.getUTCDate()).toBe(29);

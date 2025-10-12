@@ -46,24 +46,6 @@ interface CellValidationResult {
   message?: string;
 }
 
-// Type guard helper functions for Promise.allSettled results
-type BatchUpdateResult =
-  | { success: true; workLogId: string }
-  | { success: false; workLogId: string; error: string };
-
-const isSuccessResult = (
-  r: PromiseSettledResult<BatchUpdateResult>,
-): r is PromiseFulfilledResult<{ success: true; workLogId: string }> =>
-  r.status === "fulfilled" && r.value.success;
-
-const isFailureResult = (
-  r: PromiseSettledResult<BatchUpdateResult>,
-): r is PromiseFulfilledResult<{
-  success: false;
-  workLogId: string;
-  error: string;
-}> => r.status === "fulfilled" && !r.value.success;
-
 const validateHours = (value: string): CellValidationResult => {
   if (!value) {
     return { valid: false, message: "時間を入力してください" };
@@ -504,11 +486,15 @@ export function AGGridWorkLogTable({
       );
 
       const succeeded = results.filter(
-        (r): r is PromiseFulfilledResult<{ success: true; workLogId: string }> =>
+        (
+          r,
+        ): r is PromiseFulfilledResult<{ success: true; workLogId: string }> =>
           r.status === "fulfilled" && r.value.success,
       );
       const failed = results.filter(
-        (r): r is PromiseFulfilledResult<{
+        (
+          r,
+        ): r is PromiseFulfilledResult<{
           success: false;
           workLogId: string;
           error: string;

@@ -1,32 +1,6 @@
 "use client";
 
-import { 
-  AllCommunityModule, 
-  ModuleRegistry,
-  ClientSideRowModelModule,
-  CsvExportModule,
-  InfiniteRowModelModule,
-} from "ag-grid-community";
-
-// Try to import Enterprise modules, but gracefully handle if not available
-let ClipboardModule: any = null;
-let CellSelectionModule: any = null;
-let ColumnMenuModule: any = null;
-let ContextMenuModule: any = null;
-let RangeSelectionModule: any = null;
-let RowGroupingModule: any = null;
-
-try {
-  const enterprise = require("ag-grid-enterprise");
-  ClipboardModule = enterprise.ClipboardModule;
-  CellSelectionModule = enterprise.CellSelectionModule;
-  ColumnMenuModule = enterprise.ColumnMenuModule;
-  ContextMenuModule = enterprise.ContextMenuModule;
-  RangeSelectionModule = enterprise.RangeSelectionModule;
-  RowGroupingModule = enterprise.RowGroupingModule;
-} catch (e) {
-  console.warn("AG Grid Enterprise modules not available, some features will be limited");
-}
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -39,27 +13,11 @@ import type {
   GridApi,
   CellValueChangedEvent,
   SelectionChangedEvent,
-  ProcessDataFromClipboardParams,
   GridOptions,
 } from "ag-grid-community";
 
 // Register AG Grid modules
-const modules = [
-  AllCommunityModule,
-  ClientSideRowModelModule,
-  CsvExportModule,
-  InfiniteRowModelModule,
-];
-
-// Add Enterprise modules if available
-if (ClipboardModule) modules.push(ClipboardModule);
-if (CellSelectionModule) modules.push(CellSelectionModule);
-if (ColumnMenuModule) modules.push(ColumnMenuModule);
-if (ContextMenuModule) modules.push(ContextMenuModule);
-if (RangeSelectionModule) modules.push(RangeSelectionModule);
-if (RowGroupingModule) modules.push(RowGroupingModule);
-
-ModuleRegistry.registerModules(modules);
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -75,6 +33,16 @@ import {
 import type { EnhancedGridProps, GridHistoryStack, GridAction } from "../types/grid-types";
 import { GridToolbar } from "../toolbar/grid-toolbar";
 
+interface EnhancedAGGridProps<T extends { id: string }> extends EnhancedGridProps<T> {
+  children?: React.ReactNode;
+  columnDefs: ColDef[];
+  defaultColDef?: ColDef;
+  getRowClass?: (params: RowClassParams) => string;
+  onGridReady?: (params: GridReadyEvent) => void;
+  onCellEditingStopped?: (event: CellEditingStoppedEvent) => void;
+  gridOptions?: GridOptions;
+}
+
 export function EnhancedAGGrid<T extends { id: string }>({
   rowData,
   onDataChange,
@@ -86,16 +54,13 @@ export function EnhancedAGGrid<T extends { id: string }>({
   enableUndoRedo = true,
   maxUndoRedoSteps = 20,
   children,
-  ...gridProps
-}: EnhancedGridProps<T> & {
-  children?: React.ReactNode;
-  columnDefs: ColDef[];
-  defaultColDef?: ColDef;
-  getRowClass?: (params: RowClassParams) => string;
-  onGridReady?: (params: GridReadyEvent) => void;
-  onCellEditingStopped?: (event: CellEditingStoppedEvent) => void;
-  gridOptions?: GridOptions;
-}) {
+  columnDefs,
+  defaultColDef,
+  getRowClass,
+  onGridReady: onGridReadyProp,
+  onCellEditingStopped: onCellEditingStoppedProp,
+  gridOptions,
+}: EnhancedAGGridProps<T>) {
   // Grid references
   const gridRef = useRef<AgGridReact>(null);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
@@ -128,8 +93,8 @@ export function EnhancedAGGrid<T extends { id: string }>({
   const onGridReady = useCallback((params: GridReadyEvent) => {
     setGridApi(params.api);
     params.api.sizeColumnsToFit();
-    gridProps.onGridReady?.(params);
-  }, [gridProps]);
+    onGridReadyProp?.(params);
+  }, [onGridReadyProp]);
 
   // Selection changed handler
   const onSelectionChanged = useCallback((event: SelectionChangedEvent) => {
@@ -155,8 +120,8 @@ export function EnhancedAGGrid<T extends { id: string }>({
       addToHistory(action);
     }
     
-    gridProps.onCellEditingStopped?.(event);
-  }, [addToHistory, gridProps]);
+    onCellEditingStoppedProp?.(event);
+  }, [addToHistory, onCellEditingStoppedProp]);
 
   // Keyboard event handler for shortcuts
   const onCellKeyPress = useCallback((event: any) => {
@@ -215,8 +180,8 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
       // Focus on the new row for editing
       setTimeout(() => {
-        gridApi?.setFocusedCell(0, gridProps.columnDefs[0].field || '');
-        gridApi?.startEditingCell({ rowIndex: 0, colKey: gridProps.columnDefs[0].field || '' });
+        gridApi?.setFocusedCell(0, columnDefs[0].field || '');
+        gridApi?.startEditingCell({ rowIndex: 0, colKey: columnDefs[0].field || '' });
       }, 100);
 
       const action: GridAction = {
@@ -231,7 +196,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
       console.error('Failed to add row:', error);
       toast.error('行の追加に失敗しました');
     }
-  }, [onRowAdd, gridApi, rowData, onDataChange, addToHistory, gridProps.columnDefs]);
+  }, [onRowAdd, gridApi, rowData, onDataChange, addToHistory, columnDefs]);
 
   // Row duplication handler
   const handleDuplicateRows = useCallback(async () => {
@@ -280,56 +245,12 @@ export function EnhancedAGGrid<T extends { id: string }>({
     setDeleteDialogOpen(true);
   }, [selectedNodes]);
 
-  // Process clipboard data for paste operations
-  const processDataFromClipboard = useCallback((params: ProcessDataFromClipboardParams) => {
-    if (!enableClipboard) return [];
-    
-    const data = params.data;
-    const focusedCell = gridApi?.getFocusedCell();
-    
-    if (!focusedCell) return data;
-    
-    // If pasting more rows than available, add new rows
-    const focusedRowIndex = focusedCell.rowIndex;
-    const currentRowCount = gridApi?.getDisplayedRowCount() || 0;
-    const resultLastIndex = focusedRowIndex + data.length - 1;
-    
-    if (resultLastIndex >= currentRowCount) {
-      const numRowsToAdd = resultLastIndex - currentRowCount + 1;
-      const newRows = Array.from({ length: numRowsToAdd }, (_, i) => ({
-        id: `new-${Date.now()}-${i}`,
-        // Add default values for new rows based on your data structure
-      })) as unknown as T[];
-      
-      // Add new rows to grid
-      gridApi?.applyTransaction({ add: newRows });
-      
-      // Track paste action
-      const action: GridAction = {
-        type: 'PASTE',
-        timestamp: Date.now(),
-        data: {
-          pastedData: data,
-          newRows,
-          focusedCell,
-        },
-      };
-      addToHistory(action);
-    }
-    
-    return data;
-  }, [enableClipboard, gridApi, addToHistory]);
-
-  // Context menu configuration
+  // Context menu configuration (simplified for Community edition)
   const getContextMenuItems = useCallback((params: any) => {
     const result: any[] = [
-      'copy',
-      'paste',
-      'separator',
       {
         name: '行を追加',
         action: () => handleAddRow(),
-        icon: '<span class="ag-icon ag-icon-plus"></span>',
       },
     ];
 
@@ -338,13 +259,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
         {
           name: '行を複製',
           action: () => handleDuplicateRows(),
-          icon: '<span class="ag-icon ag-icon-copy"></span>',
         },
-        'separator',
         {
           name: '行を削除',
           action: () => handleDeleteRows(),
-          icon: '<span class="ag-icon ag-icon-delete"></span>',
         }
       );
     }
@@ -459,39 +377,24 @@ export function EnhancedAGGrid<T extends { id: string }>({
     toast.info('操作をやり直しました');
   }, [historyStack.redoStack, gridApi]);
 
-  // Enhanced grid options
-  const enhancedGridOptions: GridOptions = useMemo(() => {
-    const options: GridOptions = {
-      ...gridProps.gridOptions,
-      rowSelection: 'multiple',
-      animateRows: true,
-      suppressRowClickSelection: false,
-      suppressMenuHide: false,
-      allowContextMenuWithControlKey: true,
-      undoRedoCellEditing: enableUndoRedo,
-      undoRedoCellEditingLimit: maxUndoRedoSteps,
-      onCellKeyPress,
-    };
-
-    // Add Enterprise features only if available
-    if (ClipboardModule && enableClipboard) {
-      options.enableCellTextSelection = true;
-      options.enableRangeSelection = true;
-      options.getContextMenuItems = getContextMenuItems;
-      options.processDataFromClipboard = processDataFromClipboard;
-      options.clipboardDelimiter = '\t';
-      options.suppressCopyRowsToClipboard = false;
-      options.suppressCopySingleCellRanges = false;
-    }
-
-    return options;
-  }, [
-    gridProps.gridOptions,
+  // Enhanced grid options (Community edition compatible)
+  const enhancedGridOptions: GridOptions = useMemo(() => ({
+    ...gridOptions,
+    rowSelection: 'multiple',
+    animateRows: true,
+    suppressRowClickSelection: false,
+    suppressMenuHide: false,
+    allowContextMenuWithControlKey: true,
+    undoRedoCellEditing: enableUndoRedo,
+    undoRedoCellEditingLimit: maxUndoRedoSteps,
+    onCellKeyPress,
+    getContextMenuItems: enableClipboard ? getContextMenuItems : undefined,
+  }), [
+    gridOptions,
     enableClipboard,
     enableUndoRedo,
     maxUndoRedoSteps,
     getContextMenuItems,
-    processDataFromClipboard,
     onCellKeyPress,
   ]);
 
@@ -518,9 +421,9 @@ export function EnhancedAGGrid<T extends { id: string }>({
           className="h-full w-full"
           theme="legacy"
           rowData={rowData}
-          columnDefs={gridProps.columnDefs}
-          defaultColDef={gridProps.defaultColDef}
-          getRowClass={gridProps.getRowClass}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          getRowClass={getRowClass}
           onGridReady={onGridReady}
           onCellEditingStopped={onCellEditingStopped}
           onSelectionChanged={onSelectionChanged}

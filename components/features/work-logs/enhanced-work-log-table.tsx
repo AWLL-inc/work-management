@@ -340,25 +340,13 @@ export function EnhancedWorkLogTable({
     [failedWorkLogIds],
   );
 
-  // Handle row addition
+  // Handle row addition (local only, no API call)
   const handleRowAdd = useCallback(async (newRows: WorkLog[]) => {
-    try {
-      for (const row of newRows) {
-        // Create new work log with default values
-        await onCreateWorkLog({
-          date: typeof row.date === 'string' ? row.date : new Date().toISOString().split('T')[0],
-          hours: String(row.hours || "0"),
-          projectId: row.projectId || (projects.find(p => p.isActive)?.id || ""),
-          categoryId: row.categoryId || (categories.find(c => c.isActive)?.id || ""),
-          details: row.details || "",
-        });
-      }
-      onRefresh?.();
-    } catch (error) {
-      console.error("Failed to add rows:", error);
-      throw error;
-    }
-  }, [onCreateWorkLog, projects, categories, onRefresh]);
+    // Add rows locally to the grid, API save will happen when user actually saves
+    // This is handled by the Enhanced AG Grid component itself via onDataChange
+    // No need to call API here, just let the grid handle the local state
+    toast.success(`${newRows.length}行を追加しました（編集後に保存してください）`);
+  }, []);
 
   // Handle row updates
   const handleRowUpdate = useCallback(async (updates: Array<{ id: string; data: Partial<WorkLog> }>) => {
@@ -473,6 +461,10 @@ export function EnhancedWorkLogTable({
         getRowClass={getRowClass}
         onGridReady={onGridReady}
         onRowAdd={handleRowAdd}
+        onDataChange={(newData) => {
+          // When data changes locally, we don't need to do anything
+          // The actual save will happen when user uses the form dialog or batch save
+        }}
         onRowUpdate={handleRowUpdate}
         onRowDelete={handleRowDelete}
         enableToolbar={true}

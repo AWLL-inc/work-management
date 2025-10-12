@@ -166,35 +166,41 @@ export function EnhancedAGGrid<T extends { id: string }>({
     const newRow = {
       id: `new-${Date.now()}`,
       date: new Date().toISOString().split('T')[0],
-      // Add other default values as needed
+      hours: "8.0", // Default work hours
+      projectId: "", // Will be set by user
+      categoryId: "", // Will be set by user
+      details: "", // Empty by default
+      // Add timestamps for audit
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      userId: "", // Will be set by the backend
     } as unknown as T;
 
-    try {
-      if (onRowAdd) {
+    // Always add to grid locally first
+    gridApi?.applyTransaction({ add: [newRow], addIndex: 0 });
+    onDataChange?.([newRow, ...rowData]);
+
+    // Focus on the new row for editing
+    setTimeout(() => {
+      gridApi?.setFocusedCell(0, columnDefs[0].field || '');
+      gridApi?.startEditingCell({ rowIndex: 0, colKey: columnDefs[0].field || '' });
+    }, 100);
+
+    const action: GridAction = {
+      type: 'ADD',
+      timestamp: Date.now(),
+      data: { newRow },
+    };
+    addToHistory(action);
+
+    // Call onRowAdd for notification purposes only (no API call expected)
+    if (onRowAdd) {
+      try {
         await onRowAdd([newRow]);
-      } else {
-        // Add to grid directly
-        gridApi?.applyTransaction({ add: [newRow], addIndex: 0 });
-        onDataChange?.([newRow, ...rowData]);
+      } catch (error) {
+        // This is just for notification, don't fail the local operation
+        console.warn('Row add notification failed:', error);
       }
-
-      // Focus on the new row for editing
-      setTimeout(() => {
-        gridApi?.setFocusedCell(0, columnDefs[0].field || '');
-        gridApi?.startEditingCell({ rowIndex: 0, colKey: columnDefs[0].field || '' });
-      }, 100);
-
-      const action: GridAction = {
-        type: 'ADD',
-        timestamp: Date.now(),
-        data: { newRow },
-      };
-      addToHistory(action);
-
-      toast.success('新しい行を追加しました');
-    } catch (error) {
-      console.error('Failed to add row:', error);
-      toast.error('行の追加に失敗しました');
     }
   }, [onRowAdd, gridApi, rowData, onDataChange, addToHistory, columnDefs]);
 
@@ -211,26 +217,28 @@ export function EnhancedAGGrid<T extends { id: string }>({
       date: new Date().toISOString().split('T')[0], // Set current date
     }));
 
-    try {
-      if (onRowAdd) {
+    // Always add to grid locally first
+    gridApi?.applyTransaction({ add: duplicatedRows, addIndex: 0 });
+    onDataChange?.([...duplicatedRows, ...rowData]);
+
+    const action: GridAction = {
+      type: 'ADD',
+      timestamp: Date.now(),
+      data: { duplicatedRows, originalRows: selectedNodes.map(n => n.data) },
+    };
+    addToHistory(action);
+
+    // Call onRowAdd for notification purposes only (no API call expected)
+    if (onRowAdd) {
+      try {
         await onRowAdd(duplicatedRows);
-      } else {
-        gridApi?.applyTransaction({ add: duplicatedRows, addIndex: 0 });
-        onDataChange?.([...duplicatedRows, ...rowData]);
+      } catch (error) {
+        // This is just for notification, don't fail the local operation
+        console.warn('Row duplication notification failed:', error);
       }
-
-      const action: GridAction = {
-        type: 'ADD',
-        timestamp: Date.now(),
-        data: { duplicatedRows, originalRows: selectedNodes.map(n => n.data) },
-      };
-      addToHistory(action);
-
-      toast.success(`${duplicatedRows.length}行を複製しました`);
-    } catch (error) {
-      console.error('Failed to duplicate rows:', error);
-      toast.error('行の複製に失敗しました');
     }
+
+    toast.success(`${duplicatedRows.length}行を複製しました（編集後に保存してください）`);
   }, [selectedNodes, onRowAdd, gridApi, rowData, onDataChange, addToHistory]);
 
   // Row deletion handler

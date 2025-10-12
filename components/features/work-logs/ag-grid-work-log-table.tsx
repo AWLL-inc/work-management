@@ -325,21 +325,20 @@ export function AGGridWorkLogTable({
         field: "details",
         flex: 1,
         editable: batchEditingEnabled,
-        cellEditor: "agTextCellEditor",
+        cellEditor: "agLargeTextCellEditor",
         cellEditorParams: {
           maxLength: WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH,
+          rows: 5,
+          cols: 50,
         },
         tooltipField: "details",
         wrapText: true,
-        cellStyle: (_params) => {
-          return {
-            lineHeight: "1.4",
-            padding: "8px",
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            display: "flex",
-            alignItems: "center",
-          };
+        autoHeight: true,
+        cellStyle: {
+          lineHeight: "1.4",
+          padding: "8px",
+          whiteSpace: "normal",
+          wordWrap: "break-word",
         },
       },
     ];

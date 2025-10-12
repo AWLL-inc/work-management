@@ -384,17 +384,13 @@ export function EnhancedAGGrid<T extends { id: string }>({
     animateRows: true,
     suppressRowClickSelection: false,
     suppressMenuHide: false,
-    allowContextMenuWithControlKey: true,
     undoRedoCellEditing: enableUndoRedo,
     undoRedoCellEditingLimit: maxUndoRedoSteps,
     onCellKeyPress,
-    getContextMenuItems: enableClipboard ? getContextMenuItems : undefined,
   }), [
     gridOptions,
-    enableClipboard,
     enableUndoRedo,
     maxUndoRedoSteps,
-    getContextMenuItems,
     onCellKeyPress,
   ]);
 

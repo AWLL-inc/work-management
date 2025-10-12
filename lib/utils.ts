@@ -39,7 +39,7 @@ export function validateCallbackUrl(url: string): string {
 }
 
 /**
- * Format date value for display in YYYY/MM/DD format
+ * Format date value for display in YYYY/MM/DD format (JST)
  * @param value - Date string, Date object, or null/undefined value
  * @returns Formatted date string in YYYY/MM/DD format or original value as string
  */
@@ -54,9 +54,11 @@ export function formatDateForDisplay(
       return String(value);
     }
 
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+    // JST (UTC+9) での表示
+    const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+    const year = jstDate.getUTCFullYear();
+    const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(jstDate.getUTCDate()).padStart(2, "0");
     return `${year}/${month}/${day}`;
   } catch {
     return String(value);
@@ -65,7 +67,7 @@ export function formatDateForDisplay(
 
 /**
  * Parse date string and return Date object or null
- * @param value - Date string in YYYY-MM-DD format
+ * @param value - Date string in YYYY-MM-DD format (treated as JST)
  * @returns Date object if valid, null otherwise
  */
 export function parseDate(value: string): Date | null {
@@ -74,17 +76,24 @@ export function parseDate(value: string): Date | null {
     return null;
   }
 
-  const date = new Date(value);
+  // Parse as JST (UTC+9) to avoid timezone issues
+  const [inputYear, inputMonth, inputDay] = value.split("-").map(Number);
+
+  // Create date in JST by using UTC and adjusting for JST offset
+  const date = new Date(
+    Date.UTC(inputYear, inputMonth - 1, inputDay, -9, 0, 0),
+  );
+
   if (Number.isNaN(date.getTime())) {
     return null;
   }
 
-  // Check if the parsed date components match the input to catch auto-correction
-  const [inputYear, inputMonth, inputDay] = value.split("-").map(Number);
+  // Verify the input components match (accounting for JST)
+  const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   if (
-    date.getFullYear() !== inputYear ||
-    date.getMonth() + 1 !== inputMonth ||
-    date.getDate() !== inputDay
+    jstDate.getUTCFullYear() !== inputYear ||
+    jstDate.getUTCMonth() + 1 !== inputMonth ||
+    jstDate.getUTCDate() !== inputDay
   ) {
     return null;
   }

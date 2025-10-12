@@ -31,3 +31,9 @@
   outline: 1px solid hsl(var(--primary));
   outline-offset: -1px;
 }
+
+/* Error row highlighting for failed batch operations */
+.ag-work-log-table .ag-row.ag-row-error {
+  background-color: hsl(var(--destructive) / 0.1);
+  border-left: 3px solid hsl(var(--destructive));
+}

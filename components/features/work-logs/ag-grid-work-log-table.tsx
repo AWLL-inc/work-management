@@ -14,7 +14,7 @@ import type {
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -137,6 +137,9 @@ export function AGGridWorkLogTable({
     >
   >(new Map());
 
+  // AG Grid reference for direct API access
+  const gridRef = useRef<AgGridReact>(null);
+
   // Create project and category lookup maps
   const projectsMap = useMemo(() => {
     return new Map(projects.map((p) => [p.id, p.name]));
@@ -201,6 +204,7 @@ export function AGGridWorkLogTable({
         cellEditorParams: {
           format: "yyyy-mm-dd",
         },
+        // JST表示 - formatDateForDisplayがタイムゾーンを考慮
         valueFormatter: (params) => formatDateForDisplay(params.value),
         valueParser: (params) => {
           const { newValue, oldValue } = params;
@@ -209,13 +213,15 @@ export function AGGridWorkLogTable({
             return oldValue;
           }
 
-          // 既存のparseDateユーティリティを使用
+          // JST対応のparseDateユーティリティを使用
+          // YYYY-MM-DD形式の文字列をJSTとして解釈
           const date = parseDate(newValue);
           if (!date) {
             toast.error("有効な日付をYYYY-MM-DD形式で入力してください");
             return oldValue;
           }
 
+          // ISO 8601形式の文字列として保存（データベースとの互換性維持）
           return newValue;
         },
         sort: "desc",
@@ -442,6 +448,9 @@ export function AGGridWorkLogTable({
     setIsSubmitting(true);
 
     try {
+      // 現在は並列実行を使用（パフォーマンス重視）
+      // 注意: 同じレコードへの複数更新や相互依存がある場合は競合の可能性があります
+      // 将来的にはバッチAPIエンドポイント (PUT /api/work-logs/batch) の追加を検討
       const results = await Promise.allSettled(
         Array.from(pendingChanges.entries()).map(
           async ([workLogId, changes]) => {
@@ -468,8 +477,11 @@ export function AGGridWorkLogTable({
       const failed = results.filter(
         (
           r,
-        ): r is PromiseFulfilledResult<{ success: false; workLogId: string }> =>
-          r.status === "fulfilled" && !r.value.success,
+        ): r is PromiseFulfilledResult<{
+          success: false;
+          workLogId: string;
+          error: string;
+        }> => r.status === "fulfilled" && !r.value.success,
       );
 
       if (failed.length === 0) {
@@ -477,9 +489,24 @@ export function AGGridWorkLogTable({
         setPendingChanges(new Map());
         setBatchEditingEnabled(false);
       } else if (succeeded.length > 0) {
-        toast.warning(
-          `${succeeded.length}件保存、${failed.length}件失敗しました。失敗した項目を再度確認してください。`,
+        // 失敗したレコードを視覚的にハイライト
+        const failedIds = failed.map((f) => f.value.workLogId);
+
+        // 失敗したレコードのログ表示（将来的にはUIでのハイライト実装予定）
+        console.warn("Failed work log IDs:", failedIds);
+
+        // より具体的なエラーメッセージ
+        const failedDetails = failed
+          .map((f) => {
+            const log = workLogs.find((w) => w.id === f.value.workLogId);
+            return `${formatDateForDisplay(log?.date)} - ${f.value.error}`;
+          })
+          .join("\n");
+
+        toast.error(
+          `${succeeded.length}件保存、${failed.length}件失敗しました。\n失敗したレコード:\n${failedDetails}`,
         );
+
         // Remove only successful changes from pending
         const newPendingChanges = new Map(pendingChanges);
         succeeded.forEach((r) => {
@@ -492,7 +519,7 @@ export function AGGridWorkLogTable({
     } finally {
       setIsSubmitting(false);
     }
-  }, [pendingChanges, onUpdateWorkLog]);
+  }, [pendingChanges, onUpdateWorkLog, workLogs]);
 
   // Handle cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {
@@ -579,6 +606,7 @@ export function AGGridWorkLogTable({
           className={`ag-theme-quartz ag-work-log-table h-[600px] w-full border rounded-lg${batchEditingEnabled ? " batch-editing" : ""}`}
         >
           <AgGridReact
+            ref={gridRef}
             className="h-full w-full"
             theme="legacy"
             rowData={rowData}

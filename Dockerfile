@@ -6,8 +6,12 @@
 # ============================================
 FROM node:22-alpine AS base
 
-# Install dependencies only when needed
-RUN apk add --no-cache libc6-compat
+# Install dependencies and build tools
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++
 
 WORKDIR /app
 

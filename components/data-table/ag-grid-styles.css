@@ -1,0 +1,126 @@
+/**
+ * Enhanced AG Grid styles
+ *
+ * These styles provide enhanced visual feedback for the AG Grid
+ * with support for clipboard operations, validation, and improved UX.
+ */
+
+/* Invalid cell styling for validation feedback */
+.ag-cell-invalid {
+  border: 2px solid hsl(var(--destructive));
+  background-color: hsl(var(--destructive) / 0.1);
+}
+
+/* Editing cell styling for better UX */
+.ag-cell-editing {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+
+/* Row hover effects */
+.ag-row:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Enhanced cell border for better visibility during editing */
+.ag-cell {
+  border-right: 1px solid hsl(var(--border));
+}
+
+.ag-cell:focus-within {
+  outline: 1px solid hsl(var(--primary));
+  outline-offset: -1px;
+}
+
+/* Error row highlighting for failed operations */
+.ag-row.ag-row-error {
+  background-color: hsl(var(--destructive) / 0.1);
+  border-left: 3px solid hsl(var(--destructive));
+}
+
+/* Selection styling */
+.ag-row-selected {
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border-left: 3px solid hsl(var(--primary));
+}
+
+/* Range selection styling for clipboard operations */
+.ag-cell-range-selected {
+  background-color: hsl(var(--primary) / 0.2);
+}
+
+.ag-cell-range-selected-1 {
+  background-color: hsl(var(--primary) / 0.3);
+}
+
+.ag-cell-range-selected-2 {
+  background-color: hsl(var(--primary) / 0.4);
+}
+
+/* Copy/paste styling */
+.ag-cell-range-copy {
+  border: 2px dashed hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+/* Context menu styling */
+.ag-menu {
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.ag-menu-option {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.ag-menu-option:hover {
+  background-color: hsl(var(--accent));
+}
+
+/* Toolbar integration styling */
+.ag-theme-quartz {
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Focus styling for keyboard navigation */
+.ag-cell-focus {
+  border: 2px solid hsl(var(--primary)) !important;
+  outline: none;
+}
+
+/* Loading overlay styling */
+.ag-overlay-loading-wrapper {
+  background-color: hsl(var(--background) / 0.8);
+}
+
+.ag-overlay-loading-center {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Column header styling */
+.ag-header-cell {
+  border-right: 1px solid hsl(var(--border));
+  background-color: hsl(var(--muted) / 0.3);
+}
+
+.ag-header-cell:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Sort indicator styling */
+.ag-sort-ascending-icon,
+.ag-sort-descending-icon {
+  color: hsl(var(--primary));
+}
+
+/* Filter icon styling */
+.ag-filter-icon {
+  color: hsl(var(--muted-foreground));
+}
+
+.ag-header-cell-filtered .ag-filter-icon {
+  color: hsl(var(--primary));
+}

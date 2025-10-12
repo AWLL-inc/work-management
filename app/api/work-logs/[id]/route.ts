@@ -27,9 +27,19 @@ export async function PUT(
     const isDevelopmentMode = process.env.NODE_ENV === "development";
     const isAuthDisabled = process.env.DISABLE_AUTH === "true";
 
+    // Prevent auth bypass in production
+    if (process.env.NODE_ENV === "production" && isAuthDisabled) {
+      throw new Error(
+        "DISABLE_AUTH cannot be enabled in production environment",
+      );
+    }
+
     let session = null;
     if (isDevelopmentMode && isAuthDisabled) {
-      // Skip authentication in development mode when DISABLE_AUTH=true
+      console.warn(
+        "⚠️  Authentication is disabled for development. User ID:",
+        "00000000-0000-0000-0000-000000000000",
+      );
       session = {
         user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" },
       };
@@ -168,9 +178,19 @@ export async function DELETE(
     const isDevelopmentMode = process.env.NODE_ENV === "development";
     const isAuthDisabled = process.env.DISABLE_AUTH === "true";
 
+    // Prevent auth bypass in production
+    if (process.env.NODE_ENV === "production" && isAuthDisabled) {
+      throw new Error(
+        "DISABLE_AUTH cannot be enabled in production environment",
+      );
+    }
+
     let session = null;
     if (isDevelopmentMode && isAuthDisabled) {
-      // Skip authentication in development mode when DISABLE_AUTH=true
+      console.warn(
+        "⚠️  Authentication is disabled for development. User ID:",
+        "00000000-0000-0000-0000-000000000000",
+      );
       session = {
         user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" },
       };

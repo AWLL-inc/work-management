@@ -27,6 +27,22 @@ import {
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
 
+// Validation constants
+const WORK_LOG_VALIDATION = {
+  HOURS: {
+    MIN: 0,
+    MAX: 168,
+    MAX_LENGTH: 5,
+    PATTERN: /^\d+(\.\d{1,2})?$/,
+  },
+  DETAILS: {
+    MAX_LENGTH: 1000,
+  },
+  DATE: {
+    FORMAT: /^\d{4}-\d{2}-\d{2}$/,
+  },
+} as const;
+
 interface AGGridWorkLogTableProps {
   workLogs: WorkLog[];
   projects: Project[];
@@ -71,6 +87,7 @@ export function AGGridWorkLogTable({
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [batchEditingEnabled, setBatchEditingEnabled] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<
     Map<
       string,
@@ -154,9 +171,11 @@ export function AGGridWorkLogTable({
           // If it's already YYYY-MM-DD format, format for display
           if (
             typeof params.value === "string" &&
-            /^\d{4}-\d{2}-\d{2}$/.test(params.value)
+            WORK_LOG_VALIDATION.DATE.FORMAT.test(params.value)
           ) {
-            return new Date(`${params.value}T00:00:00`).toLocaleDateString();
+            // Simple string formatting to avoid timezone issues
+            const [year, month, day] = params.value.split("-");
+            return `${year}/${month}/${day}`;
           }
 
           // Otherwise, try to parse as date
@@ -168,7 +187,10 @@ export function AGGridWorkLogTable({
         },
         valueParser: (params) => {
           // Return the value exactly as provided by the editor
-          if (params.newValue && /^\d{4}-\d{2}-\d{2}$/.test(params.newValue)) {
+          if (
+            params.newValue &&
+            WORK_LOG_VALIDATION.DATE.FORMAT.test(params.newValue)
+          ) {
             return params.newValue;
           }
 
@@ -184,7 +206,33 @@ export function AGGridWorkLogTable({
         editable: batchEditingEnabled,
         cellEditor: "agTextCellEditor",
         cellEditorParams: {
-          maxLength: 5,
+          maxLength: WORK_LOG_VALIDATION.HOURS.MAX_LENGTH,
+        },
+        valueParser: (params) => {
+          const value = params.newValue;
+
+          if (!value) {
+            toast.error("時間を入力してください");
+            return params.oldValue;
+          }
+
+          if (!WORK_LOG_VALIDATION.HOURS.PATTERN.test(value)) {
+            toast.error("時間は数値で入力してください（例: 8 または 8.5）");
+            return params.oldValue;
+          }
+
+          const hours = parseFloat(value);
+          if (hours <= WORK_LOG_VALIDATION.HOURS.MIN) {
+            toast.error("時間は0より大きい値を入力してください");
+            return params.oldValue;
+          }
+
+          if (hours > WORK_LOG_VALIDATION.HOURS.MAX) {
+            toast.error("時間は168以下で入力してください");
+            return params.oldValue;
+          }
+
+          return value;
         },
       },
       {
@@ -232,7 +280,7 @@ export function AGGridWorkLogTable({
         editable: batchEditingEnabled,
         cellEditor: "agTextCellEditor",
         cellEditorParams: {
-          maxLength: 1000,
+          maxLength: WORK_LOG_VALIDATION.DETAILS.MAX_LENGTH,
         },
         tooltipField: "details",
         wrapText: true,
@@ -347,32 +395,55 @@ export function AGGridWorkLogTable({
   // Handle batch save
   const handleBatchSave = useCallback(async () => {
     if (pendingChanges.size === 0) {
-      toast.info("No changes to save");
+      toast.info("変更がありません");
       return;
     }
 
     setIsSubmitting(true);
-    const errors: string[] = [];
 
     try {
-      // Save all pending changes
-      await Promise.all(
+      const results = await Promise.allSettled(
         Array.from(pendingChanges.entries()).map(
           async ([workLogId, changes]) => {
             try {
               await onUpdateWorkLog(workLogId, changes);
-            } catch (_error) {
-              errors.push(`Failed to update ID: ${workLogId}`);
+              return { workLogId, success: true };
+            } catch (error) {
+              return {
+                workLogId,
+                success: false,
+                error: error instanceof Error ? error.message : "Unknown error",
+              };
             }
           },
         ),
       );
 
-      if (errors.length === 0) {
-        toast.success(`Saved ${pendingChanges.size} changes`);
+      const succeeded = results.filter(
+        (r) => r.status === "fulfilled" && r.value.success,
+      );
+      const failed = results.filter(
+        (r) => r.status === "fulfilled" && !r.value.success,
+      );
+
+      if (failed.length === 0) {
+        toast.success(`${succeeded.length}件の変更を保存しました`);
         setPendingChanges(new Map());
+        setBatchEditingEnabled(false);
+      } else if (succeeded.length > 0) {
+        toast.warning(
+          `${succeeded.length}件保存、${failed.length}件失敗しました。失敗した項目を再度確認してください。`,
+        );
+        // Remove only successful changes from pending
+        const newPendingChanges = new Map(pendingChanges);
+        succeeded.forEach((r) => {
+          if (r.status === "fulfilled") {
+            newPendingChanges.delete(r.value.workLogId);
+          }
+        });
+        setPendingChanges(newPendingChanges);
       } else {
-        toast.error(`Failed to update ${errors.length} items`);
+        toast.error(`全ての更新に失敗しました (${failed.length}件)`);
       }
     } finally {
       setIsSubmitting(false);
@@ -382,18 +453,17 @@ export function AGGridWorkLogTable({
   // Handle cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {
     if (pendingChanges.size > 0) {
-      if (
-        window.confirm(
-          "You have unsaved changes. Are you sure you want to discard them?",
-        )
-      ) {
-        setPendingChanges(new Map());
-        setBatchEditingEnabled(false);
-      }
+      setCancelDialogOpen(true);
     } else {
       setBatchEditingEnabled(false);
     }
   }, [pendingChanges.size]);
+
+  const handleConfirmCancel = () => {
+    setPendingChanges(new Map());
+    setBatchEditingEnabled(false);
+    setCancelDialogOpen(false);
+  };
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     params.api.sizeColumnsToFit();
@@ -518,6 +588,29 @@ export function AGGridWorkLogTable({
               disabled={isSubmitting}
             >
               {isSubmitting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>未保存の変更を破棄しますか？</DialogTitle>
+            <DialogDescription>
+              {pendingChanges.size}件の未保存の変更があります。
+              キャンセルすると、これらの変更は失われます。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+            >
+              編集を継続
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmCancel}>
+              変更を破棄
             </Button>
           </DialogFooter>
         </DialogContent>

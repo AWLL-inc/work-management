@@ -7,14 +7,26 @@ import {
   CsvExportModule,
   InfiniteRowModelModule,
 } from "ag-grid-community";
-import {
-  ClipboardModule,
-  CellSelectionModule,
-  ColumnMenuModule,
-  ContextMenuModule,
-  RangeSelectionModule,
-  RowGroupingModule,
-} from "ag-grid-enterprise";
+
+// Try to import Enterprise modules, but gracefully handle if not available
+let ClipboardModule: any = null;
+let CellSelectionModule: any = null;
+let ColumnMenuModule: any = null;
+let ContextMenuModule: any = null;
+let RangeSelectionModule: any = null;
+let RowGroupingModule: any = null;
+
+try {
+  const enterprise = require("ag-grid-enterprise");
+  ClipboardModule = enterprise.ClipboardModule;
+  CellSelectionModule = enterprise.CellSelectionModule;
+  ColumnMenuModule = enterprise.ColumnMenuModule;
+  ContextMenuModule = enterprise.ContextMenuModule;
+  RangeSelectionModule = enterprise.RangeSelectionModule;
+  RowGroupingModule = enterprise.RowGroupingModule;
+} catch (e) {
+  console.warn("AG Grid Enterprise modules not available, some features will be limited");
+}
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
@@ -32,18 +44,22 @@ import type {
 } from "ag-grid-community";
 
 // Register AG Grid modules
-ModuleRegistry.registerModules([
+const modules = [
   AllCommunityModule,
   ClientSideRowModelModule,
   CsvExportModule,
   InfiniteRowModelModule,
-  ClipboardModule,
-  CellSelectionModule,
-  ColumnMenuModule,
-  ContextMenuModule,
-  RangeSelectionModule,
-  RowGroupingModule,
-]);
+];
+
+// Add Enterprise modules if available
+if (ClipboardModule) modules.push(ClipboardModule);
+if (CellSelectionModule) modules.push(CellSelectionModule);
+if (ColumnMenuModule) modules.push(ColumnMenuModule);
+if (ContextMenuModule) modules.push(ContextMenuModule);
+if (RangeSelectionModule) modules.push(RangeSelectionModule);
+if (RowGroupingModule) modules.push(RowGroupingModule);
+
+ModuleRegistry.registerModules(modules);
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -444,24 +460,32 @@ export function EnhancedAGGrid<T extends { id: string }>({
   }, [historyStack.redoStack, gridApi]);
 
   // Enhanced grid options
-  const enhancedGridOptions: GridOptions = useMemo(() => ({
-    ...gridProps.gridOptions,
-    rowSelection: 'multiple',
-    animateRows: true,
-    suppressRowClickSelection: false,
-    enableCellTextSelection: enableClipboard,
-    enableRangeSelection: enableClipboard,
-    suppressMenuHide: false,
-    allowContextMenuWithControlKey: true,
-    getContextMenuItems: enableClipboard ? getContextMenuItems : undefined,
-    processDataFromClipboard: enableClipboard ? processDataFromClipboard : undefined,
-    clipboardDelimiter: '\t',
-    suppressCopyRowsToClipboard: false,
-    suppressCopySingleCellRanges: false,
-    undoRedoCellEditing: enableUndoRedo,
-    undoRedoCellEditingLimit: maxUndoRedoSteps,
-    onCellKeyPress,
-  }), [
+  const enhancedGridOptions: GridOptions = useMemo(() => {
+    const options: GridOptions = {
+      ...gridProps.gridOptions,
+      rowSelection: 'multiple',
+      animateRows: true,
+      suppressRowClickSelection: false,
+      suppressMenuHide: false,
+      allowContextMenuWithControlKey: true,
+      undoRedoCellEditing: enableUndoRedo,
+      undoRedoCellEditingLimit: maxUndoRedoSteps,
+      onCellKeyPress,
+    };
+
+    // Add Enterprise features only if available
+    if (ClipboardModule && enableClipboard) {
+      options.enableCellTextSelection = true;
+      options.enableRangeSelection = true;
+      options.getContextMenuItems = getContextMenuItems;
+      options.processDataFromClipboard = processDataFromClipboard;
+      options.clipboardDelimiter = '\t';
+      options.suppressCopyRowsToClipboard = false;
+      options.suppressCopySingleCellRanges = false;
+    }
+
+    return options;
+  }, [
     gridProps.gridOptions,
     enableClipboard,
     enableUndoRedo,

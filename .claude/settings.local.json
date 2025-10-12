@@ -61,7 +61,9 @@
       "Bash(DISABLE_AUTH=false npm run build)",
       "mcp__serena__think_about_whether_you_are_done",
       "Bash(npx biome format:*)",
-      "mcp__serena__create_text_file"
+      "mcp__serena__create_text_file",
+      "Bash(chmod:*)",
+      "Bash(docker compose:*)"
     ],
     "deny": [],
     "ask": []

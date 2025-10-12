@@ -8,18 +8,20 @@ import "../ag-grid-styles.css";
 import type {
   CellEditingStoppedEvent,
   ColDef,
-  GridReadyEvent,
-  RowClassParams,
+  GetContextMenuItemsParams,
   GridApi,
-  CellValueChangedEvent,
-  SelectionChangedEvent,
   GridOptions,
+  GridReadyEvent,
+  IRowNode,
+  MenuItemDef,
+  RowClassParams,
+  SelectionChangedEvent,
 } from "ag-grid-community";
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-import { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,10 +32,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { EnhancedGridProps, GridHistoryStack, GridAction } from "../types/grid-types";
 import { GridToolbar } from "../toolbar/grid-toolbar";
+import type {
+  EnhancedGridProps,
+  GridAction,
+  GridHistoryStack,
+} from "../types/grid-types";
 
-interface EnhancedAGGridProps<T extends { id: string }> extends EnhancedGridProps<T> {
+interface EnhancedAGGridProps<T extends { id: string }>
+  extends EnhancedGridProps<T> {
   children?: React.ReactNode;
   columnDefs: ColDef[];
   defaultColDef?: ColDef;
@@ -47,10 +54,8 @@ export function EnhancedAGGrid<T extends { id: string }>({
   rowData,
   onDataChange,
   onRowAdd,
-  onRowUpdate,
   onRowDelete,
   enableToolbar = true,
-  enableClipboard = true,
   enableUndoRedo = true,
   maxUndoRedoSteps = 20,
   children,
@@ -66,8 +71,8 @@ export function EnhancedAGGrid<T extends { id: string }>({
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
   // Selection and editing state
-  const [selectedNodes, setSelectedNodes] = useState<any[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
+  const [selectedNodes, setSelectedNodes] = useState<IRowNode<T>[]>([]);
+  const [isEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowsToDelete, setRowsToDelete] = useState<string[]>([]);
 
@@ -79,22 +84,28 @@ export function EnhancedAGGrid<T extends { id: string }>({
   });
 
   // Add action to history stack
-  const addToHistory = useCallback((action: GridAction) => {
-    if (!enableUndoRedo) return;
-    
-    setHistoryStack(prev => ({
-      ...prev,
-      undoStack: [...prev.undoStack.slice(-prev.maxSize + 1), action],
-      redoStack: [], // Clear redo stack when new action is added
-    }));
-  }, [enableUndoRedo]);
+  const addToHistory = useCallback(
+    (action: GridAction) => {
+      if (!enableUndoRedo) return;
+
+      setHistoryStack((prev) => ({
+        ...prev,
+        undoStack: [...prev.undoStack.slice(-prev.maxSize + 1), action],
+        redoStack: [], // Clear redo stack when new action is added
+      }));
+    },
+    [enableUndoRedo],
+  );
 
   // Grid ready handler
-  const onGridReady = useCallback((params: GridReadyEvent) => {
-    setGridApi(params.api);
-    params.api.sizeColumnsToFit();
-    onGridReadyProp?.(params);
-  }, [onGridReadyProp]);
+  const onGridReady = useCallback(
+    (params: GridReadyEvent) => {
+      setGridApi(params.api);
+      params.api.sizeColumnsToFit();
+      onGridReadyProp?.(params);
+    },
+    [onGridReadyProp],
+  );
 
   // Selection changed handler
   const onSelectionChanged = useCallback((event: SelectionChangedEvent) => {
@@ -103,69 +114,34 @@ export function EnhancedAGGrid<T extends { id: string }>({
   }, []);
 
   // Cell editing stopped handler
-  const onCellEditingStopped = useCallback((event: CellEditingStoppedEvent) => {
-    const { data, colDef, newValue, oldValue } = event;
-    
-    if (newValue !== oldValue) {
-      const action: GridAction = {
-        type: 'UPDATE',
-        timestamp: Date.now(),
-        data: {
-          id: data.id,
-          field: colDef.field,
-          oldValue,
-          newValue,
-        },
-      };
-      addToHistory(action);
-    }
-    
-    onCellEditingStoppedProp?.(event);
-  }, [addToHistory, onCellEditingStoppedProp]);
+  const onCellEditingStopped = useCallback(
+    (event: CellEditingStoppedEvent) => {
+      const { data, colDef, newValue, oldValue } = event;
 
-  // Keyboard event handler for shortcuts
-  const onCellKeyPress = useCallback((event: any) => {
-    const { event: keyEvent } = event;
-    
-    if (keyEvent.ctrlKey || keyEvent.metaKey) {
-      switch (keyEvent.key) {
-        case 'n':
-        case 'N':
-          keyEvent.preventDefault();
-          handleAddRow();
-          break;
-        case 'd':
-        case 'D':
-          keyEvent.preventDefault();
-          handleDuplicateRows();
-          break;
-        case 'z':
-        case 'Z':
-          if (keyEvent.shiftKey) {
-            keyEvent.preventDefault();
-            handleRedo();
-          } else {
-            keyEvent.preventDefault();
-            handleUndo();
-          }
-          break;
-        case 'y':
-        case 'Y':
-          keyEvent.preventDefault();
-          handleRedo();
-          break;
+      if (newValue !== oldValue) {
+        const action: GridAction = {
+          type: "UPDATE",
+          timestamp: Date.now(),
+          data: {
+            id: data.id,
+            field: colDef.field,
+            oldValue,
+            newValue,
+          },
+        };
+        addToHistory(action);
       }
-    } else if (keyEvent.key === 'Delete') {
-      keyEvent.preventDefault();
-      handleDeleteRows();
-    }
-  }, []);
+
+      onCellEditingStoppedProp?.(event);
+    },
+    [addToHistory, onCellEditingStoppedProp],
+  );
 
   // Row addition handler
   const handleAddRow = useCallback(async () => {
     const newRow = {
       id: `new-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
       hours: "8.0", // Default work hours
       projectId: "", // Will be set by user
       categoryId: "", // Will be set by user
@@ -178,16 +154,19 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
     // Always add to grid locally first
     gridApi?.applyTransaction({ add: [newRow], addIndex: 0 });
-    onDataChange?.([newRow, ...rowData]);
+    onDataChange?.([newRow as T, ...rowData]);
 
     // Focus on the new row for editing
     setTimeout(() => {
-      gridApi?.setFocusedCell(0, columnDefs[0].field || '');
-      gridApi?.startEditingCell({ rowIndex: 0, colKey: columnDefs[0].field || '' });
+      gridApi?.setFocusedCell(0, columnDefs[0].field || "");
+      gridApi?.startEditingCell({
+        rowIndex: 0,
+        colKey: columnDefs[0].field || "",
+      });
     }, 100);
 
     const action: GridAction = {
-      type: 'ADD',
+      type: "ADD",
       timestamp: Date.now(),
       data: { newRow },
     };
@@ -196,10 +175,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
     // Call onRowAdd for notification purposes only (no API call expected)
     if (onRowAdd) {
       try {
-        await onRowAdd([newRow]);
+        await onRowAdd([newRow as T]);
       } catch (error) {
         // This is just for notification, don't fail the local operation
-        console.warn('Row add notification failed:', error);
+        console.warn("Row add notification failed:", error);
       }
     }
   }, [onRowAdd, gridApi, rowData, onDataChange, addToHistory, columnDefs]);
@@ -207,24 +186,32 @@ export function EnhancedAGGrid<T extends { id: string }>({
   // Row duplication handler
   const handleDuplicateRows = useCallback(async () => {
     if (selectedNodes.length === 0) {
-      toast.info('複製する行を選択してください');
+      toast.info("複製する行を選択してください");
       return;
     }
 
-    const duplicatedRows = selectedNodes.map((node, index) => ({
-      ...node.data,
-      id: `duplicate-${Date.now()}-${index}`,
-      date: new Date().toISOString().split('T')[0], // Set current date
-    }));
+    const duplicatedRows = selectedNodes
+      .map((node, index) => {
+        if (!node.data) return null;
+        return {
+          ...node.data,
+          id: `duplicate-${Date.now()}-${index}`,
+          date: new Date().toISOString().split("T")[0], // Set current date
+        };
+      })
+      .filter(Boolean) as T[];
 
     // Always add to grid locally first
     gridApi?.applyTransaction({ add: duplicatedRows, addIndex: 0 });
     onDataChange?.([...duplicatedRows, ...rowData]);
 
     const action: GridAction = {
-      type: 'ADD',
+      type: "ADD",
       timestamp: Date.now(),
-      data: { duplicatedRows, originalRows: selectedNodes.map(n => n.data) },
+      data: {
+        duplicatedRows,
+        originalRows: selectedNodes.map((n) => n.data).filter(Boolean),
+      },
     };
     addToHistory(action);
 
@@ -234,49 +221,56 @@ export function EnhancedAGGrid<T extends { id: string }>({
         await onRowAdd(duplicatedRows);
       } catch (error) {
         // This is just for notification, don't fail the local operation
-        console.warn('Row duplication notification failed:', error);
+        console.warn("Row duplication notification failed:", error);
       }
     }
 
-    toast.success(`${duplicatedRows.length}行を複製しました（編集後に保存してください）`);
+    toast.success(
+      `${duplicatedRows.length}行を複製しました（編集後に保存してください）`,
+    );
   }, [selectedNodes, onRowAdd, gridApi, rowData, onDataChange, addToHistory]);
 
   // Row deletion handler
   const handleDeleteRows = useCallback(() => {
     if (selectedNodes.length === 0) {
-      toast.info('削除する行を選択してください');
+      toast.info("削除する行を選択してください");
       return;
     }
 
-    const idsToDelete = selectedNodes.map(node => node.data.id);
+    const idsToDelete = selectedNodes
+      .map((node) => node.data?.id)
+      .filter(Boolean) as string[];
     setRowsToDelete(idsToDelete);
     setDeleteDialogOpen(true);
   }, [selectedNodes]);
 
   // Context menu configuration (simplified for Community edition)
-  const getContextMenuItems = useCallback((params: any) => {
-    const result: any[] = [
-      {
-        name: '行を追加',
-        action: () => handleAddRow(),
-      },
-    ];
-
-    if (selectedNodes.length > 0) {
-      result.push(
+  const _getContextMenuItems = useCallback(
+    (_params: GetContextMenuItemsParams) => {
+      const result: MenuItemDef[] = [
         {
-          name: '行を複製',
-          action: () => handleDuplicateRows(),
+          name: "行を追加",
+          action: () => handleAddRow(),
         },
-        {
-          name: '行を削除',
-          action: () => handleDeleteRows(),
-        }
-      );
-    }
+      ];
 
-    return result;
-  }, [selectedNodes.length, handleAddRow, handleDuplicateRows, handleDeleteRows]);
+      if (selectedNodes.length > 0) {
+        result.push(
+          {
+            name: "行を複製",
+            action: () => handleDuplicateRows(),
+          },
+          {
+            name: "行を削除",
+            action: () => handleDeleteRows(),
+          },
+        );
+      }
+
+      return result;
+    },
+    [selectedNodes.length, handleAddRow, handleDuplicateRows, handleDeleteRows],
+  );
 
   // Confirm deletion
   const confirmDelete = useCallback(async () => {
@@ -284,17 +278,17 @@ export function EnhancedAGGrid<T extends { id: string }>({
       if (onRowDelete) {
         await onRowDelete(rowsToDelete);
       } else {
-        const rowsToRemove = selectedNodes.map(node => node.data);
+        const rowsToRemove = selectedNodes.map((node) => node.data);
         gridApi?.applyTransaction({ remove: rowsToRemove });
-        
-        const newData = rowData.filter(row => !rowsToDelete.includes(row.id));
+
+        const newData = rowData.filter((row) => !rowsToDelete.includes(row.id));
         onDataChange?.(newData);
       }
 
       const action: GridAction = {
-        type: 'DELETE',
+        type: "DELETE",
         timestamp: Date.now(),
-        data: { deletedRows: selectedNodes.map(n => n.data) },
+        data: { deletedRows: selectedNodes.map((n) => n.data).filter(Boolean) },
       };
       addToHistory(action);
 
@@ -302,19 +296,28 @@ export function EnhancedAGGrid<T extends { id: string }>({
       setDeleteDialogOpen(false);
       setRowsToDelete([]);
     } catch (error) {
-      console.error('Failed to delete rows:', error);
-      toast.error('行の削除に失敗しました');
+      console.error("Failed to delete rows:", error);
+      toast.error("行の削除に失敗しました");
     }
-  }, [onRowDelete, rowsToDelete, selectedNodes, gridApi, rowData, onDataChange, addToHistory]);
+  }, [
+    onRowDelete,
+    rowsToDelete,
+    selectedNodes,
+    gridApi,
+    rowData,
+    onDataChange,
+    addToHistory,
+  ]);
 
   // Undo handler
   const handleUndo = useCallback(() => {
     if (historyStack.undoStack.length === 0) return;
 
-    const lastAction = historyStack.undoStack[historyStack.undoStack.length - 1];
-    
+    const lastAction =
+      historyStack.undoStack[historyStack.undoStack.length - 1];
+
     // Move action to redo stack
-    setHistoryStack(prev => ({
+    setHistoryStack((prev) => ({
       ...prev,
       undoStack: prev.undoStack.slice(0, -1),
       redoStack: [...prev.redoStack, lastAction],
@@ -322,38 +325,44 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
     // Implement undo logic based on action type
     switch (lastAction.type) {
-      case 'UPDATE':
+      case "UPDATE": {
         // Revert cell value
         const { id, field, oldValue } = lastAction.data;
-        const rowNode = gridApi?.getRowNode(id);
-        if (rowNode) {
-          rowNode.setDataValue(field, oldValue);
+        if (id && field) {
+          const rowNode = gridApi?.getRowNode(id);
+          if (rowNode) {
+            rowNode.setDataValue(field, oldValue);
+          }
         }
         break;
-      case 'ADD':
+      }
+      case "ADD": {
         // Remove added rows
         const { newRow, duplicatedRows } = lastAction.data;
         const rowsToRemove = newRow ? [newRow] : duplicatedRows;
         gridApi?.applyTransaction({ remove: rowsToRemove });
         break;
-      case 'DELETE':
+      }
+      case "DELETE": {
         // Re-add deleted rows
         const { deletedRows } = lastAction.data;
         gridApi?.applyTransaction({ add: deletedRows });
         break;
+      }
     }
 
-    toast.info('操作を元に戻しました');
+    toast.info("操作を元に戻しました");
   }, [historyStack.undoStack, gridApi]);
 
   // Redo handler
   const handleRedo = useCallback(() => {
     if (historyStack.redoStack.length === 0) return;
 
-    const actionToRedo = historyStack.redoStack[historyStack.redoStack.length - 1];
-    
+    const actionToRedo =
+      historyStack.redoStack[historyStack.redoStack.length - 1];
+
     // Move action back to undo stack
-    setHistoryStack(prev => ({
+    setHistoryStack((prev) => ({
       ...prev,
       redoStack: prev.redoStack.slice(0, -1),
       undoStack: [...prev.undoStack, actionToRedo],
@@ -361,46 +370,48 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
     // Implement redo logic based on action type
     switch (actionToRedo.type) {
-      case 'UPDATE':
+      case "UPDATE": {
         // Apply new value
         const { id, field, newValue } = actionToRedo.data;
-        const rowNode = gridApi?.getRowNode(id);
-        if (rowNode) {
-          rowNode.setDataValue(field, newValue);
+        if (id && field) {
+          const rowNode = gridApi?.getRowNode(id);
+          if (rowNode) {
+            rowNode.setDataValue(field, newValue);
+          }
         }
         break;
-      case 'ADD':
+      }
+      case "ADD": {
         // Re-add rows
         const { newRow, duplicatedRows } = actionToRedo.data;
         const rowsToAdd = newRow ? [newRow] : duplicatedRows;
         gridApi?.applyTransaction({ add: rowsToAdd });
         break;
-      case 'DELETE':
+      }
+      case "DELETE": {
         // Remove rows again
         const { deletedRows } = actionToRedo.data;
         gridApi?.applyTransaction({ remove: deletedRows });
         break;
+      }
     }
 
-    toast.info('操作をやり直しました');
+    toast.info("操作をやり直しました");
   }, [historyStack.redoStack, gridApi]);
 
   // Enhanced grid options (Community edition compatible)
-  const enhancedGridOptions: GridOptions = useMemo(() => ({
-    ...gridOptions,
-    rowSelection: 'multiple',
-    animateRows: true,
-    suppressRowClickSelection: false,
-    suppressMenuHide: false,
-    undoRedoCellEditing: enableUndoRedo,
-    undoRedoCellEditingLimit: maxUndoRedoSteps,
-    onCellKeyPress,
-  }), [
-    gridOptions,
-    enableUndoRedo,
-    maxUndoRedoSteps,
-    onCellKeyPress,
-  ]);
+  const enhancedGridOptions: GridOptions = useMemo(
+    () => ({
+      ...gridOptions,
+      rowSelection: "multiple",
+      animateRows: true,
+      suppressRowClickSelection: false,
+      suppressMenuHide: false,
+      undoRedoCellEditing: enableUndoRedo,
+      undoRedoCellEditingLimit: maxUndoRedoSteps,
+    }),
+    [gridOptions, enableUndoRedo, maxUndoRedoSteps],
+  );
 
   return (
     <div className="space-y-4">
@@ -454,10 +465,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
             >
               キャンセル
             </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-            >
+            <Button variant="destructive" onClick={confirmDelete}>
               削除
             </Button>
           </DialogFooter>

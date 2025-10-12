@@ -17,7 +17,9 @@ import {
 } from "@/lib/api/work-logs";
 
 export default function WorkLogsPage() {
-  const [tableType, setTableType] = useState<'enhanced' | 'ag-grid' | 'standard'>('enhanced');
+  const [tableType, setTableType] = useState<
+    "enhanced" | "ag-grid" | "standard"
+  >("enhanced");
 
   const {
     data: workLogs,

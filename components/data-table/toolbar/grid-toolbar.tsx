@@ -1,21 +1,14 @@
 "use client";
 
+import { Copy, Info, Plus, Redo, Trash2, Undo } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { 
-  Plus, 
-  Copy, 
-  Trash2, 
-  Undo, 
-  Redo,
-  Info
-} from "lucide-react";
-import type { ToolbarProps } from "../types/grid-types";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { ToolbarProps } from "../types/grid-types";
 
 export function GridToolbar({
   onAddRow,
@@ -49,7 +42,9 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>新しい行を先頭に追加します</p>
-              <p className="text-xs text-muted-foreground">ショートカット: Ctrl+N</p>
+              <p className="text-xs text-muted-foreground">
+                ショートカット: Ctrl+N
+              </p>
             </TooltipContent>
           </Tooltip>
 
@@ -74,7 +69,9 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>選択された行を複製します</p>
-              <p className="text-xs text-muted-foreground">ショートカット: Ctrl+D</p>
+              <p className="text-xs text-muted-foreground">
+                ショートカット: Ctrl+D
+              </p>
             </TooltipContent>
           </Tooltip>
 
@@ -99,7 +96,9 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>選択された行を削除します</p>
-              <p className="text-xs text-muted-foreground">ショートカット: Delete</p>
+              <p className="text-xs text-muted-foreground">
+                ショートカット: Delete
+              </p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -122,7 +121,9 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>直前の編集を元に戻します</p>
-              <p className="text-xs text-muted-foreground">ショートカット: Ctrl+Z</p>
+              <p className="text-xs text-muted-foreground">
+                ショートカット: Ctrl+Z
+              </p>
             </TooltipContent>
           </Tooltip>
 
@@ -142,7 +143,9 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>元に戻した編集を再実行します</p>
-              <p className="text-xs text-muted-foreground">ショートカット: Ctrl+Y</p>
+              <p className="text-xs text-muted-foreground">
+                ショートカット: Ctrl+Y
+              </p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -203,7 +206,7 @@ export function GridToolbar({
 
         {/* Status Info */}
         <div className="flex-1" />
-        
+
         {selectedRowCount > 0 && (
           <div className="text-sm text-muted-foreground">
             {selectedRowCount}行選択中

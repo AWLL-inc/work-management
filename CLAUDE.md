@@ -768,7 +768,44 @@ This project provides structured Issue templates for efficient project managemen
 - **Biome**: Code quality and formatting
 - **Playwright**: End-to-end testing framework
 
+## Development Quality Requirements
+
+### Mandatory CI/Test Verification
+**CRITICAL**: Every code modification MUST pass CI and tests before completion.
+
+#### Pre-completion Checklist
+1. **Type Check**: `npm run type-check` - Must pass without errors
+2. **Linting**: `npm run lint` - Must pass without errors  
+3. **Unit Tests**: `npm run test` - All tests must pass
+4. **Build**: `npm run build` - Must complete successfully
+5. **Format Check**: `npm run format` - Code must be properly formatted
+
+#### Workflow Requirements
+- Run all quality checks after every significant change
+- Fix any failures before considering the task complete
+- Never commit or deploy code that fails CI/tests
+- If unable to fix failures, document the issue and ask for guidance
+
+#### Available Commands
+```bash
+# Quick quality check (run all at once)
+npm run lint && npm run type-check && npm run test && npm run build
+
+# Individual checks
+npm run type-check    # TypeScript type validation
+npm run lint          # Biome linting and formatting
+npm run test          # Unit and integration tests
+npm run test:e2e      # End-to-end tests (when needed)
+npm run build         # Production build verification
+npm run format        # Auto-format code
+```
+
+#### CI Pipeline Integration
+- GitHub Actions automatically runs these checks on PR creation
+- All checks must pass before merge is allowed
+- Local verification prevents CI failures and reduces iteration time
+
 ---
 
-**Last Updated**: 2024-10-03
+**Last Updated**: 2024-10-12
 **Claude Instructions**: Use this context to understand the project structure, available commands, and development patterns. Always check ADRs for detailed technical decisions. When creating or reviewing Issues, follow the established templates and labeling system. Refer to the comprehensive testing guidelines and component architecture standards for development work.

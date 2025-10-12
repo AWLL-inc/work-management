@@ -40,7 +40,7 @@
 
 /* Selection styling */
 .ag-row-selected {
-  background-color: hsl(var(--primary) / 0.1) !important;
+  background-color: hsl(var(--primary) / 0.1);
   border-left: 3px solid hsl(var(--primary));
 }
 
@@ -87,7 +87,7 @@
 
 /* Focus styling for keyboard navigation */
 .ag-cell-focus {
-  border: 2px solid hsl(var(--primary)) !important;
+  border: 2px solid hsl(var(--primary));
   outline: none;
 }
 

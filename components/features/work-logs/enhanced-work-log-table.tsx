@@ -1,18 +1,14 @@
 "use client";
 
+import type {
+  CellEditingStoppedEvent,
+  ColDef,
+  GridReadyEvent,
+  RowClassParams,
+} from "ag-grid-community";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import type {
-  ColDef,
-  CellEditingStoppedEvent,
-  RowClassParams,
-  GridReadyEvent,
-} from "ag-grid-community";
-import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
-import { formatDateForDisplay, parseDate } from "@/lib/utils";
-import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
-import { WorkLogFormDialog } from "./work-log-form-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,6 +18,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import { formatDateForDisplay, parseDate } from "@/lib/utils";
+import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
+import { WorkLogFormDialog } from "./work-log-form-dialog";
 
 // Column width constants
 const COLUMN_WIDTHS = {
@@ -98,7 +98,7 @@ interface EnhancedWorkLogTableProps {
     updates: Array<{
       id: string;
       data: Partial<WorkLog>;
-    }>
+    }>,
   ) => Promise<void>;
   onRefresh?: () => void;
   isLoading: boolean;
@@ -123,7 +123,16 @@ export function EnhancedWorkLogTable({
   const [formOpen, setFormOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [failedWorkLogIds, setFailedWorkLogIds] = useState<Set<string>>(new Set());
+  const [failedWorkLogIds, setFailedWorkLogIds] = useState<Set<string>>(
+    new Set(),
+  );
+
+  // Batch editing state
+  const [batchEditingEnabled, setBatchEditingEnabled] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<
+    Map<string, Partial<WorkLog>>
+  >(new Map());
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   // Create project and category lookup maps
   const projectsMap = useMemo(() => {
@@ -166,136 +175,172 @@ export function EnhancedWorkLogTable({
 
   // Column definitions
   const columnDefs: ColDef[] = useMemo(() => {
-    return [
-      {
-        headerName: "Date",
-        field: "date",
-        width: COLUMN_WIDTHS.DATE,
-        editable: true,
-        cellEditor: "agDateCellEditor",
-        cellEditorParams: {
-          format: "yyyy-mm-dd",
-        },
-        valueFormatter: (params) => formatDateForDisplay(params.value),
-        valueParser: (params) => {
-          const { newValue, oldValue } = params;
+    const columns: ColDef[] = [];
 
-          if (!newValue) {
-            return oldValue;
-          }
+    // Add checkbox column for selection when not in batch editing mode
+    if (!batchEditingEnabled) {
+      columns.push({
+        headerName: "",
+        checkboxSelection: true,
+        headerCheckboxSelection: true,
+        width: 50,
+        pinned: "left",
+        lockPosition: "left",
+        sortable: false,
+        filter: false,
+      });
+    }
 
-          const date = parseDate(newValue);
-          if (!date) {
-            toast.error("有効な日付をYYYY-MM-DD形式で入力してください");
-            return oldValue;
-          }
-
-          return newValue;
-        },
-        sort: "desc",
-        cellClass: (params) => {
-          const validation = validateDate(params.value);
-          return validation.valid ? "" : "ag-cell-invalid";
-        },
-        tooltipValueGetter: (params) => {
-          const validation = validateDate(params.value);
-          return validation.message || "";
-        },
+    columns.push({
+      headerName: "Date",
+      field: "date",
+      width: COLUMN_WIDTHS.DATE,
+      editable: batchEditingEnabled,
+      cellEditor: "agDateCellEditor",
+      cellEditorParams: {
+        format: "yyyy-mm-dd",
       },
-      {
-        headerName: "Hours",
-        field: "hours",
-        width: COLUMN_WIDTHS.HOURS,
-        editable: true,
-        cellEditor: "agTextCellEditor",
-        cellEditorParams: {
-          maxLength: WORK_LOG_CONSTRAINTS.HOURS.MAX_LENGTH,
-        },
-        valueParser: (params) => {
-          const value = params.newValue;
+      valueFormatter: (params) => formatDateForDisplay(params.value),
+      valueParser: (params) => {
+        const { newValue, oldValue } = params;
 
-          if (!value) {
-            toast.error("時間を入力してください");
-            return params.oldValue;
-          }
+        if (!newValue) {
+          return oldValue;
+        }
 
-          if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
-            toast.error("時間は数値で入力してください（例: 8 または 8.5）");
-            return params.oldValue;
-          }
+        const date = parseDate(newValue);
+        if (!date) {
+          toast.error("有効な日付をYYYY-MM-DD形式で入力してください");
+          return oldValue;
+        }
 
-          const hours = parseFloat(value);
-          if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
-            toast.error("時間は0より大きい値を入力してください");
-            return params.oldValue;
-          }
-
-          if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
-            toast.error("時間は168以下で入力してください");
-            return params.oldValue;
-          }
-
-          return value;
-        },
-        cellClass: (params) => {
-          const validation = validateHours(params.value);
-          return validation.valid ? "" : "ag-cell-invalid";
-        },
-        tooltipValueGetter: (params) => {
-          const validation = validateHours(params.value);
-          return validation.message || "";
-        },
+        return newValue;
       },
-      {
-        headerName: "Project",
-        field: "projectId",
-        width: COLUMN_WIDTHS.PROJECT,
-        editable: true,
-        cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: projects.filter((p) => p.isActive).map((p) => p.id),
-        },
-        valueFormatter: (params) => {
+      sort: "desc",
+      cellClass: (params) => {
+        if (!batchEditingEnabled) return "";
+        const validation = validateDate(params.value);
+        return validation.valid ? "" : "ag-cell-invalid";
+      },
+      tooltipValueGetter: (params) => {
+        if (!batchEditingEnabled) return "";
+        const validation = validateDate(params.value);
+        return validation.message || "";
+      },
+    });
+
+    columns.push({
+      headerName: "Hours",
+      field: "hours",
+      width: COLUMN_WIDTHS.HOURS,
+      editable: batchEditingEnabled,
+      cellEditor: "agTextCellEditor",
+      cellEditorParams: {
+        maxLength: WORK_LOG_CONSTRAINTS.HOURS.MAX_LENGTH,
+      },
+      valueParser: (params) => {
+        const value = params.newValue;
+
+        if (!value) {
+          toast.error("時間を入力してください");
+          return params.oldValue;
+        }
+
+        if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
+          toast.error("時間は数値で入力してください（例: 8 または 8.5）");
+          return params.oldValue;
+        }
+
+        const hours = parseFloat(value);
+        if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
+          toast.error("時間は0より大きい値を入力してください");
+          return params.oldValue;
+        }
+
+        if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
+          toast.error("時間は168以下で入力してください");
+          return params.oldValue;
+        }
+
+        return value;
+      },
+      cellClass: (params) => {
+        if (!batchEditingEnabled) return "";
+        const validation = validateHours(params.value);
+        return validation.valid ? "" : "ag-cell-invalid";
+      },
+      tooltipValueGetter: (params) => {
+        if (!batchEditingEnabled) return "";
+        const validation = validateHours(params.value);
+        return validation.message || "";
+      },
+    });
+
+    columns.push({
+      headerName: "Project",
+      field: batchEditingEnabled ? "projectId" : "projectName",
+      width: COLUMN_WIDTHS.PROJECT,
+      editable: batchEditingEnabled,
+      cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
+      cellEditorParams: batchEditingEnabled
+        ? {
+            values: projects.filter((p) => p.isActive).map((p) => p.id),
+          }
+        : undefined,
+      valueFormatter: (params) => {
+        if (batchEditingEnabled) {
           return projectsMap.get(params.value) || "Unknown";
-        },
-        filter: true,
+        }
+        return params.value;
       },
-      {
-        headerName: "Category",
-        field: "categoryId",
-        width: COLUMN_WIDTHS.CATEGORY,
-        editable: true,
-        cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: categories.filter((c) => c.isActive).map((c) => c.id),
-        },
-        valueFormatter: (params) => {
+      filter: true,
+    });
+
+    columns.push({
+      headerName: "Category",
+      field: batchEditingEnabled ? "categoryId" : "categoryName",
+      width: COLUMN_WIDTHS.CATEGORY,
+      editable: batchEditingEnabled,
+      cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
+      cellEditorParams: batchEditingEnabled
+        ? {
+            values: categories.filter((c) => c.isActive).map((c) => c.id),
+          }
+        : undefined,
+      valueFormatter: (params) => {
+        if (batchEditingEnabled) {
           return categoriesMap.get(params.value) || "Unknown";
-        },
-        filter: true,
+        }
+        return params.value;
       },
-      {
-        headerName: "Details",
-        field: "details",
-        flex: 1,
-        editable: true,
-        cellEditor: "agLargeTextCellEditor",
-        cellEditorParams: {
-          maxLength: WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH,
-          rows: 5,
-          cols: 50,
-        },
-        tooltipField: "details",
-        wrapText: true,
-        autoHeight: true,
-        cellStyle: {
-          lineHeight: "1.4",
-          padding: "8px",
-          whiteSpace: "normal",
-          wordWrap: "break-word",
-        },
+      filter: true,
+    });
+
+    columns.push({
+      headerName: "Details",
+      field: "details",
+      flex: 1,
+      editable: batchEditingEnabled,
+      cellEditor: "agLargeTextCellEditor",
+      cellEditorParams: {
+        maxLength: WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH,
+        rows: 5,
+        cols: 50,
       },
-      {
+      tooltipField: "details",
+      wrapText: true,
+      autoHeight: true,
+      cellStyle: {
+        lineHeight: "1.4",
+        padding: "8px",
+        whiteSpace: "normal",
+        wordWrap: "break-word",
+      },
+    });
+
+    // Add Actions column only when not in batch editing mode
+    if (!batchEditingEnabled) {
+      columns.push({
         headerName: "Actions",
         cellRenderer: ActionsCellRenderer,
         width: COLUMN_WIDTHS.ACTIONS,
@@ -303,9 +348,12 @@ export function EnhancedWorkLogTable({
         filter: false,
         pinned: "right",
         editable: false,
-      },
-    ];
+      });
+    }
+
+    return columns;
   }, [
+    batchEditingEnabled,
     projects,
     categories,
     projectsMap,
@@ -345,54 +393,67 @@ export function EnhancedWorkLogTable({
     // Add rows locally to the grid, API save will happen when user actually saves
     // This is handled by the Enhanced AG Grid component itself via onDataChange
     // No need to call API here, just let the grid handle the local state
-    toast.success(`${newRows.length}行を追加しました（編集後に保存してください）`);
+    toast.success(
+      `${newRows.length}行を追加しました（編集後に保存してください）`,
+    );
   }, []);
 
   // Handle row updates
-  const handleRowUpdate = useCallback(async (updates: Array<{ id: string; data: Partial<WorkLog> }>) => {
-    try {
-      if (onBatchUpdateWorkLogs) {
-        await onBatchUpdateWorkLogs(updates);
-      } else {
-        // Fall back to individual updates
-        for (const update of updates) {
-          const updateData = {
-            ...update.data,
-            date: typeof update.data.date === 'string' ? update.data.date : update.data.date?.toISOString().split('T')[0],
-          };
-          // Remove undefined values to match expected interface
-          const cleanedData = Object.fromEntries(
-            Object.entries(updateData).filter(([_, value]) => value !== undefined)
-          ) as {
-            date?: string;
-            hours?: string;
-            projectId?: string;
-            categoryId?: string;
-            details?: string | null;
-          };
-          await onUpdateWorkLog(update.id, cleanedData);
+  const handleRowUpdate = useCallback(
+    async (updates: Array<{ id: string; data: Partial<WorkLog> }>) => {
+      try {
+        if (onBatchUpdateWorkLogs) {
+          await onBatchUpdateWorkLogs(updates);
+        } else {
+          // Fall back to individual updates
+          for (const update of updates) {
+            const updateData = {
+              ...update.data,
+              date:
+                typeof update.data.date === "string"
+                  ? update.data.date
+                  : update.data.date?.toISOString().split("T")[0],
+            };
+            // Remove undefined values to match expected interface
+            const cleanedData = Object.fromEntries(
+              Object.entries(updateData).filter(
+                ([_, value]) => value !== undefined,
+              ),
+            ) as {
+              date?: string;
+              hours?: string;
+              projectId?: string;
+              categoryId?: string;
+              details?: string | null;
+            };
+            await onUpdateWorkLog(update.id, cleanedData);
+          }
         }
+        setFailedWorkLogIds(new Set());
+        onRefresh?.();
+      } catch (error) {
+        console.error("Failed to update rows:", error);
+        throw error;
       }
-      setFailedWorkLogIds(new Set());
-      onRefresh?.();
-    } catch (error) {
-      console.error("Failed to update rows:", error);
-      throw error;
-    }
-  }, [onBatchUpdateWorkLogs, onUpdateWorkLog, onRefresh]);
+    },
+    [onBatchUpdateWorkLogs, onUpdateWorkLog, onRefresh],
+  );
 
   // Handle row deletion
-  const handleRowDelete = useCallback(async (ids: string[]) => {
-    try {
-      for (const id of ids) {
-        await onDeleteWorkLog(id);
+  const handleRowDelete = useCallback(
+    async (ids: string[]) => {
+      try {
+        for (const id of ids) {
+          await onDeleteWorkLog(id);
+        }
+        onRefresh?.();
+      } catch (error) {
+        console.error("Failed to delete rows:", error);
+        throw error;
       }
-      onRefresh?.();
-    } catch (error) {
-      console.error("Failed to delete rows:", error);
-      throw error;
-    }
-  }, [onDeleteWorkLog, onRefresh]);
+    },
+    [onDeleteWorkLog, onRefresh],
+  );
 
   // Handle form submission
   const handleFormSubmit = async (data: {
@@ -417,14 +478,98 @@ export function EnhancedWorkLogTable({
     }
   };
 
+  // Handle cell editing - store changes instead of immediate save
+  const onCellEditingStopped = useCallback((event: CellEditingStoppedEvent) => {
+    const { data, colDef, newValue, oldValue } = event;
+
+    if (newValue === oldValue) return;
+
+    const field = colDef.field;
+    if (!field) return;
+
+    // Store the change in pending changes
+    setPendingChanges((prev) => {
+      const newChanges = new Map(prev);
+      const workLogId = data.id;
+      const existingChanges = newChanges.get(workLogId) || {};
+      newChanges.set(workLogId, {
+        ...existingChanges,
+        [field]: newValue,
+      });
+      return newChanges;
+    });
+  }, []);
+
+  // Handle batch save
+  const handleBatchSave = useCallback(async () => {
+    if (pendingChanges.size === 0) {
+      toast.info("変更がありません");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Use batch API endpoint for transaction-based bulk updates
+      const updates = Array.from(pendingChanges.entries()).map(
+        ([id, data]) => ({
+          id,
+          data,
+        }),
+      );
+
+      const response = await fetch("/api/work-logs/batch", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        throw new Error("Batch update failed");
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success(`${pendingChanges.size}件の変更を保存しました`);
+        setPendingChanges(new Map());
+        setFailedWorkLogIds(new Set());
+        setBatchEditingEnabled(false);
+        // Data refresh
+        onRefresh?.();
+      } else {
+        throw new Error(result.error?.message || "Batch update failed");
+      }
+    } catch (error) {
+      toast.error("保存に失敗しました");
+      console.error("Batch save error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [pendingChanges, onRefresh]);
+
+  // Handle cancel batch editing
+  const handleCancelBatchEditing = useCallback(() => {
+    if (pendingChanges.size > 0) {
+      setCancelDialogOpen(true);
+    } else {
+      setBatchEditingEnabled(false);
+    }
+  }, [pendingChanges.size]);
+
+  const handleConfirmCancel = () => {
+    setPendingChanges(new Map());
+    setFailedWorkLogIds(new Set());
+    setBatchEditingEnabled(false);
+    setCancelDialogOpen(false);
+  };
+
   const onGridReady = useCallback((params: GridReadyEvent) => {
     params.api.sizeColumnsToFit();
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="text-center py-8">Loading work logs...</div>
-    );
+    return <div className="text-center py-8">Loading work logs...</div>;
   }
 
   return (
@@ -440,16 +585,48 @@ export function EnhancedWorkLogTable({
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => {
-                setSelectedWorkLog(null);
-                setFormOpen(true);
-              }}
-            >
-              Add Work Log (Dialog)
-            </Button>
+            {!batchEditingEnabled ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setBatchEditingEnabled(true)}
+                >
+                  一括編集
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    setSelectedWorkLog(null);
+                    setFormOpen(true);
+                  }}
+                >
+                  Add Work Log (Dialog)
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={handleBatchSave}
+                  disabled={isSubmitting || pendingChanges.size === 0}
+                >
+                  {isSubmitting
+                    ? "保存中..."
+                    : `保存 (${pendingChanges.size}件)`}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleCancelBatchEditing}
+                  disabled={isSubmitting}
+                >
+                  キャンセル
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -460,17 +637,25 @@ export function EnhancedWorkLogTable({
         defaultColDef={defaultColDef}
         getRowClass={getRowClass}
         onGridReady={onGridReady}
+        onCellEditingStopped={onCellEditingStopped}
         onRowAdd={handleRowAdd}
-        onDataChange={(newData) => {
+        onDataChange={(_newData) => {
           // When data changes locally, we don't need to do anything
           // The actual save will happen when user uses the form dialog or batch save
         }}
         onRowUpdate={handleRowUpdate}
         onRowDelete={handleRowDelete}
-        enableToolbar={true}
+        enableToolbar={!batchEditingEnabled}
         enableClipboard={true}
         enableUndoRedo={true}
         maxUndoRedoSteps={20}
+        gridOptions={{
+          rowSelection: "multiple",
+          suppressRowClickSelection: batchEditingEnabled,
+          singleClickEdit: batchEditingEnabled,
+          stopEditingWhenCellsLoseFocus: true,
+          enterNavigatesVertically: true,
+        }}
       />
 
       <WorkLogFormDialog
@@ -487,6 +672,30 @@ export function EnhancedWorkLogTable({
         workLog={selectedWorkLog}
         isSubmitting={isSubmitting}
       />
+
+      {/* Cancel batch editing confirmation dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>未保存の変更を破棄しますか？</DialogTitle>
+            <DialogDescription>
+              {pendingChanges.size}件の未保存の変更があります。
+              キャンセルすると、これらの変更は失われます。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+            >
+              編集を継続
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmCancel}>
+              変更を破棄
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

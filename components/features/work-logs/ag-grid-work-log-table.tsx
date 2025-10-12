@@ -57,8 +57,6 @@ interface WorkLogGridRow extends WorkLog {
   categoryName?: string;
 }
 
-
-
 export function AGGridWorkLogTable({
   workLogs,
   projects,
@@ -154,14 +152,17 @@ export function AGGridWorkLogTable({
           if (!params.value) return "";
 
           // If it's already YYYY-MM-DD format, format for display
-          if (typeof params.value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.value)) {
-            return new Date(params.value + 'T00:00:00').toLocaleDateString();
+          if (
+            typeof params.value === "string" &&
+            /^\d{4}-\d{2}-\d{2}$/.test(params.value)
+          ) {
+            return new Date(`${params.value}T00:00:00`).toLocaleDateString();
           }
 
           // Otherwise, try to parse as date
           try {
             return new Date(params.value).toLocaleDateString();
-          } catch (e) {
+          } catch (_e) {
             return params.value;
           }
         },
@@ -235,7 +236,7 @@ export function AGGridWorkLogTable({
         },
         tooltipField: "details",
         wrapText: true,
-        cellStyle: (params) => {
+        cellStyle: (_params) => {
           return {
             lineHeight: "1.4",
             padding: "8px",
@@ -278,7 +279,7 @@ export function AGGridWorkLogTable({
       filter: false,
       suppressKeyboardEvent: (params) => {
         // Allow Enter to commit cell edit and move to next row
-        if (params.event.key === 'Enter' && params.editing) {
+        if (params.event.key === "Enter" && params.editing) {
           return false;
         }
         return false;
@@ -382,7 +383,9 @@ export function AGGridWorkLogTable({
   const handleCancelBatchEditing = useCallback(() => {
     if (pendingChanges.size > 0) {
       if (
-        window.confirm("You have unsaved changes. Are you sure you want to discard them?")
+        window.confirm(
+          "You have unsaved changes. Are you sure you want to discard them?",
+        )
       ) {
         setPendingChanges(new Map());
         setBatchEditingEnabled(false);

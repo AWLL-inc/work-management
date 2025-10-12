@@ -30,7 +30,9 @@ export async function PUT(
     let session = null;
     if (isDevelopmentMode && isAuthDisabled) {
       // Skip authentication in development mode when DISABLE_AUTH=true
-      session = { user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" } };
+      session = {
+        user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" },
+      };
     } else {
       // Check authentication
       session = await auth();
@@ -169,7 +171,9 @@ export async function DELETE(
     let session = null;
     if (isDevelopmentMode && isAuthDisabled) {
       // Skip authentication in development mode when DISABLE_AUTH=true
-      session = { user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" } };
+      session = {
+        user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" },
+      };
     } else {
       // Check authentication
       session = await auth();

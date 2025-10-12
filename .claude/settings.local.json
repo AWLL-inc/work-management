@@ -56,7 +56,8 @@
       "Bash(gh pr edit:*)",
       "Bash(npx drizzle-kit introspect:*)",
       "mcp__serena__list_dir",
-      "mcp__serena__find_file"
+      "mcp__serena__find_file",
+      "Bash(gh pr view:*)"
     ],
     "deny": [],
     "ask": []

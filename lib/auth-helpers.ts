@@ -26,18 +26,22 @@ export async function getAuthenticatedSession(): Promise<AuthSession | null> {
   const isDevelopmentMode = env.NODE_ENV === "development";
   const isAuthDisabled = env.DISABLE_AUTH;
 
-  // Prevent auth bypass in production
+  // Prevent auth bypass in production (double check)
   if (env.NODE_ENV === "production" && isAuthDisabled) {
     throw new Error("DISABLE_AUTH cannot be enabled in production environment");
   }
 
+  // Additional safety: check if we're running in a CI environment
+  if (isAuthDisabled && process.env.CI === "true") {
+    throw new Error("DISABLE_AUTH cannot be enabled in CI environment");
+  }
+
   if (isDevelopmentMode && isAuthDisabled) {
-    if (env.NODE_ENV === "development") {
-      console.warn(
-        "⚠️  Authentication is disabled for development. User ID:",
-        env.DEV_USER_ID,
-      );
-    }
+    console.warn(
+      "⚠️  Authentication is disabled for development. User ID:",
+      env.DEV_USER_ID,
+    );
+    console.warn("⚠️  This should NEVER happen in production!");
     return {
       user: { id: env.DEV_USER_ID, role: "admin" as const },
     };

@@ -225,12 +225,7 @@ export async function DELETE(
     // Delete work category (soft delete)
     await deleteWorkCategory(id);
 
-    return NextResponse.json(
-      {
-        success: true,
-      },
-      { status: 204 },
-    );
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(
       `[DELETE /api/work-categories/${(await params).id}] Error:`,

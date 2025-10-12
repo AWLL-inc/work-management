@@ -96,6 +96,9 @@ export async function GET(request: NextRequest) {
         error: {
           code: "INTERNAL_ERROR",
           message: "An error occurred while fetching work logs",
+          ...(process.env.NODE_ENV === "development" && {
+            details: error instanceof Error ? error.message : String(error),
+          }),
         },
       },
       { status: 500 },
@@ -175,6 +178,9 @@ export async function POST(request: NextRequest) {
         error: {
           code: "INTERNAL_ERROR",
           message: "An error occurred while creating the work log",
+          ...(process.env.NODE_ENV === "development" && {
+            details: error instanceof Error ? error.message : String(error),
+          }),
         },
       },
       { status: 500 },

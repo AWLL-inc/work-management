@@ -404,10 +404,8 @@ describe("DELETE /api/projects/[id]", () => {
     const response = await DELETE(request, {
       params: Promise.resolve({ id: validUuid }),
     });
-    const data = await response.json();
-
     expect(response.status).toBe(204);
-    expect(data.success).toBe(true);
+    expect(response.body).toBeNull();
     expect(deleteProject).toHaveBeenCalledWith(validUuid);
   });
 

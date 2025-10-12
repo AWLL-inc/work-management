@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
-import { formatDateForDisplay } from "@/lib/utils";
+import { formatDateForDisplay, parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
 
@@ -69,12 +69,12 @@ const validateDate = (value: string): CellValidationResult => {
   if (!value) {
     return { valid: false, message: "日付を入力してください" };
   }
-  if (!WORK_LOG_CONSTRAINTS.DATE.FORMAT.test(value)) {
-    return { valid: false, message: "YYYY-MM-DD形式で入力してください" };
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return { valid: false, message: "有効な日付を入力してください" };
+  const date = parseDate(value);
+  if (!date) {
+    return {
+      valid: false,
+      message: "有効な日付をYYYY-MM-DD形式で入力してください"
+    };
   }
   return { valid: true };
 };

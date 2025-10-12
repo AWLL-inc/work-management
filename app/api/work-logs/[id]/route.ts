@@ -220,12 +220,7 @@ export async function DELETE(
     // Delete work log
     await deleteWorkLog(id);
 
-    return NextResponse.json(
-      {
-        success: true,
-      },
-      { status: 204 },
-    );
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE /api/work-logs/${(await params).id}] Error:`, error);
 

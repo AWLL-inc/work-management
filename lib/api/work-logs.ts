@@ -56,9 +56,13 @@ export async function createWorkLog(data: CreateWorkLogData): Promise<WorkLog> {
     try {
       const result: ApiResponse<never> = await response.json();
       errorMessage = result.error?.message || errorMessage;
-      console.error("API Error:", result.error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("API Error:", result.error);
+      }
     } catch (parseError) {
-      console.error("Failed to parse error response:", parseError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to parse error response:", parseError);
+      }
       errorMessage = `HTTP ${response.status}: ${response.statusText}`;
     }
     throw new Error(errorMessage);
@@ -86,8 +90,20 @@ export async function updateWorkLog(
   });
 
   if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to update work log");
+    let errorMessage = "Failed to update work log";
+    try {
+      const result: ApiResponse<never> = await response.json();
+      errorMessage = result.error?.message || errorMessage;
+      if (process.env.NODE_ENV === "development") {
+        console.error("API Error:", result.error);
+      }
+    } catch (parseError) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to parse error response:", parseError);
+      }
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    }
+    throw new Error(errorMessage);
   }
 
   const result: ApiResponse<WorkLog> = await response.json();

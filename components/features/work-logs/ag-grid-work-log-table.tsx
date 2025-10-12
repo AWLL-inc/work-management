@@ -43,6 +43,55 @@ const WORK_LOG_VALIDATION = {
   },
 } as const;
 
+// Column width constants
+const COLUMN_WIDTHS = {
+  DATE: 120,
+  HOURS: 100,
+  PROJECT: 200,
+  CATEGORY: 180,
+  ACTIONS: 150,
+} as const;
+
+// Validation helper functions
+interface CellValidationResult {
+  valid: boolean;
+  message?: string;
+}
+
+const validateHours = (value: string): CellValidationResult => {
+  if (!value) {
+    return { valid: false, message: "時間を入力してください" };
+  }
+  if (!WORK_LOG_VALIDATION.HOURS.PATTERN.test(value)) {
+    return {
+      valid: false,
+      message: "数値で入力してください（例: 8 または 8.5）",
+    };
+  }
+  const hours = parseFloat(value);
+  if (hours <= WORK_LOG_VALIDATION.HOURS.MIN) {
+    return { valid: false, message: "0より大きい値を入力してください" };
+  }
+  if (hours > WORK_LOG_VALIDATION.HOURS.MAX) {
+    return { valid: false, message: "168以下で入力してください" };
+  }
+  return { valid: true };
+};
+
+const validateDate = (value: string): CellValidationResult => {
+  if (!value) {
+    return { valid: false, message: "日付を入力してください" };
+  }
+  if (!WORK_LOG_VALIDATION.DATE.FORMAT.test(value)) {
+    return { valid: false, message: "YYYY-MM-DD形式で入力してください" };
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return { valid: false, message: "有効な日付を入力してください" };
+  }
+  return { valid: true };
+};
+
 interface AGGridWorkLogTableProps {
   workLogs: WorkLog[];
   projects: Project[];
@@ -159,7 +208,7 @@ export function AGGridWorkLogTable({
       {
         headerName: "Date",
         field: "date",
-        width: 120,
+        width: COLUMN_WIDTHS.DATE,
         editable: batchEditingEnabled,
         cellEditor: "agDateCellEditor",
         cellEditorParams: {
@@ -168,21 +217,23 @@ export function AGGridWorkLogTable({
         valueFormatter: (params) => {
           if (!params.value) return "";
 
-          // If it's already YYYY-MM-DD format, format for display
           if (
             typeof params.value === "string" &&
             WORK_LOG_VALIDATION.DATE.FORMAT.test(params.value)
           ) {
-            // Simple string formatting to avoid timezone issues
             const [year, month, day] = params.value.split("-");
             return `${year}/${month}/${day}`;
           }
 
-          // Otherwise, try to parse as date
+          // 日付オブジェクトの場合はYYYY-MM-DD形式に変換
           try {
-            return new Date(params.value).toLocaleDateString();
+            const date = new Date(params.value);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}/${month}/${day}`;
           } catch (_e) {
-            return params.value;
+            return String(params.value);
           }
         },
         valueParser: (params) => {
@@ -198,11 +249,21 @@ export function AGGridWorkLogTable({
           return params.oldValue;
         },
         sort: "desc",
+        cellClass: (params) => {
+          if (!batchEditingEnabled) return "";
+          const validation = validateDate(params.value);
+          return validation.valid ? "" : "ag-cell-invalid";
+        },
+        tooltipValueGetter: (params) => {
+          if (!batchEditingEnabled) return "";
+          const validation = validateDate(params.value);
+          return validation.message || "";
+        },
       },
       {
         headerName: "Hours",
         field: "hours",
-        width: 100,
+        width: COLUMN_WIDTHS.HOURS,
         editable: batchEditingEnabled,
         cellEditor: "agTextCellEditor",
         cellEditorParams: {
@@ -234,11 +295,21 @@ export function AGGridWorkLogTable({
 
           return value;
         },
+        cellClass: (params) => {
+          if (!batchEditingEnabled) return "";
+          const validation = validateHours(params.value);
+          return validation.valid ? "" : "ag-cell-invalid";
+        },
+        tooltipValueGetter: (params) => {
+          if (!batchEditingEnabled) return "";
+          const validation = validateHours(params.value);
+          return validation.message || "";
+        },
       },
       {
         headerName: "Project",
         field: batchEditingEnabled ? "projectId" : "projectName",
-        width: 200,
+        width: COLUMN_WIDTHS.PROJECT,
         editable: batchEditingEnabled,
         cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
         cellEditorParams: batchEditingEnabled
@@ -257,7 +328,7 @@ export function AGGridWorkLogTable({
       {
         headerName: "Category",
         field: batchEditingEnabled ? "categoryId" : "categoryName",
-        width: 180,
+        width: COLUMN_WIDTHS.CATEGORY,
         editable: batchEditingEnabled,
         cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
         cellEditorParams: batchEditingEnabled
@@ -302,7 +373,7 @@ export function AGGridWorkLogTable({
       columns.push({
         headerName: "Actions",
         cellRenderer: ActionsCellRenderer,
-        width: 150,
+        width: COLUMN_WIDTHS.ACTIONS,
         sortable: false,
         filter: false,
         pinned: "right",

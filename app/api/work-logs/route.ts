@@ -5,6 +5,7 @@ import {
   createWorkLog,
   getWorkLogs,
 } from "@/lib/db/repositories/work-log-repository";
+import { env } from "@/lib/env";
 import { createWorkLogSchema } from "@/lib/validations";
 
 // Use Node.js runtime for database operations
@@ -18,11 +19,11 @@ export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   try {
     // Check if authentication is disabled for development
-    const isDevelopmentMode = process.env.NODE_ENV === "development";
-    const isAuthDisabled = process.env.DISABLE_AUTH === "true";
+    const isDevelopmentMode = env.NODE_ENV === "development";
+    const isAuthDisabled = env.DISABLE_AUTH;
 
     // Prevent auth bypass in production
-    if (process.env.NODE_ENV === "production" && isAuthDisabled) {
+    if (env.NODE_ENV === "production" && isAuthDisabled) {
       throw new Error(
         "DISABLE_AUTH cannot be enabled in production environment",
       );
@@ -32,10 +33,10 @@ export async function GET(request: NextRequest) {
     if (isDevelopmentMode && isAuthDisabled) {
       console.warn(
         "⚠️  Authentication is disabled for development. User ID:",
-        "00000000-0000-0000-0000-000000000000",
+        env.DEV_USER_ID,
       );
       session = {
-        user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" },
+        user: { id: env.DEV_USER_ID, role: "admin" },
       };
     } else {
       // Check authentication
@@ -133,11 +134,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check if authentication is disabled for development
-    const isDevelopmentMode = process.env.NODE_ENV === "development";
-    const isAuthDisabled = process.env.DISABLE_AUTH === "true";
+    const isDevelopmentMode = env.NODE_ENV === "development";
+    const isAuthDisabled = env.DISABLE_AUTH;
 
     // Prevent auth bypass in production
-    if (process.env.NODE_ENV === "production" && isAuthDisabled) {
+    if (env.NODE_ENV === "production" && isAuthDisabled) {
       throw new Error(
         "DISABLE_AUTH cannot be enabled in production environment",
       );
@@ -147,10 +148,10 @@ export async function POST(request: NextRequest) {
     if (isDevelopmentMode && isAuthDisabled) {
       console.warn(
         "⚠️  Authentication is disabled for development. User ID:",
-        "00000000-0000-0000-0000-000000000000",
+        env.DEV_USER_ID,
       );
       session = {
-        user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" },
+        user: { id: env.DEV_USER_ID, role: "admin" },
       };
     } else {
       // Check authentication

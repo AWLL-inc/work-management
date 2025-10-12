@@ -75,5 +75,19 @@ export function parseDate(value: string): Date | null {
   }
 
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  // Check if the parsed date components match the input to catch auto-correction
+  const [inputYear, inputMonth, inputDay] = value.split("-").map(Number);
+  if (
+    date.getFullYear() !== inputYear ||
+    date.getMonth() + 1 !== inputMonth ||
+    date.getDate() !== inputDay
+  ) {
+    return null;
+  }
+
+  return date;
 }

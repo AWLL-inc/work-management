@@ -7,24 +7,27 @@
 
 /* Invalid cell styling for validation feedback */
 .ag-cell-invalid {
-  @apply border-2 border-destructive bg-destructive/10;
+  border: 2px solid hsl(var(--destructive));
+  background-color: hsl(var(--destructive) / 0.1);
 }
 
 /* Editing cell styling for better UX */
 .ag-cell-editing {
-  @apply ring-2 ring-primary;
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
 }
 
 /* Row hover effects specific to this grid */
 .ag-work-log-table .ag-row:hover {
-  @apply bg-muted/50;
+  background-color: hsl(var(--muted) / 0.5);
 }
 
 /* Custom styling for batch editing mode */
 .ag-work-log-table.batch-editing .ag-cell {
-  @apply border-border;
+  border: 1px solid hsl(var(--border));
 }
 
 .ag-work-log-table.batch-editing .ag-cell:focus-within {
-  @apply ring-1 ring-primary;
+  outline: 1px solid hsl(var(--primary));
+  outline-offset: -1px;
 }

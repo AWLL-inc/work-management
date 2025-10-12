@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   deleteWorkLog,
   getWorkLogById,
@@ -23,41 +23,19 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // Check if authentication is disabled for development
-    const isDevelopmentMode = process.env.NODE_ENV === "development";
-    const isAuthDisabled = process.env.DISABLE_AUTH === "true";
-
-    // Prevent auth bypass in production
-    if (process.env.NODE_ENV === "production" && isAuthDisabled) {
-      throw new Error(
-        "DISABLE_AUTH cannot be enabled in production environment",
-      );
-    }
-
-    let session = null;
-    if (isDevelopmentMode && isAuthDisabled) {
-      console.warn(
-        "⚠️  Authentication is disabled for development. User ID:",
-        "00000000-0000-0000-0000-000000000000",
-      );
-      session = {
-        user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" },
-      };
-    } else {
-      // Check authentication
-      session = await auth();
-      if (!session?.user) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: "UNAUTHORIZED",
-              message: "Authentication required",
-            },
+    // Check authentication
+    const session = await getAuthenticatedSession();
+    if (!session) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
           },
-          { status: 401 },
-        );
-      }
+        },
+        { status: 401 },
+      );
     }
 
     const { id } = await params;
@@ -174,41 +152,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // Check if authentication is disabled for development
-    const isDevelopmentMode = process.env.NODE_ENV === "development";
-    const isAuthDisabled = process.env.DISABLE_AUTH === "true";
-
-    // Prevent auth bypass in production
-    if (process.env.NODE_ENV === "production" && isAuthDisabled) {
-      throw new Error(
-        "DISABLE_AUTH cannot be enabled in production environment",
-      );
-    }
-
-    let session = null;
-    if (isDevelopmentMode && isAuthDisabled) {
-      console.warn(
-        "⚠️  Authentication is disabled for development. User ID:",
-        "00000000-0000-0000-0000-000000000000",
-      );
-      session = {
-        user: { id: "00000000-0000-0000-0000-000000000000", role: "admin" },
-      };
-    } else {
-      // Check authentication
-      session = await auth();
-      if (!session?.user) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: "UNAUTHORIZED",
-              message: "Authentication required",
-            },
+    // Check authentication
+    const session = await getAuthenticatedSession();
+    if (!session) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
           },
-          { status: 401 },
-        );
-      }
+        },
+        { status: 401 },
+      );
     }
 
     const { id } = await params;

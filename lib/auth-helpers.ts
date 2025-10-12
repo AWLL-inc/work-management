@@ -2,11 +2,54 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import type { NewUser } from "@/drizzle/schema";
 import { users } from "@/drizzle/schema";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/connection";
+import { env } from "@/lib/env";
 
 /**
  * Authentication Helper Functions
  */
+
+export interface AuthSession {
+  user: {
+    id: string;
+    role: "admin" | "manager" | "user";
+  };
+}
+
+/**
+ * Get authenticated session with development auth bypass support
+ * @returns Authentication session or null if unauthorized
+ * @throws Error if DISABLE_AUTH is enabled in production
+ */
+export async function getAuthenticatedSession(): Promise<AuthSession | null> {
+  const isDevelopmentMode = env.NODE_ENV === "development";
+  const isAuthDisabled = env.DISABLE_AUTH;
+
+  // Prevent auth bypass in production
+  if (env.NODE_ENV === "production" && isAuthDisabled) {
+    throw new Error("DISABLE_AUTH cannot be enabled in production environment");
+  }
+
+  if (isDevelopmentMode && isAuthDisabled) {
+    if (env.NODE_ENV === "development") {
+      console.warn(
+        "⚠️  Authentication is disabled for development. User ID:",
+        env.DEV_USER_ID,
+      );
+    }
+    return {
+      user: { id: env.DEV_USER_ID, role: "admin" as const },
+    };
+  }
+
+  const session = await auth();
+  if (!session?.user) {
+    return null;
+  }
+
+  return session as AuthSession;
+}
 
 /**
  * Hash a password using bcrypt

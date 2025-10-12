@@ -102,6 +102,7 @@ interface AGGridWorkLogTableProps {
     },
   ) => Promise<void>;
   onDeleteWorkLog: (id: string) => Promise<void>;
+  onRefresh?: () => void;
   isLoading: boolean;
 }
 
@@ -117,6 +118,7 @@ export function AGGridWorkLogTable({
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
+  onRefresh,
   isLoading,
 }: AGGridWorkLogTableProps) {
   const [formOpen, setFormOpen] = useState(false);
@@ -489,7 +491,7 @@ export function AGGridWorkLogTable({
         setFailedWorkLogIds(new Set());
         setBatchEditingEnabled(false);
         // データ再取得
-        mutate();
+        onRefresh?.();
       } else {
         throw new Error(result.error?.message || "Batch update failed");
       }
@@ -499,7 +501,7 @@ export function AGGridWorkLogTable({
     } finally {
       setIsSubmitting(false);
     }
-  }, [pendingChanges, mutate]);
+  }, [pendingChanges, onRefresh]);
 
   // Handle cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {

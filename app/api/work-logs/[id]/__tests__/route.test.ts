@@ -480,10 +480,8 @@ describe("DELETE /api/work-logs/[id]", () => {
     const response = await DELETE(request, {
       params: Promise.resolve({ id: validUuid }),
     });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
+    expect(response.status).toBe(204);
+    expect(response.body).toBeNull();
     expect(deleteWorkLog).toHaveBeenCalledWith(validUuid);
   });
 
@@ -508,10 +506,8 @@ describe("DELETE /api/work-logs/[id]", () => {
     const response = await DELETE(request, {
       params: Promise.resolve({ id: validUuid }),
     });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
+    expect(response.status).toBe(204);
+    expect(response.body).toBeNull();
     expect(deleteWorkLog).toHaveBeenCalledWith(validUuid);
     // Admin should not need ownership check
     expect(isWorkLogOwner).not.toHaveBeenCalled();

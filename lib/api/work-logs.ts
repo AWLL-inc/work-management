@@ -1,17 +1,8 @@
 import type { WorkLog } from "@/drizzle/schema";
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: unknown;
-  };
-}
+import { handleApiResponse, handleApiResponseNoData } from "./utils";
 
 export interface CreateWorkLogData {
-  date: Date;
+  date: string | Date;
   hours: string;
   projectId: string;
   categoryId: string;
@@ -19,7 +10,7 @@ export interface CreateWorkLogData {
 }
 
 export interface UpdateWorkLogData {
-  date?: Date;
+  date?: string | Date;
   hours?: string;
   projectId?: string;
   categoryId?: string;
@@ -28,18 +19,7 @@ export interface UpdateWorkLogData {
 
 export async function getWorkLogs(): Promise<WorkLog[]> {
   const response = await fetch("/api/work-logs");
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch work logs");
-  }
-
-  const result: ApiResponse<WorkLog[]> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to fetch work logs");
-  }
-
-  return result.data;
+  return handleApiResponse<WorkLog[]>(response, "Failed to fetch work logs");
 }
 
 export async function createWorkLog(data: CreateWorkLogData): Promise<WorkLog> {
@@ -51,18 +31,7 @@ export async function createWorkLog(data: CreateWorkLogData): Promise<WorkLog> {
     body: JSON.stringify(data),
   });
 
-  if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to create work log");
-  }
-
-  const result: ApiResponse<WorkLog> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to create work log");
-  }
-
-  return result.data;
+  return handleApiResponse<WorkLog>(response, "Failed to create work log");
 }
 
 export async function updateWorkLog(
@@ -77,18 +46,7 @@ export async function updateWorkLog(
     body: JSON.stringify(data),
   });
 
-  if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to update work log");
-  }
-
-  const result: ApiResponse<WorkLog> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to update work log");
-  }
-
-  return result.data;
+  return handleApiResponse<WorkLog>(response, "Failed to update work log");
 }
 
 export async function deleteWorkLog(id: string): Promise<void> {
@@ -96,14 +54,5 @@ export async function deleteWorkLog(id: string): Promise<void> {
     method: "DELETE",
   });
 
-  if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to delete work log");
-  }
-
-  const result: ApiResponse<never> = await response.json();
-
-  if (!result.success) {
-    throw new Error(result.error?.message || "Failed to delete work log");
-  }
+  return handleApiResponseNoData(response, "Failed to delete work log");
 }

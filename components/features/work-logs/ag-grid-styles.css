@@ -1,0 +1,39 @@
+/**
+ * AG Grid specific styles for work logs table
+ *
+ * These styles are scoped to the work logs AG Grid component
+ * to avoid affecting global styles and improve maintainability.
+ */
+
+/* Invalid cell styling for validation feedback */
+.ag-cell-invalid {
+  border: 2px solid hsl(var(--destructive));
+  background-color: hsl(var(--destructive) / 0.1);
+}
+
+/* Editing cell styling for better UX */
+.ag-cell-editing {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+
+/* Row hover effects specific to this grid */
+.ag-work-log-table .ag-row:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Custom styling for batch editing mode */
+.ag-work-log-table.batch-editing .ag-cell {
+  border: 1px solid hsl(var(--border));
+}
+
+.ag-work-log-table.batch-editing .ag-cell:focus-within {
+  outline: 1px solid hsl(var(--primary));
+  outline-offset: -1px;
+}
+
+/* Error row highlighting for failed batch operations */
+.ag-work-log-table .ag-row.ag-row-error {
+  background-color: hsl(var(--destructive) / 0.1);
+  border-left: 3px solid hsl(var(--destructive));
+}

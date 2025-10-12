@@ -443,10 +443,8 @@ describe("DELETE /api/work-categories/[id]", () => {
     const response = await DELETE(request, {
       params: Promise.resolve({ id: validUuid }),
     });
-    const data = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(data.success).toBe(true);
+    expect(response.status).toBe(204);
+    expect(response.body).toBeNull();
     expect(deleteWorkCategory).toHaveBeenCalledWith(validUuid);
   });
 

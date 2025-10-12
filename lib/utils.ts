@@ -1,6 +1,9 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+// JST (Japan Standard Time) timezone offset in milliseconds (UTC+9)
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -36,4 +39,67 @@ export function validateCallbackUrl(url: string): string {
     // 不正なURLの場合はデフォルトにフォールバック
     return "/";
   }
+}
+
+/**
+ * Format date value for display in YYYY/MM/DD format (JST)
+ * @param value - Date string, Date object, or null/undefined value
+ * @returns Formatted date string in YYYY/MM/DD format or original value as string
+ */
+export function formatDateForDisplay(
+  value: string | Date | null | undefined,
+): string {
+  if (!value) return "";
+
+  try {
+    const date = typeof value === "string" ? new Date(value) : value;
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    // JST (UTC+9) での表示
+    const jstDate = new Date(date.getTime() + JST_OFFSET_MS);
+    const year = jstDate.getUTCFullYear();
+    const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(jstDate.getUTCDate()).padStart(2, "0");
+    return `${year}/${month}/${day}`;
+  } catch {
+    return String(value);
+  }
+}
+
+/**
+ * Parse date string and return Date object or null
+ * @param value - Date string in YYYY-MM-DD format (treated as JST)
+ * @returns Date object if valid, null otherwise
+ */
+export function parseDate(value: string): Date | null {
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+  if (!datePattern.test(value)) {
+    return null;
+  }
+
+  // Parse as JST (UTC+9) to avoid timezone issues
+  const [inputYear, inputMonth, inputDay] = value.split("-").map(Number);
+
+  // Create date in JST by using UTC and adjusting for JST offset
+  const date = new Date(
+    Date.UTC(inputYear, inputMonth - 1, inputDay, -9, 0, 0),
+  );
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  // Verify the input components match (accounting for JST)
+  const jstDate = new Date(date.getTime() + JST_OFFSET_MS);
+  if (
+    jstDate.getUTCFullYear() !== inputYear ||
+    jstDate.getUTCMonth() + 1 !== inputMonth ||
+    jstDate.getUTCDate() !== inputDay
+  ) {
+    return null;
+  }
+
+  return date;
 }

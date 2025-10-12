@@ -380,6 +380,51 @@ export const Component: FC<PropsWithChildren<ComponentProps>> = ({
 - `/api/*` - Most endpoints require authentication (except `/api/health`)
 - Authentication check in `middleware.ts`
 
+### Development Authentication Bypass
+
+For development convenience, you can bypass authentication by setting environment variables:
+
+#### Configuration
+```bash
+# .env.local
+NODE_ENV=development
+DISABLE_AUTH=true
+DEV_USER_ID=00000000-0000-0000-0000-000000000000  # Optional, defaults to this value
+```
+
+#### Security Features
+- **Production Protection**: Automatically disabled in production environment
+- **Error Prevention**: Any attempt to enable `DISABLE_AUTH` in production will result in an error
+- **Development Only**: Only works when `NODE_ENV=development`
+- **Type-Safe**: Uses the same `AuthSession` interface as normal authentication
+
+#### Usage
+```bash
+# 1. Setup database with seed data
+npm run db:seed
+
+# 2. Configure environment variables in .env.local
+DISABLE_AUTH=true
+DEV_USER_ID=00000000-0000-0000-0000-000000000000  # Use admin user ID from seed
+
+# 3. Start development server (authentication bypassed)
+npm run dev
+```
+
+#### Implementation Details
+- Uses `getAuthenticatedSession()` helper in `lib/auth-helpers.ts`
+- Returns mock admin session when bypass is enabled
+- Logs warning message in development console
+- Maintains full API compatibility with normal authentication flow
+
+#### Important Notes
+⚠️ **Security Warning**: This feature is for development use only
+
+- Never enable in production environments
+- DEV_USER_ID should match a valid user from seed data
+- All API endpoints maintain the same security model
+- Session object structure remains identical to normal authentication
+
 ## Testing Guidelines
 
 ### Testing Strategy Overview

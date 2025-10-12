@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   deleteWorkLog,
   getWorkLogById,
@@ -24,8 +24,8 @@ export async function PUT(
 ) {
   try {
     // Check authentication
-    const session = await auth();
-    if (!session?.user) {
+    const session = await getAuthenticatedSession();
+    if (!session) {
       return NextResponse.json(
         {
           success: false,
@@ -153,8 +153,8 @@ export async function DELETE(
 ) {
   try {
     // Check authentication
-    const session = await auth();
-    if (!session?.user) {
+    const session = await getAuthenticatedSession();
+    if (!session) {
       return NextResponse.json(
         {
           success: false,
@@ -220,12 +220,7 @@ export async function DELETE(
     // Delete work log
     await deleteWorkLog(id);
 
-    return NextResponse.json(
-      {
-        success: true,
-      },
-      { status: 200 },
-    );
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`[DELETE /api/work-logs/${(await params).id}] Error:`, error);
 

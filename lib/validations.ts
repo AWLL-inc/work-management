@@ -161,5 +161,62 @@ export type ListProjectsQuery = z.infer<typeof listProjectsQuerySchema>;
 export type CreateWorkCategoryInput = z.infer<typeof createWorkCategorySchema>;
 export type UpdateWorkCategoryInput = z.infer<typeof updateWorkCategorySchema>;
 
+/**
+ * Field validation functions for frontend use
+ */
+export interface FieldValidationResult {
+  valid: boolean;
+  message?: string;
+}
+
+export const validateWorkLogField = {
+  hours: (value: string): FieldValidationResult => {
+    if (!value) {
+      return { valid: false, message: "時間を入力してください" };
+    }
+    if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
+      return {
+        valid: false,
+        message: "数値で入力してください（例: 8 または 8.5）",
+      };
+    }
+    const hours = parseFloat(value);
+    if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
+      return { valid: false, message: "0より大きい値を入力してください" };
+    }
+    if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
+      return { valid: false, message: "168以下で入力してください" };
+    }
+    return { valid: true };
+  },
+  
+  date: (value: string): FieldValidationResult => {
+    if (!value) {
+      return { valid: false, message: "日付を入力してください" };
+    }
+    if (!WORK_LOG_CONSTRAINTS.DATE.FORMAT.test(value)) {
+      return {
+        valid: false,
+        message: "有効な日付をYYYY-MM-DD形式で入力してください",
+      };
+    }
+    return { valid: true };
+  },
+} as const;
+
+/**
+ * Batch update schema for work logs
+ */
+export const batchUpdateWorkLogsSchema = z.array(
+  z.object({
+    id: z.string().uuid(),
+    data: updateWorkLogSchema,
+  })
+);
+
+/**
+ * Type exports for TypeScript
+ */
 export type CreateWorkLogInput = z.infer<typeof createWorkLogSchema>;
 export type UpdateWorkLogInput = z.infer<typeof updateWorkLogSchema>;
+export type BatchUpdateWorkLogsInput = z.infer<typeof batchUpdateWorkLogsSchema>;

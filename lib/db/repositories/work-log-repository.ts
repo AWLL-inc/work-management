@@ -227,3 +227,36 @@ export async function isWorkLogOwner(
 
   return log?.userId === userId;
 }
+
+/**
+ * Batch update work logs
+ */
+export interface BatchUpdateItem {
+  id: string;
+  data: Partial<Omit<NewWorkLog, "id" | "createdAt" | "updatedAt">>;
+}
+
+export async function batchUpdateWorkLogs(
+  updates: BatchUpdateItem[],
+): Promise<WorkLog[]> {
+  return await db.transaction(async (tx) => {
+    const results: WorkLog[] = [];
+    
+    for (const { id, data } of updates) {
+      const [updated] = await tx
+        .update(workLogs)
+        .set({
+          ...data,
+          updatedAt: new Date(),
+        })
+        .where(eq(workLogs.id, id))
+        .returning();
+      
+      if (updated) {
+        results.push(updated);
+      }
+    }
+    
+    return results;
+  });
+}

@@ -465,85 +465,41 @@ export function AGGridWorkLogTable({
     setIsSubmitting(true);
 
     try {
-      // 現在は並列実行を使用（パフォーマンス重視）
-      // 注意: 同じレコードへの複数更新や相互依存がある場合は競合の可能性があります
-      // 将来的にはバッチAPIエンドポイント (PUT /api/work-logs/batch) の追加を検討
-      const results = await Promise.allSettled(
-        Array.from(pendingChanges.entries()).map(
-          async ([workLogId, changes]) => {
-            try {
-              await onUpdateWorkLog(workLogId, changes);
-              return { workLogId, success: true };
-            } catch (error) {
-              return {
-                workLogId,
-                success: false,
-                error: error instanceof Error ? error.message : "Unknown error",
-              };
-            }
-          },
-        ),
-      );
+      // バッチAPIエンドポイントを使用してトランザクション内で一括更新
+      const updates = Array.from(pendingChanges.entries()).map(([id, data]) => ({
+        id,
+        data,
+      }));
 
-      const succeeded = results.filter(
-        (
-          r,
-        ): r is PromiseFulfilledResult<{ success: true; workLogId: string }> =>
-          r.status === "fulfilled" && r.value.success,
-      );
-      const failed = results.filter(
-        (
-          r,
-        ): r is PromiseFulfilledResult<{
-          success: false;
-          workLogId: string;
-          error: string;
-        }> => r.status === "fulfilled" && !r.value.success,
-      );
+      const response = await fetch("/api/work-logs/batch", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
 
-      if (failed.length === 0) {
-        toast.success(`${succeeded.length}件の変更を保存しました`);
-        setPendingChanges(new Map());
-        setFailedWorkLogIds(new Set()); // Clear any previous failures
-        setBatchEditingEnabled(false);
-      } else if (succeeded.length > 0) {
-        // 失敗したレコードを視覚的にハイライト
-        const failedIds = failed.map((f) => f.value.workLogId);
-        setFailedWorkLogIds(new Set(failedIds));
-
-        // 開発環境でのみログ表示
-        if (process.env.NODE_ENV === "development") {
-          console.warn("Failed work log IDs:", failedIds);
-        }
-
-        // より具体的なエラーメッセージ
-        const failedDetails = failed
-          .map((f) => {
-            const log = workLogs.find((w) => w.id === f.value.workLogId);
-            return `${formatDateForDisplay(log?.date)} - ${f.value.error}`;
-          })
-          .join("\n");
-
-        toast.error(
-          `${succeeded.length}件保存、${failed.length}件失敗しました。\n失敗したレコード:\n${failedDetails}`,
-        );
-
-        // Remove only successful changes from pending
-        const newPendingChanges = new Map(pendingChanges);
-        succeeded.forEach((r) => {
-          newPendingChanges.delete(r.value.workLogId);
-        });
-        setPendingChanges(newPendingChanges);
-      } else {
-        // 全て失敗した場合
-        const failedIds = failed.map((f) => f.value.workLogId);
-        setFailedWorkLogIds(new Set(failedIds));
-        toast.error(`全ての更新に失敗しました (${failed.length}件)`);
+      if (!response.ok) {
+        throw new Error("Batch update failed");
       }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success(`${pendingChanges.size}件の変更を保存しました`);
+        setPendingChanges(new Map());
+        setFailedWorkLogIds(new Set());
+        setBatchEditingEnabled(false);
+        // データ再取得
+        mutate();
+      } else {
+        throw new Error(result.error?.message || "Batch update failed");
+      }
+    } catch (error) {
+      toast.error("保存に失敗しました");
+      console.error("Batch save error:", error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [pendingChanges, onUpdateWorkLog, workLogs]);
+  }, [pendingChanges, mutate]);
 
   // Handle cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {

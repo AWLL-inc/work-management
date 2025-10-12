@@ -60,7 +60,8 @@
       "Bash(gh pr view:*)",
       "Bash(DISABLE_AUTH=false npm run build)",
       "mcp__serena__think_about_whether_you_are_done",
-      "Bash(npx biome format:*)"
+      "Bash(npx biome format:*)",
+      "mcp__serena__create_text_file"
     ],
     "deny": [],
     "ask": []

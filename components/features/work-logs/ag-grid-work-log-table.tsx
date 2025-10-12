@@ -73,7 +73,7 @@ const validateDate = (value: string): CellValidationResult => {
   if (!date) {
     return {
       valid: false,
-      message: "有効な日付をYYYY-MM-DD形式で入力してください"
+      message: "有効な日付をYYYY-MM-DD形式で入力してください",
     };
   }
   return { valid: true };

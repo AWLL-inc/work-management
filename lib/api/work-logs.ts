@@ -52,8 +52,16 @@ export async function createWorkLog(data: CreateWorkLogData): Promise<WorkLog> {
   });
 
   if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to create work log");
+    let errorMessage = "Failed to create work log";
+    try {
+      const result: ApiResponse<never> = await response.json();
+      errorMessage = result.error?.message || errorMessage;
+      console.error("API Error:", result.error);
+    } catch (parseError) {
+      console.error("Failed to parse error response:", parseError);
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    }
+    throw new Error(errorMessage);
   }
 
   const result: ApiResponse<WorkLog> = await response.json();

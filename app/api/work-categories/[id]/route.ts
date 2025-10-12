@@ -229,7 +229,7 @@ export async function DELETE(
       {
         success: true,
       },
-      { status: 200 },
+      { status: 204 },
     );
   } catch (error) {
     console.error(

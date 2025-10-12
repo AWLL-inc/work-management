@@ -445,7 +445,7 @@ describe("DELETE /api/work-categories/[id]", () => {
     });
     const data = await response.json();
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(204);
     expect(data.success).toBe(true);
     expect(deleteWorkCategory).toHaveBeenCalledWith(validUuid);
   });

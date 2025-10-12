@@ -4,6 +4,7 @@ import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
+import "./ag-grid-styles.css";
 import type {
   CellEditingStoppedEvent,
   ColDef,
@@ -202,16 +203,26 @@ export function AGGridWorkLogTable({
         },
         valueFormatter: (params) => formatDateForDisplay(params.value),
         valueParser: (params) => {
-          // Return the value exactly as provided by the editor
-          if (
-            params.newValue &&
-            WORK_LOG_CONSTRAINTS.DATE.FORMAT.test(params.newValue)
-          ) {
-            return params.newValue;
+          const { newValue, oldValue } = params;
+
+          if (!newValue) {
+            return oldValue;
           }
 
-          // If not valid, return the old value
-          return params.oldValue;
+          // 形式チェック
+          if (!WORK_LOG_CONSTRAINTS.DATE.FORMAT.test(newValue)) {
+            toast.error("日付はYYYY-MM-DD形式で入力してください");
+            return oldValue;
+          }
+
+          // 有効性チェック
+          const date = new Date(newValue);
+          if (Number.isNaN(date.getTime())) {
+            toast.error("有効な日付を入力してください");
+            return oldValue;
+          }
+
+          return newValue;
         },
         sort: "desc",
         cellClass: (params) => {
@@ -571,7 +582,9 @@ export function AGGridWorkLogTable({
       {isLoading ? (
         <div className="text-center py-8">Loading work logs...</div>
       ) : (
-        <div className="ag-theme-quartz h-[600px] w-full border rounded-lg">
+        <div
+          className={`ag-theme-quartz ag-work-log-table h-[600px] w-full border rounded-lg${batchEditingEnabled ? " batch-editing" : ""}`}
+        >
           <AgGridReact
             className="h-full w-full"
             theme="legacy"

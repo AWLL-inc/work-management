@@ -153,9 +153,3 @@ tr:hover {
     scroll-behavior: auto;
   }
 }
-
-/* AG Grid validation styles */
-.ag-cell-invalid {
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgb(239, 68, 68);
-}

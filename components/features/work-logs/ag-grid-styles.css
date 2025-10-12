@@ -1,0 +1,30 @@
+/**
+ * AG Grid specific styles for work logs table
+ *
+ * These styles are scoped to the work logs AG Grid component
+ * to avoid affecting global styles and improve maintainability.
+ */
+
+/* Invalid cell styling for validation feedback */
+.ag-cell-invalid {
+  @apply border-2 border-destructive bg-destructive/10;
+}
+
+/* Editing cell styling for better UX */
+.ag-cell-editing {
+  @apply ring-2 ring-primary;
+}
+
+/* Row hover effects specific to this grid */
+.ag-work-log-table .ag-row:hover {
+  @apply bg-muted/50;
+}
+
+/* Custom styling for batch editing mode */
+.ag-work-log-table.batch-editing .ag-cell {
+  @apply border-border;
+}
+
+.ag-work-log-table.batch-editing .ag-cell:focus-within {
+  @apply ring-1 ring-primary;
+}

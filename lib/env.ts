@@ -10,7 +10,18 @@ const envSchema = z.object({
     .enum(["true", "false"])
     .optional()
     .default("false")
-    .transform((val) => val === "true"),
+    .transform((val) => val === "true")
+    .refine(
+      (val) => {
+        if (val && process.env.NODE_ENV === "production") {
+          return false;
+        }
+        return true;
+      },
+      {
+        message: "DISABLE_AUTH cannot be enabled in production environment",
+      },
+    ),
   DEV_USER_ID: z
     .string()
     .uuid()

@@ -57,6 +57,8 @@ interface WorkLogGridRow extends WorkLog {
   categoryName?: string;
 }
 
+
+
 export function AGGridWorkLogTable({
   workLogs,
   projects,
@@ -150,7 +152,27 @@ export function AGGridWorkLogTable({
         },
         valueFormatter: (params) => {
           if (!params.value) return "";
-          return new Date(params.value).toLocaleDateString();
+
+          // If it's already YYYY-MM-DD format, format for display
+          if (typeof params.value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.value)) {
+            return new Date(params.value + 'T00:00:00').toLocaleDateString();
+          }
+
+          // Otherwise, try to parse as date
+          try {
+            return new Date(params.value).toLocaleDateString();
+          } catch (e) {
+            return params.value;
+          }
+        },
+        valueParser: (params) => {
+          // Return the value exactly as provided by the editor
+          if (params.newValue && /^\d{4}-\d{2}-\d{2}$/.test(params.newValue)) {
+            return params.newValue;
+          }
+
+          // If not valid, return the old value
+          return params.oldValue;
         },
         sort: "desc",
       },
@@ -207,12 +229,22 @@ export function AGGridWorkLogTable({
         field: "details",
         flex: 1,
         editable: batchEditingEnabled,
-        cellEditor: "agLargeTextCellEditor",
+        cellEditor: "agTextCellEditor",
         cellEditorParams: {
           maxLength: 1000,
-          rows: 3,
         },
         tooltipField: "details",
+        wrapText: true,
+        cellStyle: (params) => {
+          return {
+            lineHeight: "1.4",
+            padding: "8px",
+            whiteSpace: "normal",
+            wordWrap: "break-word",
+            display: "flex",
+            alignItems: "center",
+          };
+        },
       },
     ];
 
@@ -244,6 +276,13 @@ export function AGGridWorkLogTable({
       sortable: true,
       resizable: true,
       filter: false,
+      suppressKeyboardEvent: (params) => {
+        // Allow Enter to commit cell edit and move to next row
+        if (params.event.key === 'Enter' && params.editing) {
+          return false;
+        }
+        return false;
+      },
     }),
     [],
   );
@@ -307,7 +346,7 @@ export function AGGridWorkLogTable({
   // Handle batch save
   const handleBatchSave = useCallback(async () => {
     if (pendingChanges.size === 0) {
-      toast.info("保存する変更がありません");
+      toast.info("No changes to save");
       return;
     }
 
@@ -322,17 +361,17 @@ export function AGGridWorkLogTable({
             try {
               await onUpdateWorkLog(workLogId, changes);
             } catch (_error) {
-              errors.push(`ID: ${workLogId} の更新に失敗しました`);
+              errors.push(`Failed to update ID: ${workLogId}`);
             }
           },
         ),
       );
 
       if (errors.length === 0) {
-        toast.success(`${pendingChanges.size}件の変更を保存しました`);
+        toast.success(`Saved ${pendingChanges.size} changes`);
         setPendingChanges(new Map());
       } else {
-        toast.error(`${errors.length}件の更新に失敗しました`);
+        toast.error(`Failed to update ${errors.length} items`);
       }
     } finally {
       setIsSubmitting(false);
@@ -343,7 +382,7 @@ export function AGGridWorkLogTable({
   const handleCancelBatchEditing = useCallback(() => {
     if (pendingChanges.size > 0) {
       if (
-        window.confirm("未保存の変更があります。破棄してもよろしいですか？")
+        window.confirm("You have unsaved changes. Are you sure you want to discard them?")
       ) {
         setPendingChanges(new Map());
         setBatchEditingEnabled(false);
@@ -433,6 +472,8 @@ export function AGGridWorkLogTable({
             suppressRowClickSelection={true}
             singleClickEdit={batchEditingEnabled}
             stopEditingWhenCellsLoseFocus={true}
+            enterNavigatesVertically={true}
+            undoRedoCellEditing={true}
           />
         </div>
       )}

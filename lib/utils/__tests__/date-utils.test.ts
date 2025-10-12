@@ -44,9 +44,12 @@ describe("Date Utilities", () => {
     it("should parse valid YYYY-MM-DD format", () => {
       const result = parseDate("2024-01-15");
       expect(result).toBeInstanceOf(Date);
-      expect(result?.getFullYear()).toBe(2024);
-      expect(result?.getMonth()).toBe(0); // January is 0
-      expect(result?.getDate()).toBe(15);
+
+      // JST (UTC+9) での検証 - parseDate は JST として解釈する
+      const jstDate = new Date(result!.getTime() + 9 * 60 * 60 * 1000);
+      expect(jstDate.getUTCFullYear()).toBe(2024);
+      expect(jstDate.getUTCMonth()).toBe(0); // January is 0
+      expect(jstDate.getUTCDate()).toBe(15);
     });
 
     it("should return null for invalid format", () => {
@@ -64,8 +67,11 @@ describe("Date Utilities", () => {
     it("should handle leap year correctly", () => {
       const result = parseDate("2024-02-29");
       expect(result).toBeInstanceOf(Date);
-      expect(result?.getMonth()).toBe(1); // February
-      expect(result?.getDate()).toBe(29);
+
+      // JST (UTC+9) での検証 - parseDate は JST として解釈する
+      const jstDate = new Date(result!.getTime() + 9 * 60 * 60 * 1000);
+      expect(jstDate.getUTCMonth()).toBe(1); // February
+      expect(jstDate.getUTCDate()).toBe(29);
     });
 
     it("should return null for non-leap year February 29", () => {

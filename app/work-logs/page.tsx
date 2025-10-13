@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { AGGridWorkLogTable } from "@/components/features/work-logs/ag-grid-work-log-table";
+import { EnhancedWorkLogTable } from "@/components/features/work-logs/enhanced-work-log-table";
 import { WorkLogTable } from "@/components/features/work-logs/work-log-table";
 import { Button } from "@/components/ui/button";
 import { getProjects } from "@/lib/api/projects";
@@ -16,7 +17,9 @@ import {
 } from "@/lib/api/work-logs";
 
 export default function WorkLogsPage() {
-  const [useAGGrid, setUseAGGrid] = useState(true);
+  const [tableType, setTableType] = useState<
+    "enhanced" | "ag-grid" | "standard"
+  >("enhanced");
 
   const {
     data: workLogs,
@@ -107,17 +110,42 @@ export default function WorkLogsPage() {
 
   return (
     <div className="px-4 sm:px-0">
-      <div className="mb-4 flex justify-end">
+      <div className="mb-4 flex justify-end gap-2">
         <Button
-          variant={useAGGrid ? "default" : "outline"}
-          onClick={() => setUseAGGrid(!useAGGrid)}
+          variant={tableType === "enhanced" ? "default" : "outline"}
+          onClick={() => setTableType("enhanced")}
           className="mb-4"
         >
-          {useAGGrid ? "Switch to Standard Table" : "Switch to AG Grid"}
+          Enhanced AG Grid
+        </Button>
+        <Button
+          variant={tableType === "ag-grid" ? "default" : "outline"}
+          onClick={() => setTableType("ag-grid")}
+          className="mb-4"
+        >
+          Original AG Grid
+        </Button>
+        <Button
+          variant={tableType === "standard" ? "default" : "outline"}
+          onClick={() => setTableType("standard")}
+          className="mb-4"
+        >
+          Standard Table
         </Button>
       </div>
 
-      {useAGGrid ? (
+      {tableType === "enhanced" ? (
+        <EnhancedWorkLogTable
+          workLogs={workLogs || []}
+          projects={projects || []}
+          categories={categories || []}
+          onCreateWorkLog={handleCreateWorkLog}
+          onUpdateWorkLog={handleUpdateWorkLog}
+          onDeleteWorkLog={handleDeleteWorkLog}
+          onRefresh={mutateWorkLogs}
+          isLoading={isLoading}
+        />
+      ) : tableType === "ag-grid" ? (
         <AGGridWorkLogTable
           workLogs={workLogs || []}
           projects={projects || []}
@@ -125,6 +153,7 @@ export default function WorkLogsPage() {
           onCreateWorkLog={handleCreateWorkLog}
           onUpdateWorkLog={handleUpdateWorkLog}
           onDeleteWorkLog={handleDeleteWorkLog}
+          onRefresh={mutateWorkLogs}
           isLoading={isLoading}
         />
       ) : (

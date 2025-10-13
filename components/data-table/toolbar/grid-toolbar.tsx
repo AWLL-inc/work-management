@@ -124,8 +124,8 @@ export function GridToolbar({
                 variant="outline"
                 size="sm"
                 onClick={onUndo}
-                disabled={!canUndo}
-                className="h-8 px-3"
+                disabled={!canUndo || !batchEditingEnabled}
+                className={`h-8 px-3 ${!batchEditingEnabled ? "opacity-50" : ""}`}
                 data-testid="undo-button"
               >
                 <Undo className="w-4 h-4 mr-1" />
@@ -134,6 +134,11 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>直前の編集を元に戻します</p>
+              {!batchEditingEnabled && (
+                <p className="text-xs text-orange-500">
+                  一括編集モードで利用可能
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 ショートカット: Ctrl+Z
               </p>
@@ -146,8 +151,8 @@ export function GridToolbar({
                 variant="outline"
                 size="sm"
                 onClick={onRedo}
-                disabled={!canRedo}
-                className="h-8 px-3"
+                disabled={!canRedo || !batchEditingEnabled}
+                className={`h-8 px-3 ${!batchEditingEnabled ? "opacity-50" : ""}`}
                 data-testid="redo-button"
               >
                 <Redo className="w-4 h-4 mr-1" />
@@ -156,6 +161,11 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>元に戻した編集を再実行します</p>
+              {!batchEditingEnabled && (
+                <p className="text-xs text-orange-500">
+                  一括編集モードで利用可能
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 ショートカット: Ctrl+Y
               </p>

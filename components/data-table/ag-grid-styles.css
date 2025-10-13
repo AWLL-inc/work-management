@@ -138,3 +138,22 @@
 .ag-row-error .ag-cell {
   border-color: hsl(var(--destructive) / 0.3);
 }
+
+/* Details cell multi-line display styling */
+.ag-cell.details-cell {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  line-height: 1.4 !important;
+  padding: 8px !important;
+  display: block !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+
+.ag-cell.details-cell .ag-cell-value {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  display: block !important;
+}

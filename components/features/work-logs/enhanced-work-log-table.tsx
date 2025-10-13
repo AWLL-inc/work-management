@@ -1,10 +1,15 @@
 "use client";
 
 import type {
+  CellEditingStartedEvent,
+  CellValueChangedEvent,
   ColDef,
   GridApi,
   GridReadyEvent,
+  ICellRendererParams,
   RowClassParams,
+  RowHeightParams,
+  SuppressKeyboardEventParams,
 } from "ag-grid-community";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -21,8 +26,8 @@ import {
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { formatDateForDisplay, parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
-import { WorkLogFormDialog } from "./work-log-form-dialog";
 import { CustomDateEditor } from "./custom-date-editor";
+import { WorkLogFormDialog } from "./work-log-form-dialog";
 
 // Column width constants
 const COLUMN_WIDTHS = {
@@ -284,7 +289,7 @@ export function EnhancedWorkLogTable({
         if (
           newValue &&
           typeof newValue === "object" &&
-          (newValue as any) instanceof Date
+          newValue instanceof Date
         ) {
           dateString = (newValue as Date).toISOString().split("T")[0];
         } else if (typeof newValue === "string") {
@@ -391,7 +396,7 @@ export function EnhancedWorkLogTable({
       },
       cellRenderer: batchEditingEnabled
         ? undefined
-        : (params: any) => {
+        : (params: ICellRendererParams) => {
             // In view mode, show project name
             return projectsMap.get(params.value) || "Unknown";
           },
@@ -438,7 +443,7 @@ export function EnhancedWorkLogTable({
       },
       cellRenderer: batchEditingEnabled
         ? undefined
-        : (params: any) => {
+        : (params: ICellRendererParams) => {
             // In view mode, show category name
             return categoriesMap.get(params.value) || "Unknown";
           },
@@ -496,7 +501,7 @@ export function EnhancedWorkLogTable({
   ]);
 
   // Row height calculation for multi-line details
-  const getRowHeight = useCallback((params: any) => {
+  const getRowHeight = useCallback((params: RowHeightParams) => {
     const details = params.data?.details;
     if (!details) return 50; // Default height
 
@@ -516,7 +521,7 @@ export function EnhancedWorkLogTable({
       sortable: true,
       resizable: true,
       filter: false,
-      suppressKeyboardEvent: (params: any) => {
+      suppressKeyboardEvent: (params: SuppressKeyboardEventParams) => {
         if (params.event.key === "Enter" && params.editing) {
           return false;
         }
@@ -693,7 +698,7 @@ export function EnhancedWorkLogTable({
 
   // AG Grid standard: Simple cell value change handler
   const onCellValueChanged = useCallback(
-    (event: any) => {
+    (event: CellValueChangedEvent) => {
       const { data, colDef, newValue } = event;
       const field = colDef.field;
 
@@ -712,7 +717,7 @@ export function EnhancedWorkLogTable({
   );
 
   // AG Grid standard: Minimal cell editing start handler
-  const onCellEditingStarted = useCallback((event: any) => {
+  const onCellEditingStarted = useCallback((event: CellEditingStartedEvent) => {
     // Let AG Grid handle the date editor with the current value
     // No manual intervention needed
   }, []);

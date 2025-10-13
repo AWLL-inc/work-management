@@ -58,7 +58,7 @@ interface EnhancedAGGridProps<T extends { id: string }>
 export function EnhancedAGGrid<T extends { id: string }>({
   rowData,
   onDataChange,
-  onRowAdd,
+  onRowAdd: _onRowAdd,
   onRowDelete,
   enableToolbar = true,
   enableUndoRedo = true,
@@ -437,6 +437,37 @@ export function EnhancedAGGrid<T extends { id: string }>({
     toast.info("操作をやり直しました");
   }, [historyStack.redoStack, gridApi]);
 
+  // Fallback copy function for older browsers
+  const fallbackCopyTextToClipboard = useCallback((text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand("copy");
+      if (successful) {
+        toast.success(
+          `セル値をコピーしました: "${text.length > 20 ? `${text.substring(0, 20)}...` : text}"`,
+        );
+      } else {
+        toast.error("コピーに失敗しました");
+      }
+    } catch (err) {
+      console.error("Fallback copy failed:", err);
+      toast.error("コピーに失敗しました");
+    }
+
+    document.body.removeChild(textArea);
+  }, []);
+
   // Cell-level copy & paste handler for Community Edition
   const onCellKeyDown = useCallback((event: CellKeyDownEvent) => {
     const { event: keyboardEvent, node, column } = event;
@@ -535,38 +566,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
         );
       }
     }
-  }, []); // Remove batchEditingEnabled from deps since we use ref
-
-  // Fallback copy function for older browsers
-  const fallbackCopyTextToClipboard = useCallback((text: string) => {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-
-    // Avoid scrolling to bottom
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.position = "fixed";
-
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
-    try {
-      const successful = document.execCommand("copy");
-      if (successful) {
-        toast.success(
-          `セル値をコピーしました: "${text.length > 20 ? `${text.substring(0, 20)}...` : text}"`,
-        );
-      } else {
-        toast.error("コピーに失敗しました");
-      }
-    } catch (err) {
-      console.error("Fallback copy failed:", err);
-      toast.error("コピーに失敗しました");
-    }
-
-    document.body.removeChild(textArea);
-  }, []);
+  }, [fallbackCopyTextToClipboard]); // Add the dependency
 
   // Enhanced grid options (Community edition compatible)
   const enhancedGridOptions: GridOptions = useMemo(

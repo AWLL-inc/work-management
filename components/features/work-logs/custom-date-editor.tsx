@@ -1,7 +1,7 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import type { ICellEditor, ICellEditorParams } from "ag-grid-community";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
 
 interface CustomDateEditorProps extends ICellEditorParams {}
 
@@ -10,7 +10,7 @@ export const CustomDateEditor = forwardRef<ICellEditor, CustomDateEditorProps>(
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Get the initial value from the cell
-    const getInitialValue = () => {
+    const getInitialValue = useCallback(() => {
       const fieldName = props.colDef?.field;
       if (!fieldName) return "";
 
@@ -29,7 +29,7 @@ export const CustomDateEditor = forwardRef<ICellEditor, CustomDateEditorProps>(
       }
 
       return "";
-    };
+    }, [props.colDef?.field, props.data]);
 
     useEffect(() => {
       // Set initial value and focus
@@ -38,7 +38,7 @@ export const CustomDateEditor = forwardRef<ICellEditor, CustomDateEditorProps>(
         inputRef.current.focus();
         inputRef.current.select();
       }
-    }, []);
+    }, [getInitialValue]);
 
     // AG Grid interface methods
     useImperativeHandle(ref, () => ({
@@ -51,7 +51,7 @@ export const CustomDateEditor = forwardRef<ICellEditor, CustomDateEditorProps>(
         return inputRef.current.value;
       },
 
-      getGui: () => inputRef.current!,
+      getGui: () => inputRef.current as HTMLInputElement,
 
       afterGuiAttached: () => {
         if (inputRef.current) {

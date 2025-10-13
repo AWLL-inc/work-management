@@ -42,6 +42,15 @@ interface SearchFilters {
   userId: string | null;
 }
 
+// API filters type
+interface ApiFilters {
+  startDate?: string;
+  endDate?: string;
+  projectIds?: string;
+  categoryIds?: string;
+  userId?: string | null;
+}
+
 // Column width constants
 const COLUMN_WIDTHS = {
   DATE: 120,
@@ -120,7 +129,7 @@ interface EnhancedWorkLogTableProps {
     }>,
   ) => Promise<void>;
   onRefresh?: () => void;
-  onFilterChange?: (filters: SearchFilters) => void;
+  onFilterChange?: (filters: ApiFilters) => void;
   isLoading: boolean;
 }
 
@@ -1097,7 +1106,13 @@ export function EnhancedWorkLogTable({
         }}
         onClearFilters={() => {
           if (onFilterChange) {
-            onFilterChange({});
+            onFilterChange({
+              startDate: undefined,
+              endDate: undefined,
+              projectIds: undefined,
+              categoryIds: undefined,
+              userId: undefined,
+            });
           }
         }}
         isLoading={isLoading}

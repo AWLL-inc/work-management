@@ -1076,7 +1076,10 @@ export function EnhancedWorkLogTable({
             if (ctrlKey && key === "n" && batchEditingEnabled) {
               keyboardEvent?.preventDefault();
               handleRowAdd([]);
-            } else if (key === "delete" && !event.api.getEditingCells().length) {
+            } else if (
+              key === "delete" &&
+              !event.api.getEditingCells().length
+            ) {
               // Delete selected rows when not editing
               keyboardEvent?.preventDefault();
               handleRowDelete([]);

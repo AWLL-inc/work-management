@@ -1,7 +1,18 @@
 "use client";
 
-import { Copy, Info, Plus, Redo, Trash2, Undo } from "lucide-react";
+import {
+  Copy,
+  Filter,
+  Info,
+  Plus,
+  Redo,
+  Search,
+  Trash2,
+  Undo,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -11,6 +22,7 @@ import {
 import type { ToolbarProps } from "../types/grid-types";
 
 export function GridToolbar({
+  gridApi,
   onAddRow,
   onDuplicateRows,
   onDeleteRows,
@@ -20,6 +32,10 @@ export function GridToolbar({
   canRedo,
   selectedRowCount,
   batchEditingEnabled = false,
+  enableQuickFilter = false,
+  quickFilterText = "",
+  onQuickFilterChange,
+  enableFilterToolPanel = false,
 }: ToolbarProps) {
   return (
     <TooltipProvider>
@@ -172,6 +188,64 @@ export function GridToolbar({
             </TooltipContent>
           </Tooltip>
         </div>
+
+        {/* Quick Filter */}
+        {enableQuickFilter && (
+          <div className="flex items-center gap-1 border-r pr-3">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="検索..."
+                value={quickFilterText}
+                onChange={(e) => onQuickFilterChange?.(e.target.value)}
+                className="pl-8 pr-8 w-48 h-8"
+              />
+              {quickFilterText && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                  onClick={() => onQuickFilterChange?.("")}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Filter Tool Panel Toggle */}
+        {enableFilterToolPanel && (
+          <div className="flex items-center gap-1 border-r pr-3">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3"
+                  onClick={() => {
+                    if (gridApi) {
+                      const isToolPanelShowing = gridApi.isToolPanelShowing();
+                      if (isToolPanelShowing) {
+                        gridApi.closeToolPanel();
+                      } else {
+                        gridApi.openToolPanel("filters");
+                      }
+                    }
+                  }}
+                  data-testid="filter-panel-button"
+                >
+                  <Filter className="w-4 h-4 mr-1" />
+                  フィルター
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>詳細フィルターパネルを開く/閉じる</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
 
         {/* Keyboard Shortcuts Help */}
         <div className="flex items-center gap-1">

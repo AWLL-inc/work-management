@@ -1,4 +1,13 @@
-import { and, count, desc, eq, gte, lte } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  lte,
+} from "drizzle-orm";
 import {
   type NewWorkLog,
   projects,
@@ -35,6 +44,10 @@ export interface GetWorkLogsOptions {
   startDate?: Date;
   endDate?: Date;
   projectId?: string;
+  projectIds?: string[]; // Multiple project filtering
+  categoryId?: string;
+  categoryIds?: string[]; // Multiple category filtering
+  searchText?: string; // Full text search in details
   page?: number;
   limit?: number;
 }
@@ -58,23 +71,46 @@ export async function getWorkLogs(options: GetWorkLogsOptions = {}): Promise<{
     startDate,
     endDate,
     projectId,
+    projectIds,
+    categoryId,
+    categoryIds,
+    searchText,
     page = 1,
     limit = 20,
   } = options;
 
   // Build WHERE conditions
   const conditions = [];
+
   if (userId) {
     conditions.push(eq(workLogs.userId, userId));
   }
+
   if (startDate) {
     conditions.push(gte(workLogs.date, startDate));
   }
+
   if (endDate) {
     conditions.push(lte(workLogs.date, endDate));
   }
-  if (projectId) {
+
+  // Project filtering - support both single and multiple
+  if (projectIds && projectIds.length > 0) {
+    conditions.push(inArray(workLogs.projectId, projectIds));
+  } else if (projectId) {
     conditions.push(eq(workLogs.projectId, projectId));
+  }
+
+  // Category filtering - support both single and multiple
+  if (categoryIds && categoryIds.length > 0) {
+    conditions.push(inArray(workLogs.categoryId, categoryIds));
+  } else if (categoryId) {
+    conditions.push(eq(workLogs.categoryId, categoryId));
+  }
+
+  // Full text search in details
+  if (searchText) {
+    conditions.push(ilike(workLogs.details, `%${searchText}%`));
   }
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;

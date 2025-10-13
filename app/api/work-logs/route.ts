@@ -39,6 +39,18 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const projectId = searchParams.get("projectId");
+    // New filtering parameters
+    const projectIds = searchParams
+      .get("projectIds")
+      ?.split(",")
+      .filter(Boolean);
+    const categoryId = searchParams.get("categoryId");
+    const categoryIds = searchParams
+      .get("categoryIds")
+      ?.split(",")
+      .filter(Boolean);
+    const userId = searchParams.get("userId");
+    const searchText = searchParams.get("searchText");
 
     // Validate pagination parameters
     if (page < 1 || limit < 1 || limit > 100) {
@@ -63,6 +75,9 @@ export async function GET(request: NextRequest) {
     // Non-admin users can only see their own work logs
     if (session.user.role !== "admin") {
       options.userId = session.user.id;
+    } else if (userId) {
+      // Admin can filter by specific user
+      options.userId = userId;
     }
 
     // Add date filters if provided
@@ -72,8 +87,24 @@ export async function GET(request: NextRequest) {
     if (endDate) {
       options.endDate = new Date(endDate);
     }
-    if (projectId) {
+
+    // Project filtering - support both single and multiple
+    if (projectIds && projectIds.length > 0) {
+      options.projectIds = projectIds;
+    } else if (projectId) {
       options.projectId = projectId;
+    }
+
+    // Category filtering - support both single and multiple
+    if (categoryIds && categoryIds.length > 0) {
+      options.categoryIds = categoryIds;
+    } else if (categoryId) {
+      options.categoryId = categoryId;
+    }
+
+    // Full text search in details
+    if (searchText) {
+      options.searchText = searchText;
     }
 
     // Get work logs from repository

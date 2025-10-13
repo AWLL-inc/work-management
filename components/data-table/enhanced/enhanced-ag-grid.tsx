@@ -53,6 +53,11 @@ interface EnhancedAGGridProps<T extends { id: string }>
   onCellEditingStopped?: (event: CellEditingStoppedEvent) => void;
   gridOptions?: GridOptions;
   batchEditingEnabled?: boolean;
+  quickFilterText?: string;
+  onQuickFilterChange?: (filterText: string) => void;
+  enableQuickFilter?: boolean;
+  enableFloatingFilter?: boolean;
+  enableFilterToolPanel?: boolean;
 }
 
 export function EnhancedAGGrid<T extends { id: string }>({
@@ -72,6 +77,11 @@ export function EnhancedAGGrid<T extends { id: string }>({
   onCellEditingStopped: onCellEditingStoppedProp,
   gridOptions,
   batchEditingEnabled = false,
+  quickFilterText,
+  onQuickFilterChange,
+  enableQuickFilter = true,
+  enableFloatingFilter = true,
+  enableFilterToolPanel = false,
 }: EnhancedAGGridProps<T>) {
   // Use ref to get current value in callbacks
   const batchEditingEnabledRef = useRef(batchEditingEnabled);
@@ -590,6 +600,33 @@ export function EnhancedAGGrid<T extends { id: string }>({
       suppressCopyRowsToClipboard: true,
       suppressClipboardPaste: true,
       suppressClipboardApi: false, // Allow clipboard API access
+      // Enable advanced filtering features
+      enableFilter: true,
+      enableQuickFilter: enableQuickFilter,
+      floatingFilter: enableFloatingFilter,
+      quickFilterText: quickFilterText,
+      // Filter configuration
+      defaultFilterParams: {
+        filterOptions: ["contains", "startsWith", "endsWith", "equals"],
+        suppressAndOrCondition: false,
+        alwaysShowBothConditions: false,
+      },
+      // Tool panel configuration
+      sideBar: enableFilterToolPanel
+        ? {
+            toolPanels: [
+              {
+                id: "filters",
+                labelDefault: "フィルター",
+                labelKey: "filters",
+                iconKey: "filter",
+                toolPanel: "agFiltersToolPanel",
+              },
+            ],
+            defaultToolPanel: "",
+            hiddenByDefault: true,
+          }
+        : undefined,
     }),
     [
       gridOptions,
@@ -597,6 +634,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
       maxUndoRedoSteps,
       getRowHeight,
       onCellKeyDown,
+      enableQuickFilter,
+      enableFloatingFilter,
+      enableFilterToolPanel,
+      quickFilterText,
     ],
   );
 
@@ -614,6 +655,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
           canRedo={historyStack.redoStack.length > 0}
           selectedRowCount={selectedNodes.length}
           batchEditingEnabled={batchEditingEnabled}
+          enableQuickFilter={enableQuickFilter}
+          quickFilterText={quickFilterText}
+          onQuickFilterChange={onQuickFilterChange}
+          enableFilterToolPanel={enableFilterToolPanel}
         />
       )}
 

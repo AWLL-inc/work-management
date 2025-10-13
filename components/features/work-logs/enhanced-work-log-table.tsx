@@ -28,7 +28,19 @@ import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { CustomDateEditor } from "./custom-date-editor";
+import { SearchControls } from "./search/search-controls";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
+
+// Search filters type
+interface SearchFilters {
+  dateRange: {
+    from: Date | undefined;
+    to: Date | undefined;
+  };
+  projectIds: string[];
+  categoryIds: string[];
+  userId: string | null;
+}
 
 // Column width constants
 const COLUMN_WIDTHS = {
@@ -108,6 +120,7 @@ interface EnhancedWorkLogTableProps {
     }>,
   ) => Promise<void>;
   onRefresh?: () => void;
+  onFilterChange?: (filters: SearchFilters) => void;
   isLoading: boolean;
 }
 
@@ -125,6 +138,7 @@ export function EnhancedWorkLogTable({
   onDeleteWorkLog,
   onBatchUpdateWorkLogs,
   onRefresh,
+  onFilterChange,
   isLoading,
 }: EnhancedWorkLogTableProps) {
   const [formOpen, setFormOpen] = useState(false);
@@ -138,6 +152,20 @@ export function EnhancedWorkLogTable({
   const [batchEditingEnabled, setBatchEditingEnabled] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
+
+  // Quick Filter state
+  const [quickFilterText, setQuickFilterText] = useState("");
+
+  // Search filters state
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    dateRange: {
+      from: undefined,
+      to: undefined,
+    },
+    projectIds: [],
+    categoryIds: [],
+    userId: null,
+  });
 
   // Create project and category lookup maps
   const projectsMap = useMemo(() => {
@@ -400,7 +428,6 @@ export function EnhancedWorkLogTable({
             // In view mode, show project name
             return projectsMap.get(params.value) || "Unknown";
           },
-      filter: true,
     });
 
     columns.push({
@@ -447,7 +474,6 @@ export function EnhancedWorkLogTable({
             // In view mode, show category name
             return categoriesMap.get(params.value) || "Unknown";
           },
-      filter: true,
     });
 
     columns.push({
@@ -520,7 +546,9 @@ export function EnhancedWorkLogTable({
     () => ({
       sortable: true,
       resizable: true,
-      filter: false,
+      filter: true, // Enable filtering for all columns
+      floatingFilter: true, // Enable floating filters
+      menuTabs: ["filterMenuTab"], // Show filter menu tab
       suppressKeyboardEvent: (params: SuppressKeyboardEventParams) => {
         if (params.event.key === "Enter" && params.editing) {
           return false;
@@ -1039,6 +1067,43 @@ export function EnhancedWorkLogTable({
         </div>
       </div>
 
+      {/* Search Controls */}
+      <SearchControls
+        filters={searchFilters}
+        onFiltersChange={setSearchFilters}
+        projects={projects}
+        categories={categories}
+        // users={users} // Will be added when user API is available
+        showUserFilter={false} // Will be true when user role checking is implemented
+        onApplyFilters={() => {
+          if (onFilterChange) {
+            const apiFilters = {
+              startDate: searchFilters.dateRange.from
+                ?.toISOString()
+                .split("T")[0],
+              endDate: searchFilters.dateRange.to?.toISOString().split("T")[0],
+              projectIds:
+                searchFilters.projectIds.length > 0
+                  ? searchFilters.projectIds.join(",")
+                  : undefined,
+              categoryIds:
+                searchFilters.categoryIds.length > 0
+                  ? searchFilters.categoryIds.join(",")
+                  : undefined,
+              userId: searchFilters.userId,
+            };
+            onFilterChange(apiFilters);
+          }
+        }}
+        onClearFilters={() => {
+          if (onFilterChange) {
+            onFilterChange({});
+          }
+        }}
+        isLoading={isLoading}
+        className="mb-4"
+      />
+
       <EnhancedAGGrid<WorkLog>
         rowData={rowData}
         columnDefs={columnDefs}
@@ -1056,6 +1121,12 @@ export function EnhancedWorkLogTable({
         batchEditingEnabled={batchEditingEnabled}
         enableUndoRedo={true}
         maxUndoRedoSteps={20}
+        // Filtering features
+        enableQuickFilter={true}
+        quickFilterText={quickFilterText}
+        onQuickFilterChange={setQuickFilterText}
+        enableFloatingFilter={true}
+        enableFilterToolPanel={false}
         gridOptions={{
           rowSelection: "multiple",
           suppressRowClickSelection: false, // Always allow row selection

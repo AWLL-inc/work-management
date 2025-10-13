@@ -59,4 +59,8 @@ export interface ToolbarProps {
   canRedo: boolean;
   selectedRowCount: number;
   batchEditingEnabled?: boolean;
+  enableQuickFilter?: boolean;
+  quickFilterText?: string;
+  onQuickFilterChange?: (filterText: string) => void;
+  enableFilterToolPanel?: boolean;
 }

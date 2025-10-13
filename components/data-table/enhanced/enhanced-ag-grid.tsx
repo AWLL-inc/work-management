@@ -209,38 +209,41 @@ export function EnhancedAGGrid<T extends { id: string }>({
     columnDefs,
   ]);
 
-  // Row duplication handler
+  // Row duplication handler  
   const handleDuplicateRows = useCallback(async () => {
     if (selectedNodes.length === 0) {
       toast.info("複製する行を選択してください");
       return;
     }
 
-    const duplicatedRows = selectedNodes
-      .map((node, _index) => {
-        if (!node.data) return null;
-        return {
-          ...node.data,
-          id: generateUuid(),
-          date: new Date().toISOString().split("T")[0], // Set current date
-        };
-      })
-      .filter(Boolean) as T[];
+    // Only duplicate the first selected row for simplicity
+    const nodeToClone = selectedNodes[0];
+    if (!nodeToClone.data) {
+      toast.error("選択された行のデータが見つかりません");
+      return;
+    }
 
+    const duplicatedRow = {
+      ...nodeToClone.data,
+      id: generateUuid(),
+      date: new Date().toISOString().split("T")[0], // Set current date
+    } as T;
+
+    // Get the row index of the selected row to insert directly below it
+    const selectedRowIndex = nodeToClone.rowIndex !== null ? nodeToClone.rowIndex + 1 : 0;
+    
     // Add to grid using transaction only (don't modify external rowData)
-    gridApi?.applyTransaction({ add: duplicatedRows, addIndex: 0 });
+    gridApi?.applyTransaction({ add: [duplicatedRow], addIndex: selectedRowIndex });
 
     // Force grid refresh for proper display, but avoid affecting existing data
     setTimeout(() => {
-      // Only refresh newly duplicated rows to prevent data loss in existing rows
-      const newRowNodes = duplicatedRows
-        .map(row => gridApi?.getRowNode(row.id))
-        .filter(Boolean) as any[];
+      // Only refresh the newly duplicated row to prevent data loss in existing rows
+      const newRowNode = gridApi?.getRowNode(duplicatedRow.id);
       
-      if (newRowNodes.length > 0) {
+      if (newRowNode) {
         gridApi?.refreshCells({ 
           force: true,
-          rowNodes: newRowNodes
+          rowNodes: [newRowNode]
         });
       }
       gridApi?.sizeColumnsToFit();
@@ -250,26 +253,17 @@ export function EnhancedAGGrid<T extends { id: string }>({
       type: "ADD",
       timestamp: Date.now(),
       data: {
-        duplicatedRows,
-        originalRows: selectedNodes.map((n) => n.data).filter(Boolean),
+        duplicatedRows: [duplicatedRow],
+        originalRows: [nodeToClone.data],
       },
     };
     addToHistory(action);
 
-    // Call onRowAdd for notification purposes only (no API call expected)
-    if (onRowAdd) {
-      try {
-        await onRowAdd(duplicatedRows);
-      } catch (error) {
-        // This is just for notification, don't fail the local operation
-        console.warn("Row duplication notification failed:", error);
-      }
-    }
+    // Note: onRowAdd is not called for row duplication to avoid double creation
+    // Row duplication is handled purely by AG Grid transactions
 
-    toast.success(
-      `${duplicatedRows.length}行を複製しました（編集後に保存してください）`,
-    );
-  }, [selectedNodes, onRowAdd, gridApi, rowData, onDataChange, addToHistory]);
+    toast.success("行を複製しました（編集後に保存してください）");
+  }, [selectedNodes, gridApi, addToHistory]);
 
   // Row deletion handler
   const handleDeleteRows = useCallback(() => {

@@ -63,7 +63,9 @@
       "Bash(npx biome format:*)",
       "mcp__serena__create_text_file",
       "Bash(chmod:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)"
     ],
     "deny": [],
     "ask": []

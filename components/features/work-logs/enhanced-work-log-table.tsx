@@ -440,22 +440,26 @@ export function EnhancedWorkLogTable({
       cellEditor: "agLargeTextCellEditor",
       cellEditorParams: {
         maxLength: WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH,
-        rows: 2,
-        cols: 40,
+        rows: 3,
+        cols: 50,
       },
+      cellEditorPopup: true,
       tooltipField: "details",
-      wrapText: false,
+      wrapText: true,
+      autoHeight: true,
       cellStyle: {
-        lineHeight: "1.2",
-        padding: "4px 8px",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
+        lineHeight: "1.4",
+        padding: "8px",
+        whiteSpace: "pre-wrap", // 改行文字を表示
+        wordWrap: "break-word",
+        overflow: "visible",
       },
       cellRenderer: (params: { value: string }) => {
         const value = params.value || "";
-        if (value.length > 50) {
-          return `${value.substring(0, 50)}...`;
+        // 複数行をそのまま表示（最大3行まで）
+        const lines = value.split('\n');
+        if (lines.length > 3) {
+          return lines.slice(0, 3).join('\n') + '...';
         }
         return value;
       },

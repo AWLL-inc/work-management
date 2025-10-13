@@ -1,7 +1,6 @@
 "use client";
 
 import type {
-  CellEditingStoppedEvent,
   ColDef,
   GridApi,
   GridReadyEvent,
@@ -23,6 +22,7 @@ import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { formatDateForDisplay, parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
+import { CustomDateEditor } from "./custom-date-editor";
 
 // Column width constants
 const COLUMN_WIDTHS = {
@@ -128,11 +128,8 @@ export function EnhancedWorkLogTable({
     new Set(),
   );
 
-  // Batch editing state
+  // Simplified AG Grid state management
   const [batchEditingEnabled, setBatchEditingEnabled] = useState(false);
-  const [pendingChanges, setPendingChanges] = useState<
-    Map<string, Partial<WorkLog>>
-  >(new Map());
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
@@ -145,23 +142,29 @@ export function EnhancedWorkLogTable({
     return new Map(categories.map((c) => [c.id, c.name]));
   }, [categories]);
 
-  // Prepare data with project and category names
+  // Prepare data with project and category names (deep copy to prevent mutation)
   const rowData: WorkLogGridRow[] = useMemo(() => {
-    return workLogs.map((workLog) => ({
-      ...workLog,
-      // Ensure date is consistently formatted as YYYY-MM-DD string (no time)
-      date: workLog.date instanceof Date 
-        ? workLog.date.toISOString().split('T')[0] 
-        : typeof workLog.date === 'string' 
-          ? workLog.date.split('T')[0] // Remove time part if present
-          : new Date(workLog.date).toISOString().split('T')[0],
-      // Ensure both ID and name fields are always available
-      projectId: workLog.projectId || "",
-      projectName: projectsMap.get(workLog.projectId) || "Unknown",
-      categoryId: workLog.categoryId || "",
-      categoryName: categoriesMap.get(workLog.categoryId) || "Unknown",
-    }));
+    return workLogs.map((workLog) => {
+      // Create a deep copy to prevent external mutations affecting the grid
+      const workLogCopy = JSON.parse(JSON.stringify(workLog));
+      return {
+        ...workLogCopy,
+        // Ensure date is consistently formatted as YYYY-MM-DD string (no time)
+        date: workLogCopy.date instanceof Date 
+          ? workLogCopy.date.toISOString().split('T')[0] 
+          : typeof workLogCopy.date === 'string' 
+            ? workLogCopy.date.split('T')[0] // Remove time part if present
+            : new Date(workLogCopy.date).toISOString().split('T')[0],
+        // Ensure both ID and name fields are always available
+        projectId: workLogCopy.projectId || "",
+        projectName: projectsMap.get(workLogCopy.projectId) || "Unknown",
+        categoryId: workLogCopy.categoryId || "",
+        categoryName: categoriesMap.get(workLogCopy.categoryId) || "Unknown",
+      };
+    });
   }, [workLogs, projectsMap, categoriesMap]);
+
+  // AG Grid handles data management internally - no manual sync needed
 
   // Actions cell renderer
   const ActionsCellRenderer = useCallback((params: { data: WorkLog }) => {
@@ -188,66 +191,108 @@ export function EnhancedWorkLogTable({
   const columnDefs: ColDef[] = useMemo(() => {
     const columns: ColDef[] = [];
 
-    // Add checkbox column for selection when not in batch editing mode
-    if (!batchEditingEnabled) {
-      columns.push({
-        headerName: "",
-        checkboxSelection: true,
-        headerCheckboxSelection: true,
-        width: 50,
-        pinned: "left",
-        lockPosition: "left",
-        sortable: false,
-        filter: false,
-      });
-    }
+    // Add checkbox column for selection (always available)
+    columns.push({
+      headerName: "",
+      checkboxSelection: true,
+      headerCheckboxSelection: true,
+      width: 50,
+      pinned: "left",
+      lockPosition: "left",
+      sortable: false,
+      filter: false,
+    });
 
     columns.push({
       headerName: "Date",
       field: "date",
       width: COLUMN_WIDTHS.DATE,
       editable: batchEditingEnabled,
-      cellEditor: "agDateCellEditor",
-      cellEditorParams: {
-        format: "yyyy-mm-dd",
+      cellEditor: CustomDateEditor,
+      cellEditorParams: {},
+      // Use inline editing for better UX
+      cellEditorPopup: false,
+      valueGetter: (params) => {
+        const value = params.data.date;
+        if (!value) return null;
+        
+        // For the date editor, we need to provide a consistent format
+        if (value instanceof Date) {
+          return value.toISOString().split('T')[0];
+        }
+        
+        if (typeof value === 'string') {
+          // Remove time component if present
+          return value.split('T')[0];
+        }
+        
+        return value;
       },
       valueFormatter: (params) => {
-        if (batchEditingEnabled) {
-          // In batch editing mode, show raw date value for editing
-          return params.value || "";
-        } else {
-          // In view mode, format for display
-          return formatDateForDisplay(params.value);
+        const dateValue = params.value;
+        if (!dateValue) return "";
+        
+        // Handle different date formats
+        if (dateValue instanceof Date) {
+          return dateValue.toISOString().split('T')[0].replace(/-/g, '/');
         }
-      },
-      valueParser: (params) => {
-        const { newValue, oldValue } = params;
-
-        if (!newValue) {
-          return oldValue;
+        
+        // Always format as YYYY/MM/DD for consistent display
+        if (typeof dateValue === 'string') {
+          // Remove time part if present, then convert to display format
+          const dateOnly = dateValue.split('T')[0];
+          if (dateOnly.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            return dateOnly.replace(/-/g, '/'); // Convert YYYY-MM-DD to YYYY/MM/DD
+          }
         }
-
-        const date = parseDate(newValue);
-        if (!date) {
-          toast.error("有効な日付をYYYY-MM-DD形式で入力してください");
-          return oldValue;
-        }
-
-        return newValue;
+        
+        return dateValue;
       },
       valueSetter: (params) => {
-        // Ensure the value is stored as string in YYYY-MM-DD format only
         const { newValue } = params;
-        if (newValue instanceof Date) {
+        
+        // Convert any input to YYYY-MM-DD string format
+        if (newValue && typeof newValue === 'object' && newValue instanceof Date) {
           params.data.date = newValue.toISOString().split('T')[0];
         } else if (typeof newValue === 'string') {
-          // Remove time part if present
-          params.data.date = newValue.split('T')[0];
+          // Handle various string formats and convert to YYYY-MM-DD
+          if (newValue.includes('/')) {
+            // Convert YYYY/MM/DD to YYYY-MM-DD
+            params.data.date = newValue.replace(/\//g, '-');
+          } else {
+            // Remove time part if present
+            params.data.date = newValue.split('T')[0];
+          }
         } else {
           params.data.date = newValue;
         }
+        
         return true;
       },
+      valueParser: (params) => {
+        const { newValue, oldValue } = params;
+        if (!newValue) return newValue;
+        
+        // Convert various date formats to YYYY-MM-DD
+        let dateString = newValue;
+        
+        if (newValue && typeof newValue === 'object' && (newValue as any) instanceof Date) {
+          dateString = (newValue as Date).toISOString().split('T')[0];
+        } else if (typeof newValue === 'string') {
+          // Handle YYYY/MM/DD format
+          if (newValue.includes('/')) {
+            dateString = newValue.replace(/\//g, '-');
+          } else {
+            // Remove time part if present
+            dateString = newValue.split('T')[0];
+          }
+        }
+        
+        // Validate the parsed date
+        const date = parseDate(dateString);
+        return date ? dateString : oldValue;
+      },
+      // Let AG Grid handle value setting automatically
       sort: "desc",
       cellClass: (params) => {
         if (!batchEditingEnabled) return "";
@@ -272,29 +317,18 @@ export function EnhancedWorkLogTable({
       },
       valueParser: (params) => {
         const value = params.newValue;
-
-        if (!value) {
-          toast.error("時間を入力してください");
-          return params.oldValue;
+        if (!value) return value; // Let validation handle empty values
+        
+        // Basic parsing - validation handled elsewhere
+        if (WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
+          const hours = parseFloat(value);
+          if (hours > 0 && hours <= WORK_LOG_CONSTRAINTS.HOURS.MAX) {
+            return value;
+          }
         }
-
-        if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
-          toast.error("時間は数値で入力してください（例: 8 または 8.5）");
-          return params.oldValue;
-        }
-
-        const hours = parseFloat(value);
-        if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
-          toast.error("時間は0より大きい値を入力してください");
-          return params.oldValue;
-        }
-
-        if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
-          toast.error("時間は168以下で入力してください");
-          return params.oldValue;
-        }
-
-        return value;
+        
+        // Return original value if invalid - validation will catch it
+        return params.oldValue;
       },
       cellClass: (params) => {
         if (!batchEditingEnabled) return "";
@@ -346,7 +380,7 @@ export function EnhancedWorkLogTable({
         params.data.projectName = projectsMap.get(newValue) || "Unknown";
         return true;
       },
-      cellRenderer: batchEditingEnabled ? undefined : ((params) => {
+      cellRenderer: batchEditingEnabled ? undefined : ((params: any) => {
         // In view mode, show project name
         return projectsMap.get(params.value) || "Unknown";
       }),
@@ -391,7 +425,7 @@ export function EnhancedWorkLogTable({
         params.data.categoryName = categoriesMap.get(newValue) || "Unknown";
         return true;
       },
-      cellRenderer: batchEditingEnabled ? undefined : ((params) => {
+      cellRenderer: batchEditingEnabled ? undefined : ((params: any) => {
         // In view mode, show category name
         return categoriesMap.get(params.value) || "Unknown";
       }),
@@ -456,7 +490,7 @@ export function EnhancedWorkLogTable({
       sortable: true,
       resizable: true,
       filter: false,
-      suppressKeyboardEvent: (params) => {
+      suppressKeyboardEvent: (params: any) => {
         if (params.event.key === "Enter" && params.editing) {
           return false;
         }
@@ -477,29 +511,50 @@ export function EnhancedWorkLogTable({
     [failedWorkLogIds],
   );
 
-  // Handle row addition (local only, no API call)
-  const handleRowAdd = useCallback(async (newRows: WorkLog[]) => {
-    // Add rows locally to the grid, API save will happen when user actually saves
-    // Add new rows to pending changes so save button becomes active
-    setPendingChanges((prev) => {
-      const newChanges = new Map(prev);
-      for (const row of newRows) {
-        // Mark as new row with empty values that need to be filled
-        newChanges.set(row.id, {
-          date: row.date || "",
-          hours: row.hours || "",
-          projectId: row.projectId || "",
-          categoryId: row.categoryId || "",
-          details: row.details || "",
-        });
-      }
-      return newChanges;
+  // AG Grid standard: Handle row addition with applyTransaction
+  const handleRowAdd = useCallback(async (newRows: WorkLogGridRow[]) => {
+    if (!batchEditingEnabled) {
+      toast.info("一括編集モードを有効にしてください");
+      return;
+    }
+
+    if (!gridApi) {
+      toast.error("グリッドが初期化されていません");
+      return;
+    }
+
+    // Create new row with empty values for user to fill
+    const newRow: WorkLogGridRow = {
+      id: crypto.randomUUID(),
+      date: new Date(), // Default to current date
+      hours: "", // Empty - user will fill in  
+      projectId: "",
+      projectName: "",
+      categoryId: "", 
+      categoryName: "",
+      details: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      userId: "", // Will be set by backend
+    };
+
+    // AG Grid standard: Add row using applyTransaction
+    const result = gridApi.applyTransaction({ 
+      add: [newRow],
+      addIndex: 0 // Add at top
     });
 
-    toast.success(
-      `${newRows.length}行を追加しました（各項目を入力して保存してください）`,
-    );
-  }, []);
+    if (result?.add && result.add.length > 0) {
+      toast.success("新しい行を追加しました（Ctrl+N で連続追加可能）");
+      
+      // Just focus on the new row without starting edit mode for better UX
+      setTimeout(() => {
+        gridApi.setFocusedCell(0, "date");
+        // Don't auto-start editing to allow continuous row addition
+        // User can press Enter or double-click to start editing
+      }, 100);
+    }
+  }, [batchEditingEnabled, gridApi]);
 
   // Handle row updates
   const handleRowUpdate = useCallback(
@@ -542,7 +597,7 @@ export function EnhancedWorkLogTable({
     [onBatchUpdateWorkLogs, onUpdateWorkLog, onRefresh],
   );
 
-  // Handle row deletion
+  // Handle immediate row deletion (non-batch mode)
   const handleRowDelete = useCallback(
     async (ids: string[]) => {
       try {
@@ -556,6 +611,28 @@ export function EnhancedWorkLogTable({
       }
     },
     [onDeleteWorkLog, onRefresh],
+  );
+
+  // Handle batch deletion (batch editing mode)
+  const handleBatchDelete = useCallback(
+    async (ids: string[]) => {
+      if (!gridApi) return;
+      
+      // Get selected rows for deletion
+      const selectedNodes = gridApi.getSelectedNodes();
+      if (selectedNodes.length === 0) {
+        toast.info("削除する行を選択してください");
+        return;
+      }
+
+      const selectedData = selectedNodes.map(node => node.data).filter(Boolean);
+      
+      // Remove from AG Grid only (don't call API)
+      gridApi.applyTransaction({ remove: selectedData });
+      
+      toast.success(`${selectedData.length}行をバッチ削除対象に追加しました（保存時に反映されます）`);
+    },
+    [gridApi],
   );
 
   // Handle form submission
@@ -581,36 +658,28 @@ export function EnhancedWorkLogTable({
     }
   };
 
-  // Handle cell editing - store changes instead of immediate save
-  const onCellEditingStopped = useCallback((event: CellEditingStoppedEvent) => {
-    const { data, colDef, newValue, oldValue } = event;
-
-    if (newValue === oldValue) return;
-
+  // AG Grid standard: Simple cell value change handler
+  const onCellValueChanged = useCallback((event: any) => {
+    const { data, colDef, newValue } = event;
     const field = colDef.field;
+    
     if (!field) return;
 
-    // Update related fields for consistency
+    // Update related fields for consistency (project/category names)
     if (field === "projectId") {
-      // Update projectName when projectId changes
       data.projectName = projectsMap.get(newValue) || "Unknown";
     } else if (field === "categoryId") {
-      // Update categoryName when categoryId changes
       data.categoryName = categoriesMap.get(newValue) || "Unknown";
     }
-
-    // Store the change in pending changes
-    setPendingChanges((prev) => {
-      const newChanges = new Map(prev);
-      const workLogId = data.id;
-      const existingChanges = newChanges.get(workLogId) || {};
-      newChanges.set(workLogId, {
-        ...existingChanges,
-        [field]: newValue,
-      });
-      return newChanges;
-    });
+    
+    // AG Grid handles the data internally - no manual state sync needed
   }, [projectsMap, categoriesMap]);
+
+  // AG Grid standard: Minimal cell editing start handler
+  const onCellEditingStarted = useCallback((event: any) => {
+    // Let AG Grid handle the date editor with the current value
+    // No manual intervention needed
+  }, []);
 
   // Validate work log data
   const validateWorkLogData = useCallback((data: Partial<WorkLog>) => {
@@ -668,54 +737,61 @@ export function EnhancedWorkLogTable({
     return errors;
   }, []);
 
-  // Handle batch save
+  // AG Grid standard: Simplified batch save with validation
   const handleBatchSave = useCallback(async () => {
-    // Determine which changes to process
-    let changesToProcess = pendingChanges;
-    
-    // In batch editing mode, if no changes were made, use current grid data
-    if (pendingChanges.size === 0) {
-      const currentPendingChanges = new Map<string, Partial<WorkLog>>();
-      gridApi?.forEachNode((node) => {
-        if (node.data) {
-          currentPendingChanges.set(node.data.id, {
-            date: node.data.date,
-            hours: node.data.hours,
-            projectId: node.data.projectId,
-            categoryId: node.data.categoryId,
-            details: node.data.details || "",
-          });
-        }
-      });
-      
-      if (currentPendingChanges.size === 0) {
-        toast.info("データがありません");
-        return;
-      }
-      
-      changesToProcess = currentPendingChanges;
+    if (!gridApi) {
+      toast.error("グリッドが初期化されていません");
+      return;
     }
 
-    // Validate all changes before saving
+    // Get current data from AG Grid (source of truth)
+    const currentGridData: WorkLogGridRow[] = [];
+    gridApi.forEachNode((node) => {
+      if (node.data) {
+        currentGridData.push(node.data);
+      }
+    });
+
+    if (currentGridData.length === 0) {
+      toast.info("データがありません");
+      return;
+    }
+
+    // Separate new, updated, and deleted rows
+    const originalIds = new Set(workLogs.map(wl => wl.id));
+    const currentIds = new Set(currentGridData.map(row => row.id));
+    
+    const newRows: WorkLogGridRow[] = [];
+    const updatedRows: WorkLogGridRow[] = [];
+    const deletedRows: string[] = [];
     const validationErrors = new Map<string, string[]>();
 
-    for (const [id, data] of changesToProcess.entries()) {
-      // Get complete row data from grid
-      const gridRow = gridApi?.getRowNode(id)?.data;
-      const completeData = { ...gridRow, ...data };
-
-      const errors = validateWorkLogData(completeData);
-      if (errors.length > 0) {
-        validationErrors.set(id, errors);
+    // Find deleted rows (in original but not in current)
+    for (const originalRow of workLogs) {
+      if (!currentIds.has(originalRow.id)) {
+        deletedRows.push(originalRow.id);
       }
     }
 
-    // If there are validation errors, show them and mark failed rows
+    // Categorize and validate current rows
+    for (const row of currentGridData) {
+      const errors = validateWorkLogData(row);
+      if (errors.length > 0) {
+        validationErrors.set(row.id, errors);
+        continue;
+      }
+
+      if (!originalIds.has(row.id)) {
+        newRows.push(row);
+      } else {
+        updatedRows.push(row);
+      }
+    }
+
+    // Show validation errors if any
     if (validationErrors.size > 0) {
       const errorMessages = Array.from(validationErrors.entries())
-        .map(
-          ([id, errors]) => `ID: ${id.slice(0, 8)}... - ${errors.join(", ")}`,
-        )
+        .map(([id, errors]) => `ID: ${id.slice(0, 8)}... - ${errors.join(", ")}`)
         .join("\n");
 
       toast.error(`バリデーションエラー:\n${errorMessages}`);
@@ -726,177 +802,107 @@ export function EnhancedWorkLogTable({
     setIsSubmitting(true);
 
     try {
-      // Separate new rows from existing rows
-      const pendingEntries = Array.from(changesToProcess.entries());
-      const newRows: Array<{ id: string; data: Partial<WorkLog> }> = [];
-      const existingRows: Array<{ id: string; data: Partial<WorkLog> }> = [];
-
-      for (const [id, data] of pendingEntries) {
-        // Check if this is a new row by looking at the current rowData
-        const foundInRowData = rowData.find((row) => row.id === id);
-        const isNewRow = !foundInRowData;
-
-        if (isNewRow) {
-          // For new rows, we need the complete data from the grid
-          const gridRow = gridApi?.getRowNode(id)?.data;
-
-          if (gridRow) {
-            // Got data from grid node
-            newRows.push({
-              id,
-              data: {
-                date: gridRow.date,
-                hours: gridRow.hours,
-                projectId: gridRow.projectId,
-                categoryId: gridRow.categoryId,
-                details: gridRow.details,
-                ...data, // Apply any pending changes
-              },
-            });
-          } else {
-            // Grid node not found, try to construct from pending changes
-            // This happens when the row was added but grid hasn't updated yet
-
-            // Check if we have all required fields in pending changes
-            if (data.date && data.hours && data.projectId && data.categoryId) {
-              newRows.push({
-                id,
-                data: {
-                  date: data.date,
-                  hours: data.hours,
-                  projectId: data.projectId,
-                  categoryId: data.categoryId,
-                  details: data.details || "",
-                },
-              });
-            }
-          }
-        } else {
-          existingRows.push({ id, data });
-        }
+      // Delete removed rows
+      if (deletedRows.length > 0) {
+        const deletePromises = deletedRows.map(id => onDeleteWorkLog(id));
+        await Promise.all(deletePromises);
       }
 
-      // Handle new rows first (create)
+      // Create new rows
       if (newRows.length > 0) {
-        const createPromises = newRows.map(({ data }) => {
-          const dateStr =
-            data.date instanceof Date
-              ? data.date.toISOString().split("T")[0]
-              : data.date || new Date().toISOString().split("T")[0];
-
-          // Validate that required fields have actual values (not empty strings)
-          if (!data.projectId || data.projectId.trim() === "") {
-            throw new Error("プロジェクトを選択してください");
-          }
-          if (!data.categoryId || data.categoryId.trim() === "") {
-            throw new Error("カテゴリを選択してください");
-          }
-          if (!data.hours || data.hours.trim() === "") {
-            throw new Error("時間を入力してください");
-          }
-
+        const createPromises = newRows.map(row => {
           const createData = {
-            date: dateStr,
-            hours: data.hours,
-            projectId: data.projectId,
-            categoryId: data.categoryId,
-            details: data.details || "",
+            date: row.date instanceof Date ? row.date.toISOString().split('T')[0] : row.date,
+            hours: row.hours,
+            projectId: row.projectId,
+            categoryId: row.categoryId,
+            details: row.details || "",
           };
-
           return onCreateWorkLog(createData);
         });
-
         await Promise.all(createPromises);
       }
 
-      // Handle existing rows (update)
-      if (existingRows.length > 0) {
-        const response = await fetch("/api/work-logs/batch", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(existingRows),
+      // Update existing rows
+      if (updatedRows.length > 0) {
+        const updatePromises = updatedRows.map(row => {
+          const updateData = {
+            date: row.date instanceof Date ? row.date.toISOString().split('T')[0] : row.date,
+            hours: row.hours,
+            projectId: row.projectId,
+            categoryId: row.categoryId,
+            details: row.details || "",
+          };
+          return onUpdateWorkLog(row.id, updateData);
         });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          console.error("Batch update failed:", {
-            status: response.status,
-            statusText: response.statusText,
-            result,
-          });
-          throw new Error(result.error?.message || "Batch update failed");
-        }
-
-        if (!result.success) {
-          throw new Error(result.error?.message || "Batch update failed");
-        }
+        await Promise.all(updatePromises);
       }
 
-      // Success - all operations completed
-      toast.success(`${changesToProcess.size}件の変更を保存しました`);
-      setPendingChanges(new Map());
+      // Success
+      const totalChanges = newRows.length + updatedRows.length + deletedRows.length;
+      const changeDetails = [];
+      if (newRows.length > 0) changeDetails.push(`${newRows.length}件追加`);
+      if (updatedRows.length > 0) changeDetails.push(`${updatedRows.length}件更新`);
+      if (deletedRows.length > 0) changeDetails.push(`${deletedRows.length}件削除`);
+      
+      toast.success(`バッチ処理完了: ${changeDetails.join(", ")}`);
       setFailedWorkLogIds(new Set());
       setBatchEditingEnabled(false);
-      // Data refresh
       onRefresh?.();
     } catch (error) {
       console.error("Batch save error:", error);
-
-      // Parse validation errors if available
+      
       if (error instanceof Error) {
-        const errorMessage = error.message;
-        if (
-          errorMessage.includes("validation") ||
-          errorMessage.includes("Invalid")
-        ) {
-          toast.error("バリデーションエラー: データを確認してください");
-        } else {
-          toast.error(`保存に失敗しました: ${errorMessage}`);
-        }
+        toast.error(`保存に失敗しました: ${error.message}`);
       } else {
         toast.error("保存に失敗しました");
       }
-
-      // Mark failed rows for visual indication
-      const failedIds = Array.from(changesToProcess.keys());
+      
+      // Mark all changed rows as failed (for new/updated rows)
+      const failedIds = [...newRows, ...updatedRows].map(row => row.id);
       setFailedWorkLogIds(new Set(failedIds));
+      
+      // Note: Deleted rows can't be highlighted as they're no longer in the grid
     } finally {
       setIsSubmitting(false);
     }
-  }, [
-    pendingChanges,
-    onRefresh,
-    rowData,
-    gridApi,
-    onCreateWorkLog,
-    validateWorkLogData,
-  ]);
+  }, [gridApi, workLogs, validateWorkLogData, onCreateWorkLog, onUpdateWorkLog, onDeleteWorkLog, onRefresh]);
 
-  // Handle cancel batch editing
+  // AG Grid standard: Simplified cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {
-    if (pendingChanges.size > 0) {
+    if (!gridApi) {
+      setBatchEditingEnabled(false);
+      return;
+    }
+
+    // Check for any changes (additions or deletions)
+    const currentRowCount = gridApi.getDisplayedRowCount();
+    const originalRowCount = workLogs.length;
+    
+    // Also check if any rows were deleted
+    const currentIds = new Set<string>();
+    gridApi.forEachNode(node => {
+      if (node.data?.id) currentIds.add(node.data.id);
+    });
+    
+    const originalIds = new Set(workLogs.map(wl => wl.id));
+    const hasDeletedRows = workLogs.some(wl => !currentIds.has(wl.id));
+    const hasNewRows = currentRowCount > originalRowCount;
+    
+    if (hasNewRows || hasDeletedRows) {
       setCancelDialogOpen(true);
     } else {
       setBatchEditingEnabled(false);
     }
-  }, [pendingChanges.size]);
+  }, [gridApi, workLogs]);
 
+  // AG Grid standard: Reset to original data
   const handleConfirmCancel = () => {
-    // Remove new rows that haven't been saved to the database
-    const newRowIds = Array.from(pendingChanges.keys()).filter(
-      (id) => !rowData.find((row) => row.id === id),
-    );
-
-    if (newRowIds.length > 0 && gridApi) {
-      // Remove new rows from the grid
-      const rowsToRemove = newRowIds
-        .map((id) => gridApi.getRowNode(id)?.data)
-        .filter(Boolean);
-      gridApi.applyTransaction({ remove: rowsToRemove });
+    if (gridApi) {
+      // Reset AG Grid data to original workLogs data
+      gridApi.setGridOption('rowData', rowData);
     }
-
-    setPendingChanges(new Map());
+    
     setFailedWorkLogIds(new Set());
     setBatchEditingEnabled(false);
     setCancelDialogOpen(false);
@@ -907,73 +913,7 @@ export function EnhancedWorkLogTable({
     params.api.sizeColumnsToFit();
   }, []);
 
-  // Sync data when batch editing mode changes
-  const [prevBatchEditingEnabled, setPrevBatchEditingEnabled] = useState(batchEditingEnabled);
-  
-  useEffect(() => {
-    if (batchEditingEnabled !== prevBatchEditingEnabled && gridApi) {
-      // Force grid refresh to ensure proper data sync
-      setTimeout(() => {
-        gridApi.refreshCells({ force: true });
-        gridApi.sizeColumnsToFit();
-        
-        // If entering batch editing mode, ensure all rows have complete data
-        if (batchEditingEnabled) {
-          // Pre-populate pendingChanges with all existing row data
-          // This ensures existing values are recognized during validation
-          const newPendingChanges = new Map<string, Partial<WorkLog>>();
-          
-          gridApi.forEachNode((node) => {
-            if (node.data) {
-              // Ensure projectId and categoryId are properly set
-              if (!node.data.projectId && node.data.projectName) {
-                // Try to find projectId from projectName
-                const project = projects.find(p => p.name === node.data.projectName);
-                if (project) {
-                  node.data.projectId = project.id;
-                }
-              }
-              if (!node.data.categoryId && node.data.categoryName) {
-                // Try to find categoryId from categoryName
-                const category = categories.find(c => c.name === node.data.categoryName);
-                if (category) {
-                  node.data.categoryId = category.id;
-                }
-              }
-              
-              // Ensure projectName and categoryName are set from IDs
-              if (node.data.projectId && !node.data.projectName) {
-                node.data.projectName = projectsMap.get(node.data.projectId) || "Unknown";
-              }
-              if (node.data.categoryId && !node.data.categoryName) {
-                node.data.categoryName = categoriesMap.get(node.data.categoryId) || "Unknown";
-              }
-
-              // Add existing row data to pendingChanges so validation recognizes existing values
-              newPendingChanges.set(node.data.id, {
-                date: node.data.date,
-                hours: node.data.hours,
-                projectId: node.data.projectId,
-                categoryId: node.data.categoryId,
-                details: node.data.details || "",
-              });
-            }
-          });
-          
-          // Set the pre-populated pending changes
-          setPendingChanges(newPendingChanges);
-          
-          // Force another refresh after data sync
-          gridApi.refreshCells({ force: true });
-        } else {
-          // When exiting batch editing mode, clear pending changes
-          setPendingChanges(new Map());
-        }
-      }, 100);
-      
-      setPrevBatchEditingEnabled(batchEditingEnabled);
-    }
-  }, [batchEditingEnabled, prevBatchEditingEnabled, gridApi, projects, categories, projectsMap, categoriesMap]);
+  // AG Grid automatically handles column sizing and refresh
 
   if (isLoading) {
     return <div className="text-center py-8">Loading work logs...</div>;
@@ -1018,11 +958,11 @@ export function EnhancedWorkLogTable({
                   variant="default"
                   size="lg"
                   onClick={handleBatchSave}
-                  disabled={isSubmitting || pendingChanges.size === 0}
+                  disabled={isSubmitting}
                 >
                   {isSubmitting
                     ? "保存中..."
-                    : `保存 (${pendingChanges.size}件)`}
+                    : "保存"}
                 </Button>
                 <Button
                   variant="outline"
@@ -1044,26 +984,44 @@ export function EnhancedWorkLogTable({
         defaultColDef={defaultColDef}
         getRowClass={getRowClass}
         onGridReady={onGridReady}
-        onCellEditingStopped={onCellEditingStopped}
-        onRowAdd={handleRowAdd}
-        onDataChange={(_newData) => {
-          // When data changes locally, we don't need to do anything
-          // The actual save will happen when user uses the form dialog or batch save
-        }}
+        // Cell value changes handled via column definitions
+        // onCellEditingStarted handled at column level
+        onRowAdd={handleRowAdd} // Pass our handleRowAdd to toolbar
+        onDataChange={undefined} // Disable data change callback to prevent external interference
         onRowUpdate={handleRowUpdate}
-        onRowDelete={handleRowDelete}
+        onRowDelete={batchEditingEnabled ? handleBatchDelete : handleRowDelete}
         enableToolbar={true}
         batchEditingEnabled={batchEditingEnabled}
         enableUndoRedo={true}
         maxUndoRedoSteps={20}
         gridOptions={{
           rowSelection: "multiple",
-          suppressRowClickSelection: batchEditingEnabled,
+          suppressRowClickSelection: false, // Always allow row selection
           singleClickEdit: batchEditingEnabled,
           stopEditingWhenCellsLoseFocus: true,
           enterNavigatesVertically: true,
           suppressColumnVirtualisation: true, // Prevent column virtualization issues
           ensureDomOrder: true, // Ensure DOM order matches logical order
+          suppressCellFocus: false, // Allow cell focus
+          suppressRowTransform: true, // Prevent row transformation that might affect data
+          rowBuffer: 0, // Don't buffer rows to avoid data inconsistencies
+          animateRows: false, // Disable row animation to prevent data conflicts
+          onCellKeyDown: (event: any) => {
+            const key = event.event?.key?.toLowerCase();
+            const ctrlKey = event.event?.ctrlKey;
+            
+            if (ctrlKey && key === 'n' && batchEditingEnabled) {
+              event.event?.preventDefault();
+              handleRowAdd([]);
+            } else if (key === 'delete' && !event.editing) {
+              // Delete selected rows when not editing
+              event.event?.preventDefault();
+              handleRowDelete([]);
+            } else if (ctrlKey && key === 'd' && batchEditingEnabled) {
+              // Duplicate selected rows handled by toolbar
+              event.event?.preventDefault();
+            }
+          },
         }}
       />
 
@@ -1088,7 +1046,7 @@ export function EnhancedWorkLogTable({
           <DialogHeader>
             <DialogTitle>未保存の変更を破棄しますか？</DialogTitle>
             <DialogDescription>
-              {pendingChanges.size}件の未保存の変更があります。
+              未保存の変更があります。
               キャンセルすると、これらの変更は失われます。
             </DialogDescription>
           </DialogHeader>

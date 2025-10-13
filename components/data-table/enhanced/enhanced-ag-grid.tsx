@@ -163,13 +163,16 @@ export function EnhancedAGGrid<T extends { id: string }>({
       userId: "", // Will be set by the backend
     } as unknown as T;
 
-    // Always add to grid locally first
+    // Add to grid using transaction only (don't modify external rowData)
     gridApi?.applyTransaction({ add: [newRow], addIndex: 0 });
-    onDataChange?.([newRow as T, ...rowData]);
 
-    // Force grid refresh to ensure proper column alignment
+    // Force grid refresh for proper column alignment, but avoid affecting existing data
     setTimeout(() => {
-      gridApi?.refreshCells({ force: true });
+      // Only refresh newly added rows to prevent data loss in existing rows
+      gridApi?.refreshCells({ 
+        force: true,
+        rowNodes: [gridApi?.getRowNode(newRow.id)].filter(Boolean) as any[]
+      });
       gridApi?.sizeColumnsToFit();
 
       // Focus on the new row for editing
@@ -224,13 +227,22 @@ export function EnhancedAGGrid<T extends { id: string }>({
       })
       .filter(Boolean) as T[];
 
-    // Always add to grid locally first
+    // Add to grid using transaction only (don't modify external rowData)
     gridApi?.applyTransaction({ add: duplicatedRows, addIndex: 0 });
-    onDataChange?.([...duplicatedRows, ...rowData]);
 
-    // Force grid refresh to ensure proper display
+    // Force grid refresh for proper display, but avoid affecting existing data
     setTimeout(() => {
-      gridApi?.refreshCells({ force: true });
+      // Only refresh newly duplicated rows to prevent data loss in existing rows
+      const newRowNodes = duplicatedRows
+        .map(row => gridApi?.getRowNode(row.id))
+        .filter(Boolean) as any[];
+      
+      if (newRowNodes.length > 0) {
+        gridApi?.refreshCells({ 
+          force: true,
+          rowNodes: newRowNodes
+        });
+      }
       gridApi?.sizeColumnsToFit();
     }, 100);
 
@@ -310,8 +322,12 @@ export function EnhancedAGGrid<T extends { id: string }>({
         const rowsToRemove = selectedNodes.map((node) => node.data);
         gridApi?.applyTransaction({ remove: rowsToRemove });
 
-        const newData = rowData.filter((row) => !rowsToDelete.includes(row.id));
-        onDataChange?.(newData);
+        // Only call onDataChange if it's expected to update external state
+        // For internal grid operations, the transaction handles the updates
+        if (onDataChange) {
+          const newData = rowData.filter((row) => !rowsToDelete.includes(row.id));
+          onDataChange(newData);
+        }
       }
 
       const action: GridAction = {

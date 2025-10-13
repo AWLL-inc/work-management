@@ -19,7 +19,8 @@ docs/
 │   ├── 002-server-side-implementation.md
 │   ├── 003-database-integration.md
 │   ├── 004-development-guidelines.md
-│   └── 005-ui-library-and-data-table.md
+│   ├── 005-ui-library-and-data-table.md
+│   └── 006-ag-grid-standard-compliance.md
 ```
 
 ### Language Guidelines
@@ -41,6 +42,7 @@ Architecture decisions are documented in `docs/adr/` using a structured format. 
 - **ADR-003**: Database Integration with Vercel Postgres - Data layer and ORM choices
 - **ADR-004**: Development Guidelines and Best Practices - Coding standards and workflow
 - **ADR-005**: UIライブラリとデータテーブルの選定 - UI components and data table library selection
+- **ADR-006**: AG Grid標準準拠の実装ガイドライン - AG Grid implementation standards and customization guidelines
 
 ### Creating New ADRs
 When making significant technical decisions, document them as ADRs:
@@ -58,6 +60,48 @@ When making significant technical decisions, document them as ADRs:
 - **Testing**: Comprehensive test coverage with Vitest and Playwright
 - **Git Workflow**: Conventional commits with feature branches
 - **Performance**: Core Web Vitals optimization and bundle monitoring
+
+### AG Grid Implementation Standards (ADR-006)
+**CRITICAL**: AG Grid implementations must follow standard patterns to ensure stability and maintainability.
+
+#### 🚨 Required Standards
+- **AG Grid APIs Only**: Use `gridApi.applyTransaction()` for all data modifications
+- **Single Source of Truth**: AG Grid internal data is the authoritative source
+- **Standard Events**: Use `onCellValueChanged`, `onGridReady` - avoid custom event handling
+- **Validation**: Perform validation at save time, not during cell editing
+
+#### ✅ Approved Patterns
+```typescript
+// Row addition (Standard)
+gridApi.applyTransaction({ add: [newRow], addIndex: 0 });
+
+// Data retrieval (Standard)
+const currentData = [];
+gridApi.forEachNode(node => currentData.push(node.data));
+
+// Batch operations (Standard)
+await Promise.all([deletePromises, createPromises, updatePromises]);
+```
+
+#### ❌ Prohibited Patterns
+```typescript
+// DON'T: Duplicate state management
+const [gridRowData, setGridRowData] = useState([]);
+
+// DON'T: Toast in valueParser
+valueParser: (params) => {
+  if (!valid) toast.error("Error"); // Prohibited
+}
+
+// DON'T: Complex custom event handling
+onCellEditingStopped: (event) => { /* Complex logic */ } // Avoid
+```
+
+#### 📋 Deviation Process
+1. **Document need**: Why can't standard patterns be used?
+2. **Create ADR**: Document the decision and alternatives considered  
+3. **Team approval**: Get explicit approval before implementation
+4. **Update documentation**: Add to ADR-006 if approved
 
 ### Key Standards Documents
 - **ADR-004**: Development Guidelines and Best Practices - Comprehensive coding standards

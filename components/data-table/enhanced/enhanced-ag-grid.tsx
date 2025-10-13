@@ -469,104 +469,107 @@ export function EnhancedAGGrid<T extends { id: string }>({
   }, []);
 
   // Cell-level copy & paste handler for Community Edition
-  const onCellKeyDown = useCallback((event: CellKeyDownEvent) => {
-    const { event: keyboardEvent, node, column } = event;
+  const onCellKeyDown = useCallback(
+    (event: CellKeyDownEvent) => {
+      const { event: keyboardEvent, node, column } = event;
 
-    // Type guard for keyboard event
-    if (!keyboardEvent || !(keyboardEvent instanceof KeyboardEvent)) {
-      return;
-    }
-
-    const currentBatchEditingEnabled = batchEditingEnabledRef.current;
-
-    // Handle Ctrl+C (or Cmd+C on Mac) for cell copy (only in batch editing mode)
-    if (
-      (keyboardEvent.ctrlKey || keyboardEvent.metaKey) &&
-      keyboardEvent.key === "c" &&
-      currentBatchEditingEnabled
-    ) {
-      keyboardEvent.preventDefault();
-      keyboardEvent.stopPropagation();
-
-      // Get the current cell value
-      const cellValue = node.data[column.getId()];
-      const textToCopy = cellValue != null ? String(cellValue) : "";
-
-      // Try multiple methods for clipboard access
-      if (navigator.clipboard?.writeText) {
-        // Modern clipboard API
-        navigator.clipboard
-          .writeText(textToCopy)
-          .then(() => {
-            toast.success(
-              `セル値をコピーしました: "${textToCopy.length > 20 ? `${textToCopy.substring(0, 20)}...` : textToCopy}"`,
-            );
-          })
-          .catch((err) => {
-            console.error(
-              "Failed to write clipboard with navigator.clipboard:",
-              err,
-            );
-            // Fallback to execCommand
-            fallbackCopyTextToClipboard(textToCopy);
-          });
-      } else {
-        // Fallback for older browsers
-        fallbackCopyTextToClipboard(textToCopy);
-      }
-    }
-
-    // Handle Ctrl+V (or Cmd+V on Mac) for cell paste (only in batch editing mode)
-    if (
-      (keyboardEvent.ctrlKey || keyboardEvent.metaKey) &&
-      keyboardEvent.key === "v" &&
-      currentBatchEditingEnabled
-    ) {
-      keyboardEvent.preventDefault();
-      keyboardEvent.stopPropagation();
-
-      // Check if current column is editable
-      if (!column.getColDef().editable) {
-        toast.warning("このセルは編集できません");
+      // Type guard for keyboard event
+      if (!keyboardEvent || !(keyboardEvent instanceof KeyboardEvent)) {
         return;
       }
 
-      if (navigator.clipboard?.readText) {
-        navigator.clipboard
-          .readText()
-          .then((clipboardText) => {
-            if (!clipboardText) return;
+      const currentBatchEditingEnabled = batchEditingEnabledRef.current;
 
-            // Check if this is a Details field that supports multi-line content
-            const columnId = column.getId();
-            const isDetailsField = columnId === "details";
+      // Handle Ctrl+C (or Cmd+C on Mac) for cell copy (only in batch editing mode)
+      if (
+        (keyboardEvent.ctrlKey || keyboardEvent.metaKey) &&
+        keyboardEvent.key === "c" &&
+        currentBatchEditingEnabled
+      ) {
+        keyboardEvent.preventDefault();
+        keyboardEvent.stopPropagation();
 
-            let valueToSet: string;
-            if (isDetailsField) {
-              // For Details field, preserve the full multi-line content
-              // Remove tabs (for Excel-style data) but keep newlines
-              valueToSet = clipboardText.replace(/\t/g, " ");
-            } else {
-              // For other fields, take only the first value (before tab or newline)
-              valueToSet = clipboardText.split(/[\t\n]/)[0];
-            }
+        // Get the current cell value
+        const cellValue = node.data[column.getId()];
+        const textToCopy = cellValue != null ? String(cellValue) : "";
 
-            // Set the value to current cell
-            node.setDataValue(columnId, valueToSet);
-
-            toast.success("セルに貼り付けました");
-          })
-          .catch((err) => {
-            console.error("Failed to read clipboard:", err);
-            toast.error("クリップボードの読み取りに失敗しました");
-          });
-      } else {
-        toast.error(
-          "このブラウザではクリップボード機能がサポートされていません",
-        );
+        // Try multiple methods for clipboard access
+        if (navigator.clipboard?.writeText) {
+          // Modern clipboard API
+          navigator.clipboard
+            .writeText(textToCopy)
+            .then(() => {
+              toast.success(
+                `セル値をコピーしました: "${textToCopy.length > 20 ? `${textToCopy.substring(0, 20)}...` : textToCopy}"`,
+              );
+            })
+            .catch((err) => {
+              console.error(
+                "Failed to write clipboard with navigator.clipboard:",
+                err,
+              );
+              // Fallback to execCommand
+              fallbackCopyTextToClipboard(textToCopy);
+            });
+        } else {
+          // Fallback for older browsers
+          fallbackCopyTextToClipboard(textToCopy);
+        }
       }
-    }
-  }, [fallbackCopyTextToClipboard]); // Add the dependency
+
+      // Handle Ctrl+V (or Cmd+V on Mac) for cell paste (only in batch editing mode)
+      if (
+        (keyboardEvent.ctrlKey || keyboardEvent.metaKey) &&
+        keyboardEvent.key === "v" &&
+        currentBatchEditingEnabled
+      ) {
+        keyboardEvent.preventDefault();
+        keyboardEvent.stopPropagation();
+
+        // Check if current column is editable
+        if (!column.getColDef().editable) {
+          toast.warning("このセルは編集できません");
+          return;
+        }
+
+        if (navigator.clipboard?.readText) {
+          navigator.clipboard
+            .readText()
+            .then((clipboardText) => {
+              if (!clipboardText) return;
+
+              // Check if this is a Details field that supports multi-line content
+              const columnId = column.getId();
+              const isDetailsField = columnId === "details";
+
+              let valueToSet: string;
+              if (isDetailsField) {
+                // For Details field, preserve the full multi-line content
+                // Remove tabs (for Excel-style data) but keep newlines
+                valueToSet = clipboardText.replace(/\t/g, " ");
+              } else {
+                // For other fields, take only the first value (before tab or newline)
+                valueToSet = clipboardText.split(/[\t\n]/)[0];
+              }
+
+              // Set the value to current cell
+              node.setDataValue(columnId, valueToSet);
+
+              toast.success("セルに貼り付けました");
+            })
+            .catch((err) => {
+              console.error("Failed to read clipboard:", err);
+              toast.error("クリップボードの読み取りに失敗しました");
+            });
+        } else {
+          toast.error(
+            "このブラウザではクリップボード機能がサポートされていません",
+          );
+        }
+      }
+    },
+    [fallbackCopyTextToClipboard],
+  ); // Add the dependency
 
   // Enhanced grid options (Community edition compatible)
   const enhancedGridOptions: GridOptions = useMemo(

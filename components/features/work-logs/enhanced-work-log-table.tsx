@@ -11,7 +11,7 @@ import type {
   RowHeightParams,
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
-import { formatDateForDisplay, parseDate } from "@/lib/utils";
+import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { CustomDateEditor } from "./custom-date-editor";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
@@ -282,7 +282,11 @@ export function EnhancedWorkLogTable({
         // Convert various date formats to YYYY-MM-DD
         let dateString: string;
 
-        if (newValue && typeof newValue === "object" && "toISOString" in newValue) {
+        if (
+          newValue &&
+          typeof newValue === "object" &&
+          "toISOString" in newValue
+        ) {
           // Handle Date object
           dateString = (newValue as Date).toISOString().split("T")[0];
         } else if (typeof newValue === "string") {
@@ -539,7 +543,7 @@ export function EnhancedWorkLogTable({
 
   // AG Grid standard: Handle row addition with applyTransaction
   const handleRowAdd = useCallback(
-    async (newRows: WorkLogGridRow[]) => {
+    async (_newRows: WorkLogGridRow[]) => {
       if (!batchEditingEnabled) {
         toast.info("一括編集モードを有効にしてください");
         return;
@@ -644,7 +648,7 @@ export function EnhancedWorkLogTable({
 
   // Handle batch deletion (batch editing mode)
   const handleBatchDelete = useCallback(
-    async (ids: string[]) => {
+    async (_ids: string[]) => {
       if (!gridApi) return;
 
       // Get selected rows for deletion
@@ -692,7 +696,7 @@ export function EnhancedWorkLogTable({
   };
 
   // AG Grid standard: Simple cell value change handler
-  const onCellValueChanged = useCallback(
+  const _onCellValueChanged = useCallback(
     (event: CellValueChangedEvent) => {
       const { data, colDef, newValue } = event;
       const field = colDef.field;
@@ -712,10 +716,13 @@ export function EnhancedWorkLogTable({
   );
 
   // AG Grid standard: Minimal cell editing start handler
-  const onCellEditingStarted = useCallback((event: CellEditingStartedEvent) => {
-    // Let AG Grid handle the date editor with the current value
-    // No manual intervention needed
-  }, []);
+  const _onCellEditingStarted = useCallback(
+    (_event: CellEditingStartedEvent) => {
+      // Let AG Grid handle the date editor with the current value
+      // No manual intervention needed
+    },
+    [],
+  );
 
   // Validate work log data
   const validateWorkLogData = useCallback((data: Partial<WorkLog>) => {
@@ -883,7 +890,7 @@ export function EnhancedWorkLogTable({
       }
 
       // Success
-      const totalChanges =
+      const _totalChanges =
         newRows.length + updatedRows.length + deletedRows.length;
       const changeDetails = [];
       if (newRows.length > 0) changeDetails.push(`${newRows.length}件追加`);
@@ -940,7 +947,7 @@ export function EnhancedWorkLogTable({
       if (node.data?.id) currentIds.add(node.data.id);
     });
 
-    const originalIds = new Set(workLogs.map((wl) => wl.id));
+    const _originalIds = new Set(workLogs.map((wl) => wl.id));
     const hasDeletedRows = workLogs.some((wl) => !currentIds.has(wl.id));
     const hasNewRows = currentRowCount > originalRowCount;
 
@@ -1060,7 +1067,7 @@ export function EnhancedWorkLogTable({
           suppressRowTransform: true, // Prevent row transformation that might affect data
           rowBuffer: 0, // Don't buffer rows to avoid data inconsistencies
           animateRows: false, // Disable row animation to prevent data conflicts
-          onCellKeyDown: (event: any) => {
+          onCellKeyDown: (event: CellKeyDownEvent) => {
             const key = event.event?.key?.toLowerCase();
             const ctrlKey = event.event?.ctrlKey;
 

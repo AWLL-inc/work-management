@@ -7,6 +7,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import "../ag-grid-styles.css";
 import type {
   CellEditingStoppedEvent,
+  CellKeyDownEvent,
   ColDef,
   GetContextMenuItemsParams,
   GridApi,
@@ -15,6 +16,7 @@ import type {
   IRowNode,
   MenuItemDef,
   RowClassParams,
+  RowHeightParams,
   SelectionChangedEvent,
 } from "ag-grid-community";
 
@@ -46,7 +48,7 @@ interface EnhancedAGGridProps<T extends { id: string }>
   columnDefs: ColDef[];
   defaultColDef?: ColDef;
   getRowClass?: (params: RowClassParams) => string;
-  getRowHeight?: (params: any) => number;
+  getRowHeight?: (params: RowHeightParams) => number;
   onGridReady?: (params: GridReadyEvent) => void;
   onCellEditingStopped?: (event: CellEditingStoppedEvent) => void;
   gridOptions?: GridOptions;
@@ -74,7 +76,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
   // Use ref to get current value in callbacks
   const batchEditingEnabledRef = useRef(batchEditingEnabled);
   batchEditingEnabledRef.current = batchEditingEnabled;
-  
+
   // Grid references
   const gridRef = useRef<AgGridReact>(null);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
@@ -173,9 +175,11 @@ export function EnhancedAGGrid<T extends { id: string }>({
     // Force grid refresh for proper column alignment, but avoid affecting existing data
     setTimeout(() => {
       // Only refresh newly added rows to prevent data loss in existing rows
-      gridApi?.refreshCells({ 
+      gridApi?.refreshCells({
         force: true,
-        rowNodes: [gridApi?.getRowNode(newRow.id)].filter(Boolean) as any[]
+        rowNodes: [gridApi?.getRowNode(newRow.id)].filter(
+          Boolean,
+        ) as IRowNode[],
       });
       gridApi?.sizeColumnsToFit();
 
@@ -196,14 +200,9 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
     // Note: onRowAdd is not called here to avoid double row creation
     // Row addition is handled purely by AG Grid transaction
-  }, [
-    batchEditingEnabled,
-    gridApi,
-    addToHistory,
-    columnDefs,
-  ]);
+  }, [batchEditingEnabled, gridApi, addToHistory, columnDefs]);
 
-  // Row duplication handler  
+  // Row duplication handler
   const handleDuplicateRows = useCallback(async () => {
     if (selectedNodes.length === 0) {
       toast.info("複製する行を選択してください");
@@ -224,20 +223,24 @@ export function EnhancedAGGrid<T extends { id: string }>({
     } as T;
 
     // Get the row index of the selected row to insert directly below it
-    const selectedRowIndex = nodeToClone.rowIndex !== null ? nodeToClone.rowIndex + 1 : 0;
-    
+    const selectedRowIndex =
+      nodeToClone.rowIndex !== null ? nodeToClone.rowIndex + 1 : 0;
+
     // Add to grid using transaction only (don't modify external rowData)
-    gridApi?.applyTransaction({ add: [duplicatedRow], addIndex: selectedRowIndex });
+    gridApi?.applyTransaction({
+      add: [duplicatedRow],
+      addIndex: selectedRowIndex,
+    });
 
     // Force grid refresh for proper display, but avoid affecting existing data
     setTimeout(() => {
       // Only refresh the newly duplicated row to prevent data loss in existing rows
       const newRowNode = gridApi?.getRowNode(duplicatedRow.id);
-      
+
       if (newRowNode) {
-        gridApi?.refreshCells({ 
+        gridApi?.refreshCells({
           force: true,
-          rowNodes: [newRowNode]
+          rowNodes: [newRowNode],
         });
       }
       gridApi?.sizeColumnsToFit();
@@ -313,7 +316,9 @@ export function EnhancedAGGrid<T extends { id: string }>({
         // Only call onDataChange if it's expected to update external state
         // For internal grid operations, the transaction handles the updates
         if (onDataChange) {
-          const newData = rowData.filter((row) => !rowsToDelete.includes(row.id));
+          const newData = rowData.filter(
+            (row) => !rowsToDelete.includes(row.id),
+          );
           onDataChange(newData);
         }
       }
@@ -433,75 +438,101 @@ export function EnhancedAGGrid<T extends { id: string }>({
   }, [historyStack.redoStack, gridApi]);
 
   // Cell-level copy & paste handler for Community Edition
-  const onCellKeyDown = useCallback((event: any) => {
-    const { event: keyboardEvent, api, node, column } = event;
-    
+  const onCellKeyDown = useCallback((event: CellKeyDownEvent) => {
+    const { event: keyboardEvent, node, column } = event;
+
+    // Type guard for keyboard event
+    if (!keyboardEvent || !(keyboardEvent instanceof KeyboardEvent)) {
+      return;
+    }
+
     const currentBatchEditingEnabled = batchEditingEnabledRef.current;
-    
+
     // Handle Ctrl+C (or Cmd+C on Mac) for cell copy (only in batch editing mode)
-    if ((keyboardEvent.ctrlKey || keyboardEvent.metaKey) && keyboardEvent.key === 'c' && currentBatchEditingEnabled) {
+    if (
+      (keyboardEvent.ctrlKey || keyboardEvent.metaKey) &&
+      keyboardEvent.key === "c" &&
+      currentBatchEditingEnabled
+    ) {
       keyboardEvent.preventDefault();
       keyboardEvent.stopPropagation();
-      
+
       // Get the current cell value
       const cellValue = node.data[column.getId()];
-      const textToCopy = cellValue != null ? String(cellValue) : '';
-      
+      const textToCopy = cellValue != null ? String(cellValue) : "";
+
       // Try multiple methods for clipboard access
-      if (navigator.clipboard && navigator.clipboard.writeText) {
+      if (navigator.clipboard?.writeText) {
         // Modern clipboard API
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          toast.success(`セル値をコピーしました: "${textToCopy.length > 20 ? textToCopy.substring(0, 20) + '...' : textToCopy}"`);
-        }).catch((err) => {
-          console.error('Failed to write clipboard with navigator.clipboard:', err);
-          // Fallback to execCommand
-          fallbackCopyTextToClipboard(textToCopy);
-        });
+        navigator.clipboard
+          .writeText(textToCopy)
+          .then(() => {
+            toast.success(
+              `セル値をコピーしました: "${textToCopy.length > 20 ? `${textToCopy.substring(0, 20)}...` : textToCopy}"`,
+            );
+          })
+          .catch((err) => {
+            console.error(
+              "Failed to write clipboard with navigator.clipboard:",
+              err,
+            );
+            // Fallback to execCommand
+            fallbackCopyTextToClipboard(textToCopy);
+          });
       } else {
         // Fallback for older browsers
         fallbackCopyTextToClipboard(textToCopy);
       }
     }
-    
+
     // Handle Ctrl+V (or Cmd+V on Mac) for cell paste (only in batch editing mode)
-    if ((keyboardEvent.ctrlKey || keyboardEvent.metaKey) && keyboardEvent.key === 'v' && currentBatchEditingEnabled) {
+    if (
+      (keyboardEvent.ctrlKey || keyboardEvent.metaKey) &&
+      keyboardEvent.key === "v" &&
+      currentBatchEditingEnabled
+    ) {
       keyboardEvent.preventDefault();
       keyboardEvent.stopPropagation();
-      
+
       // Check if current column is editable
       if (!column.getColDef().editable) {
-        toast.warning('このセルは編集できません');
+        toast.warning("このセルは編集できません");
         return;
       }
-      
-      if (navigator.clipboard && navigator.clipboard.readText) {
-        navigator.clipboard.readText().then((clipboardText) => {
-          if (!clipboardText) return;
-          
-          // Check if this is a Details field that supports multi-line content
-          const columnId = column.getId();
-          const isDetailsField = columnId === 'details';
-          
-          let valueToSet;
-          if (isDetailsField) {
-            // For Details field, preserve the full multi-line content
-            // Remove tabs (for Excel-style data) but keep newlines
-            valueToSet = clipboardText.replace(/\t/g, ' ');
-          } else {
-            // For other fields, take only the first value (before tab or newline)
-            valueToSet = clipboardText.split(/[\t\n]/)[0];
-          }
-          
-          // Set the value to current cell
-          node.setDataValue(columnId, valueToSet);
-          
-          toast.success('セルに貼り付けました');
-        }).catch((err) => {
-          console.error('Failed to read clipboard:', err);
-          toast.error('クリップボードの読み取りに失敗しました');
-        });
+
+      if (navigator.clipboard?.readText) {
+        navigator.clipboard
+          .readText()
+          .then((clipboardText) => {
+            if (!clipboardText) return;
+
+            // Check if this is a Details field that supports multi-line content
+            const columnId = column.getId();
+            const isDetailsField = columnId === "details";
+
+            let valueToSet: string;
+            if (isDetailsField) {
+              // For Details field, preserve the full multi-line content
+              // Remove tabs (for Excel-style data) but keep newlines
+              valueToSet = clipboardText.replace(/\t/g, " ");
+            } else {
+              // For other fields, take only the first value (before tab or newline)
+              valueToSet = clipboardText.split(/[\t\n]/)[0];
+            }
+
+            // Set the value to current cell
+            node.setDataValue(columnId, valueToSet);
+
+            toast.success("セルに貼り付けました");
+          })
+          .catch((err) => {
+            console.error("Failed to read clipboard:", err);
+            toast.error("クリップボードの読み取りに失敗しました");
+          });
       } else {
-        toast.error('このブラウザではクリップボード機能がサポートされていません');
+        toast.error(
+          "このブラウザではクリップボード機能がサポートされていません",
+        );
       }
     }
   }, []); // Remove batchEditingEnabled from deps since we use ref
@@ -510,28 +541,30 @@ export function EnhancedAGGrid<T extends { id: string }>({
   const fallbackCopyTextToClipboard = useCallback((text: string) => {
     const textArea = document.createElement("textarea");
     textArea.value = text;
-    
+
     // Avoid scrolling to bottom
     textArea.style.top = "0";
     textArea.style.left = "0";
     textArea.style.position = "fixed";
-    
+
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    
+
     try {
-      const successful = document.execCommand('copy');
+      const successful = document.execCommand("copy");
       if (successful) {
-        toast.success(`セル値をコピーしました: "${text.length > 20 ? text.substring(0, 20) + '...' : text}"`);
+        toast.success(
+          `セル値をコピーしました: "${text.length > 20 ? `${text.substring(0, 20)}...` : text}"`,
+        );
       } else {
-        toast.error('コピーに失敗しました');
+        toast.error("コピーに失敗しました");
       }
     } catch (err) {
-      console.error('Fallback copy failed:', err);
-      toast.error('コピーに失敗しました');
+      console.error("Fallback copy failed:", err);
+      toast.error("コピーに失敗しました");
     }
-    
+
     document.body.removeChild(textArea);
   }, []);
 
@@ -555,7 +588,13 @@ export function EnhancedAGGrid<T extends { id: string }>({
       suppressClipboardPaste: true,
       suppressClipboardApi: false, // Allow clipboard API access
     }),
-    [gridOptions, enableUndoRedo, maxUndoRedoSteps, getRowHeight, onCellKeyDown],
+    [
+      gridOptions,
+      enableUndoRedo,
+      maxUndoRedoSteps,
+      getRowHeight,
+      onCellKeyDown,
+    ],
   );
 
   return (

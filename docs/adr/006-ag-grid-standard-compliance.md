@@ -101,7 +101,44 @@ valueParser: (params) => {
 - **onCellValueChanged**: 複雑な処理は避ける
 - **gridOptions**: 標準設定からの大幅な変更
 
-### 6. 標準から外れる場合の手順
+### 6. AG Grid Community版における制約とカスタマイゼーション
+
+#### クリップボード機能
+AG Grid Community版では、Enterprise版のClipboard/RangeSelection機能が利用できないため、以下のカスタム実装を承認済み：
+
+**✅ 承認済みカスタムクリップボード実装**
+```typescript
+// セル単位のコピー&ペースト（Ctrl+C / Ctrl+V）
+onCellKeyDown: (event: CellKeyDownEvent) => {
+  const { event: keyboardEvent, node, column } = event;
+  
+  // Ctrl+C: セル値のコピー
+  if ((keyboardEvent.ctrlKey || keyboardEvent.metaKey) && keyboardEvent.key === 'c') {
+    const cellValue = node.data[column.getId()];
+    navigator.clipboard.writeText(String(cellValue || ''));
+  }
+  
+  // Ctrl+V: セル値のペースト（詳細フィールドでの複数行コンテンツサポート）
+  if ((keyboardEvent.ctrlKey || keyboardEvent.metaKey) && keyboardEvent.key === 'v') {
+    // 実装詳細は省略
+  }
+}
+```
+
+**技術的根拠**: 
+- Enterprise機能へのアップグレードまでの暫定措置
+- Community版の制約を補完する必要最小限の実装
+- 標準的なClipboard APIの使用
+
+**機能仕様**:
+- セル単位のコピー&ペースト（Ctrl+C / Ctrl+V）
+- 詳細（Details）フィールドでの複数行コンテンツのサポート
+- 通常フィールドでは最初の値のみ（タブ・改行区切りの最初の要素）
+- バッチ編集モード有効時のみ動作
+
+**将来計画**: Enterprise版導入時に標準機能へ移行予定
+
+### 7. 標準から外れる場合の手順
 
 1. **技術的必要性の明確化**
    - なぜ標準パターンでは実現できないのか

@@ -150,11 +150,12 @@ export function EnhancedWorkLogTable({
       return {
         ...workLogCopy,
         // Ensure date is consistently formatted as YYYY-MM-DD string (no time)
-        date: workLogCopy.date instanceof Date 
-          ? workLogCopy.date.toISOString().split('T')[0] 
-          : typeof workLogCopy.date === 'string' 
-            ? workLogCopy.date.split('T')[0] // Remove time part if present
-            : new Date(workLogCopy.date).toISOString().split('T')[0],
+        date:
+          workLogCopy.date instanceof Date
+            ? workLogCopy.date.toISOString().split("T")[0]
+            : typeof workLogCopy.date === "string"
+              ? workLogCopy.date.split("T")[0] // Remove time part if present
+              : new Date(workLogCopy.date).toISOString().split("T")[0],
         // Ensure both ID and name fields are always available
         projectId: workLogCopy.projectId || "",
         projectName: projectsMap.get(workLogCopy.projectId) || "Unknown",
@@ -215,79 +216,87 @@ export function EnhancedWorkLogTable({
       valueGetter: (params) => {
         const value = params.data.date;
         if (!value) return null;
-        
+
         // For the date editor, we need to provide a consistent format
         if (value instanceof Date) {
-          return value.toISOString().split('T')[0];
+          return value.toISOString().split("T")[0];
         }
-        
-        if (typeof value === 'string') {
+
+        if (typeof value === "string") {
           // Remove time component if present
-          return value.split('T')[0];
+          return value.split("T")[0];
         }
-        
+
         return value;
       },
       valueFormatter: (params) => {
         const dateValue = params.value;
         if (!dateValue) return "";
-        
+
         // Handle different date formats
         if (dateValue instanceof Date) {
-          return dateValue.toISOString().split('T')[0].replace(/-/g, '/');
+          return dateValue.toISOString().split("T")[0].replace(/-/g, "/");
         }
-        
+
         // Always format as YYYY/MM/DD for consistent display
-        if (typeof dateValue === 'string') {
+        if (typeof dateValue === "string") {
           // Remove time part if present, then convert to display format
-          const dateOnly = dateValue.split('T')[0];
+          const dateOnly = dateValue.split("T")[0];
           if (dateOnly.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            return dateOnly.replace(/-/g, '/'); // Convert YYYY-MM-DD to YYYY/MM/DD
+            return dateOnly.replace(/-/g, "/"); // Convert YYYY-MM-DD to YYYY/MM/DD
           }
         }
-        
+
         return dateValue;
       },
       valueSetter: (params) => {
         const { newValue } = params;
-        
+
         // Convert any input to YYYY-MM-DD string format
-        if (newValue && typeof newValue === 'object' && newValue instanceof Date) {
-          params.data.date = newValue.toISOString().split('T')[0];
-        } else if (typeof newValue === 'string') {
+        if (
+          newValue &&
+          typeof newValue === "object" &&
+          newValue instanceof Date
+        ) {
+          params.data.date = newValue.toISOString().split("T")[0];
+        } else if (typeof newValue === "string") {
           // Handle various string formats and convert to YYYY-MM-DD
-          if (newValue.includes('/')) {
+          if (newValue.includes("/")) {
             // Convert YYYY/MM/DD to YYYY-MM-DD
-            params.data.date = newValue.replace(/\//g, '-');
+            params.data.date = newValue.replace(/\//g, "-");
           } else {
             // Remove time part if present
-            params.data.date = newValue.split('T')[0];
+            params.data.date = newValue.split("T")[0];
           }
         } else {
           params.data.date = newValue;
         }
-        
+
         return true;
       },
       valueParser: (params) => {
         const { newValue, oldValue } = params;
         if (!newValue) return newValue;
-        
+
         // Convert various date formats to YYYY-MM-DD
         let dateString = newValue;
-        
-        if (newValue && typeof newValue === 'object' && (newValue as any) instanceof Date) {
-          dateString = (newValue as Date).toISOString().split('T')[0];
-        } else if (typeof newValue === 'string') {
+
+        if (
+          newValue &&
+          typeof newValue === "object" &&
+          (newValue as any) instanceof Date
+        ) {
+          dateString = (newValue as Date).toISOString().split("T")[0];
+        } else if (typeof newValue === "string") {
           // Handle YYYY/MM/DD format
-          if (newValue.includes('/')) {
-            dateString = newValue.replace(/\//g, '-');
+          if (newValue.includes("/")) {
+            dateString = newValue.replace(/\//g, "-");
           } else {
             // Remove time part if present
-            dateString = newValue.split('T')[0];
+            dateString = newValue.split("T")[0];
           }
         }
-        
+
         // Validate the parsed date
         const date = parseDate(dateString);
         return date ? dateString : oldValue;
@@ -318,7 +327,7 @@ export function EnhancedWorkLogTable({
       valueParser: (params) => {
         const value = params.newValue;
         if (!value) return value; // Let validation handle empty values
-        
+
         // Basic parsing - validation handled elsewhere
         if (WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
           const hours = parseFloat(value);
@@ -326,7 +335,7 @@ export function EnhancedWorkLogTable({
             return value;
           }
         }
-        
+
         // Return original value if invalid - validation will catch it
         return params.oldValue;
       },
@@ -380,10 +389,12 @@ export function EnhancedWorkLogTable({
         params.data.projectName = projectsMap.get(newValue) || "Unknown";
         return true;
       },
-      cellRenderer: batchEditingEnabled ? undefined : ((params: any) => {
-        // In view mode, show project name
-        return projectsMap.get(params.value) || "Unknown";
-      }),
+      cellRenderer: batchEditingEnabled
+        ? undefined
+        : (params: any) => {
+            // In view mode, show project name
+            return projectsMap.get(params.value) || "Unknown";
+          },
       filter: true,
     });
 
@@ -425,10 +436,12 @@ export function EnhancedWorkLogTable({
         params.data.categoryName = categoriesMap.get(newValue) || "Unknown";
         return true;
       },
-      cellRenderer: batchEditingEnabled ? undefined : ((params: any) => {
-        // In view mode, show category name
-        return categoriesMap.get(params.value) || "Unknown";
-      }),
+      cellRenderer: batchEditingEnabled
+        ? undefined
+        : (params: any) => {
+            // In view mode, show category name
+            return categoriesMap.get(params.value) || "Unknown";
+          },
       filter: true,
     });
 
@@ -486,14 +499,14 @@ export function EnhancedWorkLogTable({
   const getRowHeight = useCallback((params: any) => {
     const details = params.data?.details;
     if (!details) return 50; // Default height
-    
+
     // Count line breaks and estimate height
     const lineBreaks = (details.match(/\n/g) || []).length;
     if (lineBreaks > 0) {
       // Base height + extra height per line (roughly 20px per line)
       return Math.max(50, 40 + (lineBreaks + 1) * 20);
     }
-    
+
     return 50; // Default height
   }, []);
 
@@ -525,49 +538,52 @@ export function EnhancedWorkLogTable({
   );
 
   // AG Grid standard: Handle row addition with applyTransaction
-  const handleRowAdd = useCallback(async (newRows: WorkLogGridRow[]) => {
-    if (!batchEditingEnabled) {
-      toast.info("一括編集モードを有効にしてください");
-      return;
-    }
+  const handleRowAdd = useCallback(
+    async (newRows: WorkLogGridRow[]) => {
+      if (!batchEditingEnabled) {
+        toast.info("一括編集モードを有効にしてください");
+        return;
+      }
 
-    if (!gridApi) {
-      toast.error("グリッドが初期化されていません");
-      return;
-    }
+      if (!gridApi) {
+        toast.error("グリッドが初期化されていません");
+        return;
+      }
 
-    // Create new row with empty values for user to fill
-    const newRow: WorkLogGridRow = {
-      id: crypto.randomUUID(),
-      date: new Date(), // Default to current date
-      hours: "", // Empty - user will fill in  
-      projectId: "",
-      projectName: "",
-      categoryId: "", 
-      categoryName: "",
-      details: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      userId: "", // Will be set by backend
-    };
+      // Create new row with empty values for user to fill
+      const newRow: WorkLogGridRow = {
+        id: crypto.randomUUID(),
+        date: new Date(), // Default to current date
+        hours: "", // Empty - user will fill in
+        projectId: "",
+        projectName: "",
+        categoryId: "",
+        categoryName: "",
+        details: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userId: "", // Will be set by backend
+      };
 
-    // AG Grid standard: Add row using applyTransaction
-    const result = gridApi.applyTransaction({ 
-      add: [newRow],
-      addIndex: 0 // Add at top
-    });
+      // AG Grid standard: Add row using applyTransaction
+      const result = gridApi.applyTransaction({
+        add: [newRow],
+        addIndex: 0, // Add at top
+      });
 
-    if (result?.add && result.add.length > 0) {
-      toast.success("新しい行を追加しました（Ctrl+N で連続追加可能）");
-      
-      // Just focus on the new row without starting edit mode for better UX
-      setTimeout(() => {
-        gridApi.setFocusedCell(0, "date");
-        // Don't auto-start editing to allow continuous row addition
-        // User can press Enter or double-click to start editing
-      }, 100);
-    }
-  }, [batchEditingEnabled, gridApi]);
+      if (result?.add && result.add.length > 0) {
+        toast.success("新しい行を追加しました（Ctrl+N で連続追加可能）");
+
+        // Just focus on the new row without starting edit mode for better UX
+        setTimeout(() => {
+          gridApi.setFocusedCell(0, "date");
+          // Don't auto-start editing to allow continuous row addition
+          // User can press Enter or double-click to start editing
+        }, 100);
+      }
+    },
+    [batchEditingEnabled, gridApi],
+  );
 
   // Handle row updates
   const handleRowUpdate = useCallback(
@@ -630,7 +646,7 @@ export function EnhancedWorkLogTable({
   const handleBatchDelete = useCallback(
     async (ids: string[]) => {
       if (!gridApi) return;
-      
+
       // Get selected rows for deletion
       const selectedNodes = gridApi.getSelectedNodes();
       if (selectedNodes.length === 0) {
@@ -638,12 +654,16 @@ export function EnhancedWorkLogTable({
         return;
       }
 
-      const selectedData = selectedNodes.map(node => node.data).filter(Boolean);
-      
+      const selectedData = selectedNodes
+        .map((node) => node.data)
+        .filter(Boolean);
+
       // Remove from AG Grid only (don't call API)
       gridApi.applyTransaction({ remove: selectedData });
-      
-      toast.success(`${selectedData.length}行をバッチ削除対象に追加しました（保存時に反映されます）`);
+
+      toast.success(
+        `${selectedData.length}行をバッチ削除対象に追加しました（保存時に反映されます）`,
+      );
     },
     [gridApi],
   );
@@ -672,21 +692,24 @@ export function EnhancedWorkLogTable({
   };
 
   // AG Grid standard: Simple cell value change handler
-  const onCellValueChanged = useCallback((event: any) => {
-    const { data, colDef, newValue } = event;
-    const field = colDef.field;
-    
-    if (!field) return;
+  const onCellValueChanged = useCallback(
+    (event: any) => {
+      const { data, colDef, newValue } = event;
+      const field = colDef.field;
 
-    // Update related fields for consistency (project/category names)
-    if (field === "projectId") {
-      data.projectName = projectsMap.get(newValue) || "Unknown";
-    } else if (field === "categoryId") {
-      data.categoryName = categoriesMap.get(newValue) || "Unknown";
-    }
-    
-    // AG Grid handles the data internally - no manual state sync needed
-  }, [projectsMap, categoriesMap]);
+      if (!field) return;
+
+      // Update related fields for consistency (project/category names)
+      if (field === "projectId") {
+        data.projectName = projectsMap.get(newValue) || "Unknown";
+      } else if (field === "categoryId") {
+        data.categoryName = categoriesMap.get(newValue) || "Unknown";
+      }
+
+      // AG Grid handles the data internally - no manual state sync needed
+    },
+    [projectsMap, categoriesMap],
+  );
 
   // AG Grid standard: Minimal cell editing start handler
   const onCellEditingStarted = useCallback((event: any) => {
@@ -771,9 +794,9 @@ export function EnhancedWorkLogTable({
     }
 
     // Separate new, updated, and deleted rows
-    const originalIds = new Set(workLogs.map(wl => wl.id));
-    const currentIds = new Set(currentGridData.map(row => row.id));
-    
+    const originalIds = new Set(workLogs.map((wl) => wl.id));
+    const currentIds = new Set(currentGridData.map((row) => row.id));
+
     const newRows: WorkLogGridRow[] = [];
     const updatedRows: WorkLogGridRow[] = [];
     const deletedRows: string[] = [];
@@ -804,7 +827,9 @@ export function EnhancedWorkLogTable({
     // Show validation errors if any
     if (validationErrors.size > 0) {
       const errorMessages = Array.from(validationErrors.entries())
-        .map(([id, errors]) => `ID: ${id.slice(0, 8)}... - ${errors.join(", ")}`)
+        .map(
+          ([id, errors]) => `ID: ${id.slice(0, 8)}... - ${errors.join(", ")}`,
+        )
         .join("\n");
 
       toast.error(`バリデーションエラー:\n${errorMessages}`);
@@ -817,15 +842,18 @@ export function EnhancedWorkLogTable({
     try {
       // Delete removed rows
       if (deletedRows.length > 0) {
-        const deletePromises = deletedRows.map(id => onDeleteWorkLog(id));
+        const deletePromises = deletedRows.map((id) => onDeleteWorkLog(id));
         await Promise.all(deletePromises);
       }
 
       // Create new rows
       if (newRows.length > 0) {
-        const createPromises = newRows.map(row => {
+        const createPromises = newRows.map((row) => {
           const createData = {
-            date: row.date instanceof Date ? row.date.toISOString().split('T')[0] : row.date,
+            date:
+              row.date instanceof Date
+                ? row.date.toISOString().split("T")[0]
+                : row.date,
             hours: row.hours,
             projectId: row.projectId,
             categoryId: row.categoryId,
@@ -838,9 +866,12 @@ export function EnhancedWorkLogTable({
 
       // Update existing rows
       if (updatedRows.length > 0) {
-        const updatePromises = updatedRows.map(row => {
+        const updatePromises = updatedRows.map((row) => {
           const updateData = {
-            date: row.date instanceof Date ? row.date.toISOString().split('T')[0] : row.date,
+            date:
+              row.date instanceof Date
+                ? row.date.toISOString().split("T")[0]
+                : row.date,
             hours: row.hours,
             projectId: row.projectId,
             categoryId: row.categoryId,
@@ -852,34 +883,45 @@ export function EnhancedWorkLogTable({
       }
 
       // Success
-      const totalChanges = newRows.length + updatedRows.length + deletedRows.length;
+      const totalChanges =
+        newRows.length + updatedRows.length + deletedRows.length;
       const changeDetails = [];
       if (newRows.length > 0) changeDetails.push(`${newRows.length}件追加`);
-      if (updatedRows.length > 0) changeDetails.push(`${updatedRows.length}件更新`);
-      if (deletedRows.length > 0) changeDetails.push(`${deletedRows.length}件削除`);
-      
+      if (updatedRows.length > 0)
+        changeDetails.push(`${updatedRows.length}件更新`);
+      if (deletedRows.length > 0)
+        changeDetails.push(`${deletedRows.length}件削除`);
+
       toast.success(`バッチ処理完了: ${changeDetails.join(", ")}`);
       setFailedWorkLogIds(new Set());
       setBatchEditingEnabled(false);
       onRefresh?.();
     } catch (error) {
       console.error("Batch save error:", error);
-      
+
       if (error instanceof Error) {
         toast.error(`保存に失敗しました: ${error.message}`);
       } else {
         toast.error("保存に失敗しました");
       }
-      
+
       // Mark all changed rows as failed (for new/updated rows)
-      const failedIds = [...newRows, ...updatedRows].map(row => row.id);
+      const failedIds = [...newRows, ...updatedRows].map((row) => row.id);
       setFailedWorkLogIds(new Set(failedIds));
-      
+
       // Note: Deleted rows can't be highlighted as they're no longer in the grid
     } finally {
       setIsSubmitting(false);
     }
-  }, [gridApi, workLogs, validateWorkLogData, onCreateWorkLog, onUpdateWorkLog, onDeleteWorkLog, onRefresh]);
+  }, [
+    gridApi,
+    workLogs,
+    validateWorkLogData,
+    onCreateWorkLog,
+    onUpdateWorkLog,
+    onDeleteWorkLog,
+    onRefresh,
+  ]);
 
   // AG Grid standard: Simplified cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {
@@ -891,17 +933,17 @@ export function EnhancedWorkLogTable({
     // Check for any changes (additions or deletions)
     const currentRowCount = gridApi.getDisplayedRowCount();
     const originalRowCount = workLogs.length;
-    
+
     // Also check if any rows were deleted
     const currentIds = new Set<string>();
-    gridApi.forEachNode(node => {
+    gridApi.forEachNode((node) => {
       if (node.data?.id) currentIds.add(node.data.id);
     });
-    
-    const originalIds = new Set(workLogs.map(wl => wl.id));
-    const hasDeletedRows = workLogs.some(wl => !currentIds.has(wl.id));
+
+    const originalIds = new Set(workLogs.map((wl) => wl.id));
+    const hasDeletedRows = workLogs.some((wl) => !currentIds.has(wl.id));
     const hasNewRows = currentRowCount > originalRowCount;
-    
+
     if (hasNewRows || hasDeletedRows) {
       setCancelDialogOpen(true);
     } else {
@@ -913,9 +955,9 @@ export function EnhancedWorkLogTable({
   const handleConfirmCancel = () => {
     if (gridApi) {
       // Reset AG Grid data to original workLogs data
-      gridApi.setGridOption('rowData', rowData);
+      gridApi.setGridOption("rowData", rowData);
     }
-    
+
     setFailedWorkLogIds(new Set());
     setBatchEditingEnabled(false);
     setCancelDialogOpen(false);
@@ -973,9 +1015,7 @@ export function EnhancedWorkLogTable({
                   onClick={handleBatchSave}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting
-                    ? "保存中..."
-                    : "保存"}
+                  {isSubmitting ? "保存中..." : "保存"}
                 </Button>
                 <Button
                   variant="outline"
@@ -1023,15 +1063,15 @@ export function EnhancedWorkLogTable({
           onCellKeyDown: (event: any) => {
             const key = event.event?.key?.toLowerCase();
             const ctrlKey = event.event?.ctrlKey;
-            
-            if (ctrlKey && key === 'n' && batchEditingEnabled) {
+
+            if (ctrlKey && key === "n" && batchEditingEnabled) {
               event.event?.preventDefault();
               handleRowAdd([]);
-            } else if (key === 'delete' && !event.editing) {
+            } else if (key === "delete" && !event.editing) {
               // Delete selected rows when not editing
               event.event?.preventDefault();
               handleRowDelete([]);
-            } else if (ctrlKey && key === 'd' && batchEditingEnabled) {
+            } else if (ctrlKey && key === "d" && batchEditingEnabled) {
               // Duplicate selected rows handled by toolbar
               event.event?.preventDefault();
             }

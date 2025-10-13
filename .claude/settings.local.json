@@ -65,7 +65,8 @@
       "Bash(chmod:*)",
       "Bash(docker compose:*)",
       "Bash(lsof:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(gh pr list:*)"
     ],
     "deny": [],
     "ask": []

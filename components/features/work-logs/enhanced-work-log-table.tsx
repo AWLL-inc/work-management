@@ -2,6 +2,7 @@
 
 import type {
   CellEditingStartedEvent,
+  CellKeyDownEvent,
   CellValueChangedEvent,
   ColDef,
   GridApi,
@@ -1068,19 +1069,20 @@ export function EnhancedWorkLogTable({
           rowBuffer: 0, // Don't buffer rows to avoid data inconsistencies
           animateRows: false, // Disable row animation to prevent data conflicts
           onCellKeyDown: (event: CellKeyDownEvent) => {
-            const key = event.event?.key?.toLowerCase();
-            const ctrlKey = event.event?.ctrlKey;
+            const keyboardEvent = event.event as KeyboardEvent;
+            const key = keyboardEvent?.key?.toLowerCase();
+            const ctrlKey = keyboardEvent?.ctrlKey;
 
             if (ctrlKey && key === "n" && batchEditingEnabled) {
-              event.event?.preventDefault();
+              keyboardEvent?.preventDefault();
               handleRowAdd([]);
-            } else if (key === "delete" && !event.editing) {
+            } else if (key === "delete" && !event.api.getEditingCells().length) {
               // Delete selected rows when not editing
-              event.event?.preventDefault();
+              keyboardEvent?.preventDefault();
               handleRowDelete([]);
             } else if (ctrlKey && key === "d" && batchEditingEnabled) {
               // Duplicate selected rows handled by toolbar
-              event.event?.preventDefault();
+              keyboardEvent?.preventDefault();
             }
           },
         }}

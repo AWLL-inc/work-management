@@ -478,11 +478,22 @@ export function EnhancedAGGrid<T extends { id: string }>({
         navigator.clipboard.readText().then((clipboardText) => {
           if (!clipboardText) return;
           
-          // For single cell paste, take only the first value (before tab or newline)
-          const firstValue = clipboardText.split(/[\t\n]/)[0];
+          // Check if this is a Details field that supports multi-line content
+          const columnId = column.getId();
+          const isDetailsField = columnId === 'details';
+          
+          let valueToSet;
+          if (isDetailsField) {
+            // For Details field, preserve the full multi-line content
+            // Remove tabs (for Excel-style data) but keep newlines
+            valueToSet = clipboardText.replace(/\t/g, ' ');
+          } else {
+            // For other fields, take only the first value (before tab or newline)
+            valueToSet = clipboardText.split(/[\t\n]/)[0];
+          }
           
           // Set the value to current cell
-          node.setDataValue(column.getId(), firstValue);
+          node.setDataValue(columnId, valueToSet);
           
           toast.success('セルに貼り付けました');
         }).catch((err) => {

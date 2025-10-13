@@ -258,11 +258,7 @@ export function EnhancedWorkLogTable({
         const { newValue } = params;
 
         // Convert any input to YYYY-MM-DD string format
-        if (
-          newValue &&
-          typeof newValue === "object" &&
-          newValue instanceof Date
-        ) {
+        if (newValue instanceof Date) {
           params.data.date = newValue.toISOString().split("T")[0];
         } else if (typeof newValue === "string") {
           // Handle various string formats and convert to YYYY-MM-DD
@@ -284,13 +280,10 @@ export function EnhancedWorkLogTable({
         if (!newValue) return newValue;
 
         // Convert various date formats to YYYY-MM-DD
-        let dateString = newValue;
+        let dateString: string;
 
-        if (
-          newValue &&
-          typeof newValue === "object" &&
-          newValue instanceof Date
-        ) {
+        if (newValue && typeof newValue === "object" && "toISOString" in newValue) {
+          // Handle Date object
           dateString = (newValue as Date).toISOString().split("T")[0];
         } else if (typeof newValue === "string") {
           // Handle YYYY/MM/DD format
@@ -300,6 +293,8 @@ export function EnhancedWorkLogTable({
             // Remove time part if present
             dateString = newValue.split("T")[0];
           }
+        } else {
+          dateString = String(newValue);
         }
 
         // Validate the parsed date

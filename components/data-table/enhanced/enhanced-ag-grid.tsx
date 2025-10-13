@@ -46,6 +46,7 @@ interface EnhancedAGGridProps<T extends { id: string }>
   columnDefs: ColDef[];
   defaultColDef?: ColDef;
   getRowClass?: (params: RowClassParams) => string;
+  getRowHeight?: (params: any) => number;
   onGridReady?: (params: GridReadyEvent) => void;
   onCellEditingStopped?: (event: CellEditingStoppedEvent) => void;
   gridOptions?: GridOptions;
@@ -64,6 +65,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
   columnDefs,
   defaultColDef,
   getRowClass,
+  getRowHeight,
   onGridReady: onGridReadyProp,
   onCellEditingStopped: onCellEditingStoppedProp,
   gridOptions,
@@ -149,18 +151,16 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
     const newRow = {
       id: generateUuid(),
-      date: "", // Empty by default - user should fill in
-      hours: "", // Empty by default - user should fill in
-      // Set empty values for user to fill in
+      date: new Date(), // Default to current date
+      hours: "", // Empty - user should fill in
       projectId: "",
       projectName: "",
       categoryId: "",
       categoryName: "",
-      details: "", // Empty by default
-      // Add timestamps for audit
+      details: "",
       createdAt: new Date(),
       updatedAt: new Date(),
-      userId: "", // Will be set by the backend
+      userId: "",
     } as unknown as T;
 
     // Add to grid using transaction only (don't modify external rowData)
@@ -190,21 +190,11 @@ export function EnhancedAGGrid<T extends { id: string }>({
     };
     addToHistory(action);
 
-    // Call onRowAdd for notification purposes only (no API call expected)
-    if (onRowAdd) {
-      try {
-        await onRowAdd([newRow as T]);
-      } catch (error) {
-        // This is just for notification, don't fail the local operation
-        console.warn("Row add notification failed:", error);
-      }
-    }
+    // Note: onRowAdd is not called here to avoid double row creation
+    // Row addition is handled purely by AG Grid transaction
   }, [
     batchEditingEnabled,
-    onRowAdd,
     gridApi,
-    rowData,
-    onDataChange,
     addToHistory,
     columnDefs,
   ]);
@@ -448,8 +438,9 @@ export function EnhancedAGGrid<T extends { id: string }>({
       suppressMenuHide: false,
       undoRedoCellEditing: enableUndoRedo,
       undoRedoCellEditingLimit: maxUndoRedoSteps,
+      getRowHeight: getRowHeight,
     }),
-    [gridOptions, enableUndoRedo, maxUndoRedoSteps],
+    [gridOptions, enableUndoRedo, maxUndoRedoSteps, getRowHeight],
   );
 
   return (

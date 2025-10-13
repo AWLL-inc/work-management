@@ -453,16 +453,10 @@ export function EnhancedWorkLogTable({
         whiteSpace: "pre-wrap", // 改行文字を表示
         wordWrap: "break-word",
         overflow: "visible",
+        display: "block",
+        textAlign: "left",
       },
-      cellRenderer: (params: { value: string }) => {
-        const value = params.value || "";
-        // 複数行をそのまま表示（最大3行まで）
-        const lines = value.split('\n');
-        if (lines.length > 3) {
-          return lines.slice(0, 3).join('\n') + '...';
-        }
-        return value;
-      },
+      cellClass: "details-cell",
     });
 
     // Add Actions column only when not in batch editing mode
@@ -487,6 +481,21 @@ export function EnhancedWorkLogTable({
     categoriesMap,
     ActionsCellRenderer,
   ]);
+
+  // Row height calculation for multi-line details
+  const getRowHeight = useCallback((params: any) => {
+    const details = params.data?.details;
+    if (!details) return 50; // Default height
+    
+    // Count line breaks and estimate height
+    const lineBreaks = (details.match(/\n/g) || []).length;
+    if (lineBreaks > 0) {
+      // Base height + extra height per line (roughly 20px per line)
+      return Math.max(50, 40 + (lineBreaks + 1) * 20);
+    }
+    
+    return 50; // Default height
+  }, []);
 
   // Default column properties
   const defaultColDef: ColDef = useMemo(
@@ -987,6 +996,7 @@ export function EnhancedWorkLogTable({
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         getRowClass={getRowClass}
+        getRowHeight={getRowHeight}
         onGridReady={onGridReady}
         // Cell value changes handled via column definitions
         // onCellEditingStarted handled at column level

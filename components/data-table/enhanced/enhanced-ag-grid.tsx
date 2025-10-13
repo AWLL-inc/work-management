@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { generateUuid } from "@/lib/utils/uuid";
 import { GridToolbar } from "../toolbar/grid-toolbar";
 import type {
   EnhancedGridProps,
@@ -48,6 +49,7 @@ interface EnhancedAGGridProps<T extends { id: string }>
   onGridReady?: (params: GridReadyEvent) => void;
   onCellEditingStopped?: (event: CellEditingStoppedEvent) => void;
   gridOptions?: GridOptions;
+  batchEditingEnabled?: boolean;
 }
 
 export function EnhancedAGGrid<T extends { id: string }>({
@@ -65,6 +67,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
   onGridReady: onGridReadyProp,
   onCellEditingStopped: onCellEditingStoppedProp,
   gridOptions,
+  batchEditingEnabled = false,
 }: EnhancedAGGridProps<T>) {
   // Grid references
   const gridRef = useRef<AgGridReact>(null);
@@ -72,7 +75,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
   // Selection and editing state
   const [selectedNodes, setSelectedNodes] = useState<IRowNode<T>[]>([]);
-  const [isEditing] = useState(false);
+  const [_isEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowsToDelete, setRowsToDelete] = useState<string[]>([]);
 
@@ -139,12 +142,20 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
   // Row addition handler
   const handleAddRow = useCallback(async () => {
+    if (!batchEditingEnabled) {
+      toast.info("一括編集モードを有効にしてください");
+      return;
+    }
+
     const newRow = {
-      id: `new-${Date.now()}`,
-      date: new Date().toISOString().split("T")[0],
-      hours: "8.0", // Default work hours
-      projectId: "", // Will be set by user
-      categoryId: "", // Will be set by user
+      id: generateUuid(),
+      date: "", // Empty by default - user should fill in
+      hours: "", // Empty by default - user should fill in
+      // Set empty values for user to fill in
+      projectId: "",
+      projectName: "",
+      categoryId: "",
+      categoryName: "",
       details: "", // Empty by default
       // Add timestamps for audit
       createdAt: new Date(),
@@ -156,8 +167,12 @@ export function EnhancedAGGrid<T extends { id: string }>({
     gridApi?.applyTransaction({ add: [newRow], addIndex: 0 });
     onDataChange?.([newRow as T, ...rowData]);
 
-    // Focus on the new row for editing
+    // Force grid refresh to ensure proper column alignment
     setTimeout(() => {
+      gridApi?.refreshCells({ force: true });
+      gridApi?.sizeColumnsToFit();
+
+      // Focus on the new row for editing
       gridApi?.setFocusedCell(0, columnDefs[0].field || "");
       gridApi?.startEditingCell({
         rowIndex: 0,
@@ -181,7 +196,15 @@ export function EnhancedAGGrid<T extends { id: string }>({
         console.warn("Row add notification failed:", error);
       }
     }
-  }, [onRowAdd, gridApi, rowData, onDataChange, addToHistory, columnDefs]);
+  }, [
+    batchEditingEnabled,
+    onRowAdd,
+    gridApi,
+    rowData,
+    onDataChange,
+    addToHistory,
+    columnDefs,
+  ]);
 
   // Row duplication handler
   const handleDuplicateRows = useCallback(async () => {
@@ -191,11 +214,11 @@ export function EnhancedAGGrid<T extends { id: string }>({
     }
 
     const duplicatedRows = selectedNodes
-      .map((node, index) => {
+      .map((node, _index) => {
         if (!node.data) return null;
         return {
           ...node.data,
-          id: `duplicate-${Date.now()}-${index}`,
+          id: generateUuid(),
           date: new Date().toISOString().split("T")[0], // Set current date
         };
       })
@@ -204,6 +227,12 @@ export function EnhancedAGGrid<T extends { id: string }>({
     // Always add to grid locally first
     gridApi?.applyTransaction({ add: duplicatedRows, addIndex: 0 });
     onDataChange?.([...duplicatedRows, ...rowData]);
+
+    // Force grid refresh to ensure proper display
+    setTimeout(() => {
+      gridApi?.refreshCells({ force: true });
+      gridApi?.sizeColumnsToFit();
+    }, 100);
 
     const action: GridAction = {
       type: "ADD",
@@ -426,7 +455,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
           canUndo={historyStack.undoStack.length > 0}
           canRedo={historyStack.redoStack.length > 0}
           selectedRowCount={selectedNodes.length}
-          disabled={isEditing}
+          batchEditingEnabled={batchEditingEnabled}
         />
       )}
 

@@ -19,7 +19,7 @@ export function GridToolbar({
   canUndo,
   canRedo,
   selectedRowCount,
-  disabled = false,
+  batchEditingEnabled = false,
 }: ToolbarProps) {
   return (
     <TooltipProvider>
@@ -32,8 +32,8 @@ export function GridToolbar({
                 variant="outline"
                 size="sm"
                 onClick={onAddRow}
-                disabled={disabled}
-                className="h-8 px-3"
+                disabled={!batchEditingEnabled}
+                className={`h-8 px-3 ${!batchEditingEnabled ? "opacity-50" : ""}`}
                 data-testid="add-row-button"
               >
                 <Plus className="w-4 h-4 mr-1" />
@@ -42,6 +42,11 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>新しい行を先頭に追加します</p>
+              {!batchEditingEnabled && (
+                <p className="text-xs text-orange-500">
+                  一括編集モードで利用可能
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 ショートカット: Ctrl+N
               </p>
@@ -54,8 +59,8 @@ export function GridToolbar({
                 variant="outline"
                 size="sm"
                 onClick={onDuplicateRows}
-                disabled={disabled || selectedRowCount === 0}
-                className="h-8 px-3"
+                disabled={!batchEditingEnabled}
+                className={`h-8 px-3 ${!batchEditingEnabled ? "opacity-50" : ""}`}
                 data-testid="duplicate-row-button"
               >
                 <Copy className="w-4 h-4 mr-1" />
@@ -69,6 +74,11 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>選択された行を複製します</p>
+              {!batchEditingEnabled && (
+                <p className="text-xs text-orange-500">
+                  一括編集モードで利用可能
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 ショートカット: Ctrl+D
               </p>
@@ -81,8 +91,8 @@ export function GridToolbar({
                 variant="outline"
                 size="sm"
                 onClick={onDeleteRows}
-                disabled={disabled || selectedRowCount === 0}
-                className="h-8 px-3 text-destructive hover:text-destructive"
+                disabled={batchEditingEnabled}
+                className={`h-8 px-3 text-destructive hover:text-destructive ${batchEditingEnabled ? "opacity-50" : ""}`}
                 data-testid="delete-row-button"
               >
                 <Trash2 className="w-4 h-4 mr-1" />
@@ -96,6 +106,9 @@ export function GridToolbar({
             </TooltipTrigger>
             <TooltipContent>
               <p>選択された行を削除します</p>
+              {batchEditingEnabled && (
+                <p className="text-xs text-orange-500">通常モードで利用可能</p>
+              )}
               <p className="text-xs text-muted-foreground">
                 ショートカット: Delete
               </p>
@@ -111,7 +124,7 @@ export function GridToolbar({
                 variant="outline"
                 size="sm"
                 onClick={onUndo}
-                disabled={disabled || !canUndo}
+                disabled={!canUndo}
                 className="h-8 px-3"
                 data-testid="undo-button"
               >
@@ -133,7 +146,7 @@ export function GridToolbar({
                 variant="outline"
                 size="sm"
                 onClick={onRedo}
-                disabled={disabled || !canRedo}
+                disabled={!canRedo}
                 className="h-8 px-3"
                 data-testid="redo-button"
               >

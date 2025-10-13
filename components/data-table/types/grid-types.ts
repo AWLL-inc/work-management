@@ -58,5 +58,5 @@ export interface ToolbarProps {
   canUndo: boolean;
   canRedo: boolean;
   selectedRowCount: number;
-  disabled?: boolean;
+  batchEditingEnabled?: boolean;
 }

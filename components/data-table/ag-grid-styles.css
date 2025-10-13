@@ -124,3 +124,17 @@
 .ag-header-cell-filtered .ag-filter-icon {
   color: hsl(var(--primary));
 }
+
+/* Error row styling for validation failures */
+.ag-row-error {
+  background-color: hsl(var(--destructive) / 0.1);
+  border-left: 4px solid hsl(var(--destructive));
+}
+
+.ag-row-error:hover {
+  background-color: hsl(var(--destructive) / 0.2);
+}
+
+.ag-row-error .ag-cell {
+  border-color: hsl(var(--destructive) / 0.3);
+}

@@ -3,6 +3,7 @@
 import type {
   CellEditingStoppedEvent,
   ColDef,
+  GridApi,
   GridReadyEvent,
   RowClassParams,
 } from "ag-grid-community";
@@ -133,6 +134,7 @@ export function EnhancedWorkLogTable({
     Map<string, Partial<WorkLog>>
   >(new Map());
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
   // Create project and category lookup maps
   const projectsMap = useMemo(() => {
@@ -324,17 +326,24 @@ export function EnhancedWorkLogTable({
       cellEditor: "agLargeTextCellEditor",
       cellEditorParams: {
         maxLength: WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH,
-        rows: 5,
-        cols: 50,
+        rows: 2,
+        cols: 40,
       },
       tooltipField: "details",
-      wrapText: true,
-      autoHeight: true,
+      wrapText: false,
       cellStyle: {
-        lineHeight: "1.4",
-        padding: "8px",
-        whiteSpace: "normal",
-        wordWrap: "break-word",
+        lineHeight: "1.2",
+        padding: "4px 8px",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      },
+      cellRenderer: (params: { value: string }) => {
+        const value = params.value || "";
+        if (value.length > 50) {
+          return `${value.substring(0, 50)}...`;
+        }
+        return value;
       },
     });
 
@@ -391,10 +400,24 @@ export function EnhancedWorkLogTable({
   // Handle row addition (local only, no API call)
   const handleRowAdd = useCallback(async (newRows: WorkLog[]) => {
     // Add rows locally to the grid, API save will happen when user actually saves
-    // This is handled by the Enhanced AG Grid component itself via onDataChange
-    // No need to call API here, just let the grid handle the local state
+    // Add new rows to pending changes so save button becomes active
+    setPendingChanges((prev) => {
+      const newChanges = new Map(prev);
+      for (const row of newRows) {
+        // Mark as new row with empty values that need to be filled
+        newChanges.set(row.id, {
+          date: row.date || "",
+          hours: row.hours || "",
+          projectId: row.projectId || "",
+          categoryId: row.categoryId || "",
+          details: row.details || "",
+        });
+      }
+      return newChanges;
+    });
+
     toast.success(
-      `${newRows.length}行を追加しました（編集後に保存してください）`,
+      `${newRows.length}行を追加しました（各項目を入力して保存してください）`,
     );
   }, []);
 
@@ -500,6 +523,62 @@ export function EnhancedWorkLogTable({
     });
   }, []);
 
+  // Validate work log data
+  const validateWorkLogData = useCallback((data: Partial<WorkLog>) => {
+    const errors: string[] = [];
+
+    if (!data.date) {
+      errors.push("日付は必須です");
+    }
+
+    if (!data.hours || data.hours.trim() === "") {
+      errors.push("時間は必須です");
+    } else {
+      const hours = parseFloat(data.hours);
+      if (Number.isNaN(hours) || hours <= 0 || hours > 168) {
+        errors.push("時間は0〜168の範囲で入力してください");
+      }
+      // Check pattern
+      if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(data.hours)) {
+        errors.push("時間は数値で入力してください（例: 8 または 8.5）");
+      }
+    }
+
+    if (!data.projectId || data.projectId.trim() === "") {
+      errors.push("プロジェクトを選択してください");
+    } else {
+      // Check if it's a valid UUID format (basic check)
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidPattern.test(data.projectId)) {
+        errors.push("有効なプロジェクトを選択してください");
+      }
+    }
+
+    if (!data.categoryId || data.categoryId.trim() === "") {
+      errors.push("カテゴリを選択してください");
+    } else {
+      // Check if it's a valid UUID format (basic check)
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidPattern.test(data.categoryId)) {
+        errors.push("有効なカテゴリを選択してください");
+      }
+    }
+
+    // Check details length if provided
+    if (
+      data.details &&
+      data.details.length > WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH
+    ) {
+      errors.push(
+        `詳細は${WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH}文字以下で入力してください`,
+      );
+    }
+
+    return errors;
+  }, []);
+
   // Handle batch save
   const handleBatchSave = useCallback(async () => {
     if (pendingChanges.size === 0) {
@@ -507,46 +586,182 @@ export function EnhancedWorkLogTable({
       return;
     }
 
+    // Validate all pending changes before saving
+    const validationErrors = new Map<string, string[]>();
+
+    for (const [id, data] of pendingChanges.entries()) {
+      // Get complete row data from grid
+      const gridRow = gridApi?.getRowNode(id)?.data;
+      const completeData = { ...gridRow, ...data };
+
+      const errors = validateWorkLogData(completeData);
+      if (errors.length > 0) {
+        validationErrors.set(id, errors);
+      }
+    }
+
+    // If there are validation errors, show them and mark failed rows
+    if (validationErrors.size > 0) {
+      const errorMessages = Array.from(validationErrors.entries())
+        .map(
+          ([id, errors]) => `ID: ${id.slice(0, 8)}... - ${errors.join(", ")}`,
+        )
+        .join("\n");
+
+      toast.error(`バリデーションエラー:\n${errorMessages}`);
+      setFailedWorkLogIds(new Set(validationErrors.keys()));
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Use batch API endpoint for transaction-based bulk updates
-      const updates = Array.from(pendingChanges.entries()).map(
-        ([id, data]) => ({
-          id,
-          data,
-        }),
-      );
+      // Separate new rows from existing rows
+      const pendingEntries = Array.from(pendingChanges.entries());
+      const newRows: Array<{ id: string; data: Partial<WorkLog> }> = [];
+      const existingRows: Array<{ id: string; data: Partial<WorkLog> }> = [];
 
-      const response = await fetch("/api/work-logs/batch", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      });
+      for (const [id, data] of pendingEntries) {
+        // Check if this is a new row by looking at the current rowData
+        const foundInRowData = rowData.find((row) => row.id === id);
+        const isNewRow = !foundInRowData;
 
-      if (!response.ok) {
-        throw new Error("Batch update failed");
+        if (isNewRow) {
+          // For new rows, we need the complete data from the grid
+          const gridRow = gridApi?.getRowNode(id)?.data;
+
+          if (gridRow) {
+            // Got data from grid node
+            newRows.push({
+              id,
+              data: {
+                date: gridRow.date,
+                hours: gridRow.hours,
+                projectId: gridRow.projectId,
+                categoryId: gridRow.categoryId,
+                details: gridRow.details,
+                ...data, // Apply any pending changes
+              },
+            });
+          } else {
+            // Grid node not found, try to construct from pending changes
+            // This happens when the row was added but grid hasn't updated yet
+
+            // Check if we have all required fields in pending changes
+            if (data.date && data.hours && data.projectId && data.categoryId) {
+              newRows.push({
+                id,
+                data: {
+                  date: data.date,
+                  hours: data.hours,
+                  projectId: data.projectId,
+                  categoryId: data.categoryId,
+                  details: data.details || "",
+                },
+              });
+            }
+          }
+        } else {
+          existingRows.push({ id, data });
+        }
       }
 
-      const result = await response.json();
+      // Handle new rows first (create)
+      if (newRows.length > 0) {
+        const createPromises = newRows.map(({ data }) => {
+          const dateStr =
+            data.date instanceof Date
+              ? data.date.toISOString().split("T")[0]
+              : data.date || new Date().toISOString().split("T")[0];
 
-      if (result.success) {
-        toast.success(`${pendingChanges.size}件の変更を保存しました`);
-        setPendingChanges(new Map());
-        setFailedWorkLogIds(new Set());
-        setBatchEditingEnabled(false);
-        // Data refresh
-        onRefresh?.();
-      } else {
-        throw new Error(result.error?.message || "Batch update failed");
+          // Validate that required fields have actual values (not empty strings)
+          if (!data.projectId || data.projectId.trim() === "") {
+            throw new Error("プロジェクトを選択してください");
+          }
+          if (!data.categoryId || data.categoryId.trim() === "") {
+            throw new Error("カテゴリを選択してください");
+          }
+          if (!data.hours || data.hours.trim() === "") {
+            throw new Error("時間を入力してください");
+          }
+
+          const createData = {
+            date: dateStr,
+            hours: data.hours,
+            projectId: data.projectId,
+            categoryId: data.categoryId,
+            details: data.details || "",
+          };
+
+          return onCreateWorkLog(createData);
+        });
+
+        await Promise.all(createPromises);
       }
+
+      // Handle existing rows (update)
+      if (existingRows.length > 0) {
+        const response = await fetch("/api/work-logs/batch", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(existingRows),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          console.error("Batch update failed:", {
+            status: response.status,
+            statusText: response.statusText,
+            result,
+          });
+          throw new Error(result.error?.message || "Batch update failed");
+        }
+
+        if (!result.success) {
+          throw new Error(result.error?.message || "Batch update failed");
+        }
+      }
+
+      // Success - all operations completed
+      toast.success(`${pendingChanges.size}件の変更を保存しました`);
+      setPendingChanges(new Map());
+      setFailedWorkLogIds(new Set());
+      setBatchEditingEnabled(false);
+      // Data refresh
+      onRefresh?.();
     } catch (error) {
-      toast.error("保存に失敗しました");
       console.error("Batch save error:", error);
+
+      // Parse validation errors if available
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+        if (
+          errorMessage.includes("validation") ||
+          errorMessage.includes("Invalid")
+        ) {
+          toast.error("バリデーションエラー: データを確認してください");
+        } else {
+          toast.error(`保存に失敗しました: ${errorMessage}`);
+        }
+      } else {
+        toast.error("保存に失敗しました");
+      }
+
+      // Mark failed rows for visual indication
+      const failedIds = Array.from(pendingChanges.keys());
+      setFailedWorkLogIds(new Set(failedIds));
     } finally {
       setIsSubmitting(false);
     }
-  }, [pendingChanges, onRefresh]);
+  }, [
+    pendingChanges,
+    onRefresh,
+    rowData,
+    gridApi,
+    onCreateWorkLog,
+    validateWorkLogData,
+  ]);
 
   // Handle cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {
@@ -558,6 +773,19 @@ export function EnhancedWorkLogTable({
   }, [pendingChanges.size]);
 
   const handleConfirmCancel = () => {
+    // Remove new rows that haven't been saved to the database
+    const newRowIds = Array.from(pendingChanges.keys()).filter(
+      (id) => !rowData.find((row) => row.id === id),
+    );
+
+    if (newRowIds.length > 0 && gridApi) {
+      // Remove new rows from the grid
+      const rowsToRemove = newRowIds
+        .map((id) => gridApi.getRowNode(id)?.data)
+        .filter(Boolean);
+      gridApi.applyTransaction({ remove: rowsToRemove });
+    }
+
     setPendingChanges(new Map());
     setFailedWorkLogIds(new Set());
     setBatchEditingEnabled(false);
@@ -565,6 +793,7 @@ export function EnhancedWorkLogTable({
   };
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
+    setGridApi(params.api);
     params.api.sizeColumnsToFit();
   }, []);
 
@@ -645,8 +874,8 @@ export function EnhancedWorkLogTable({
         }}
         onRowUpdate={handleRowUpdate}
         onRowDelete={handleRowDelete}
-        enableToolbar={!batchEditingEnabled}
-        enableClipboard={true}
+        enableToolbar={true}
+        batchEditingEnabled={batchEditingEnabled}
         enableUndoRedo={true}
         maxUndoRedoSteps={20}
         gridOptions={{
@@ -655,6 +884,8 @@ export function EnhancedWorkLogTable({
           singleClickEdit: batchEditingEnabled,
           stopEditingWhenCellsLoseFocus: true,
           enterNavigatesVertically: true,
+          suppressColumnVirtualisation: true, // Prevent column virtualization issues
+          ensureDomOrder: true, // Ensure DOM order matches logical order
         }}
       />
 

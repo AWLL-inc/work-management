@@ -7,7 +7,7 @@ import type {
   GridReadyEvent,
   RowClassParams,
 } from "ag-grid-community";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
@@ -149,7 +149,16 @@ export function EnhancedWorkLogTable({
   const rowData: WorkLogGridRow[] = useMemo(() => {
     return workLogs.map((workLog) => ({
       ...workLog,
+      // Ensure date is consistently formatted as YYYY-MM-DD string (no time)
+      date: workLog.date instanceof Date 
+        ? workLog.date.toISOString().split('T')[0] 
+        : typeof workLog.date === 'string' 
+          ? workLog.date.split('T')[0] // Remove time part if present
+          : new Date(workLog.date).toISOString().split('T')[0],
+      // Ensure both ID and name fields are always available
+      projectId: workLog.projectId || "",
       projectName: projectsMap.get(workLog.projectId) || "Unknown",
+      categoryId: workLog.categoryId || "",
       categoryName: categoriesMap.get(workLog.categoryId) || "Unknown",
     }));
   }, [workLogs, projectsMap, categoriesMap]);
@@ -202,7 +211,15 @@ export function EnhancedWorkLogTable({
       cellEditorParams: {
         format: "yyyy-mm-dd",
       },
-      valueFormatter: (params) => formatDateForDisplay(params.value),
+      valueFormatter: (params) => {
+        if (batchEditingEnabled) {
+          // In batch editing mode, show raw date value for editing
+          return params.value || "";
+        } else {
+          // In view mode, format for display
+          return formatDateForDisplay(params.value);
+        }
+      },
       valueParser: (params) => {
         const { newValue, oldValue } = params;
 
@@ -217,6 +234,19 @@ export function EnhancedWorkLogTable({
         }
 
         return newValue;
+      },
+      valueSetter: (params) => {
+        // Ensure the value is stored as string in YYYY-MM-DD format only
+        const { newValue } = params;
+        if (newValue instanceof Date) {
+          params.data.date = newValue.toISOString().split('T')[0];
+        } else if (typeof newValue === 'string') {
+          // Remove time part if present
+          params.data.date = newValue.split('T')[0];
+        } else {
+          params.data.date = newValue;
+        }
+        return true;
       },
       sort: "desc",
       cellClass: (params) => {
@@ -280,41 +310,91 @@ export function EnhancedWorkLogTable({
 
     columns.push({
       headerName: "Project",
-      field: batchEditingEnabled ? "projectId" : "projectName",
+      field: "projectId", // Always use projectId field
       width: COLUMN_WIDTHS.PROJECT,
       editable: batchEditingEnabled,
       cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
       cellEditorParams: batchEditingEnabled
         ? {
             values: projects.filter((p) => p.isActive).map((p) => p.id),
+            formatValue: (value: string) => {
+              return projectsMap.get(value) || value;
+            },
+            valueListGap: 0,
+            valueListMaxHeight: 200,
           }
         : undefined,
       valueFormatter: (params) => {
         if (batchEditingEnabled) {
+          // In edit mode, ensure we show the name but maintain the ID value
+          const projectName = projectsMap.get(params.value);
+          return projectName || "プロジェクトを選択してください";
+        } else {
+          // In view mode, show project name
           return projectsMap.get(params.value) || "Unknown";
         }
-        return params.value;
       },
+      valueGetter: (params) => {
+        // Ensure we always return the projectId for editing
+        return params.data.projectId;
+      },
+      valueSetter: (params) => {
+        // Ensure the projectId is stored correctly
+        const { newValue } = params;
+        params.data.projectId = newValue;
+        // Also update projectName for consistency
+        params.data.projectName = projectsMap.get(newValue) || "Unknown";
+        return true;
+      },
+      cellRenderer: batchEditingEnabled ? undefined : ((params) => {
+        // In view mode, show project name
+        return projectsMap.get(params.value) || "Unknown";
+      }),
       filter: true,
     });
 
     columns.push({
       headerName: "Category",
-      field: batchEditingEnabled ? "categoryId" : "categoryName",
+      field: "categoryId", // Always use categoryId field
       width: COLUMN_WIDTHS.CATEGORY,
       editable: batchEditingEnabled,
       cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
       cellEditorParams: batchEditingEnabled
         ? {
             values: categories.filter((c) => c.isActive).map((c) => c.id),
+            formatValue: (value: string) => {
+              return categoriesMap.get(value) || value;
+            },
+            valueListGap: 0,
+            valueListMaxHeight: 200,
           }
         : undefined,
       valueFormatter: (params) => {
         if (batchEditingEnabled) {
+          // In edit mode, ensure we show the name but maintain the ID value
+          const categoryName = categoriesMap.get(params.value);
+          return categoryName || "カテゴリを選択してください";
+        } else {
+          // In view mode, show category name
           return categoriesMap.get(params.value) || "Unknown";
         }
-        return params.value;
       },
+      valueGetter: (params) => {
+        // Ensure we always return the categoryId for editing
+        return params.data.categoryId;
+      },
+      valueSetter: (params) => {
+        // Ensure the categoryId is stored correctly
+        const { newValue } = params;
+        params.data.categoryId = newValue;
+        // Also update categoryName for consistency
+        params.data.categoryName = categoriesMap.get(newValue) || "Unknown";
+        return true;
+      },
+      cellRenderer: batchEditingEnabled ? undefined : ((params) => {
+        // In view mode, show category name
+        return categoriesMap.get(params.value) || "Unknown";
+      }),
       filter: true,
     });
 
@@ -510,6 +590,15 @@ export function EnhancedWorkLogTable({
     const field = colDef.field;
     if (!field) return;
 
+    // Update related fields for consistency
+    if (field === "projectId") {
+      // Update projectName when projectId changes
+      data.projectName = projectsMap.get(newValue) || "Unknown";
+    } else if (field === "categoryId") {
+      // Update categoryName when categoryId changes
+      data.categoryName = categoriesMap.get(newValue) || "Unknown";
+    }
+
     // Store the change in pending changes
     setPendingChanges((prev) => {
       const newChanges = new Map(prev);
@@ -521,7 +610,7 @@ export function EnhancedWorkLogTable({
       });
       return newChanges;
     });
-  }, []);
+  }, [projectsMap, categoriesMap]);
 
   // Validate work log data
   const validateWorkLogData = useCallback((data: Partial<WorkLog>) => {
@@ -581,15 +670,36 @@ export function EnhancedWorkLogTable({
 
   // Handle batch save
   const handleBatchSave = useCallback(async () => {
+    // Determine which changes to process
+    let changesToProcess = pendingChanges;
+    
+    // In batch editing mode, if no changes were made, use current grid data
     if (pendingChanges.size === 0) {
-      toast.info("変更がありません");
-      return;
+      const currentPendingChanges = new Map<string, Partial<WorkLog>>();
+      gridApi?.forEachNode((node) => {
+        if (node.data) {
+          currentPendingChanges.set(node.data.id, {
+            date: node.data.date,
+            hours: node.data.hours,
+            projectId: node.data.projectId,
+            categoryId: node.data.categoryId,
+            details: node.data.details || "",
+          });
+        }
+      });
+      
+      if (currentPendingChanges.size === 0) {
+        toast.info("データがありません");
+        return;
+      }
+      
+      changesToProcess = currentPendingChanges;
     }
 
-    // Validate all pending changes before saving
+    // Validate all changes before saving
     const validationErrors = new Map<string, string[]>();
 
-    for (const [id, data] of pendingChanges.entries()) {
+    for (const [id, data] of changesToProcess.entries()) {
       // Get complete row data from grid
       const gridRow = gridApi?.getRowNode(id)?.data;
       const completeData = { ...gridRow, ...data };
@@ -617,7 +727,7 @@ export function EnhancedWorkLogTable({
 
     try {
       // Separate new rows from existing rows
-      const pendingEntries = Array.from(pendingChanges.entries());
+      const pendingEntries = Array.from(changesToProcess.entries());
       const newRows: Array<{ id: string; data: Partial<WorkLog> }> = [];
       const existingRows: Array<{ id: string; data: Partial<WorkLog> }> = [];
 
@@ -724,7 +834,7 @@ export function EnhancedWorkLogTable({
       }
 
       // Success - all operations completed
-      toast.success(`${pendingChanges.size}件の変更を保存しました`);
+      toast.success(`${changesToProcess.size}件の変更を保存しました`);
       setPendingChanges(new Map());
       setFailedWorkLogIds(new Set());
       setBatchEditingEnabled(false);
@@ -749,7 +859,7 @@ export function EnhancedWorkLogTable({
       }
 
       // Mark failed rows for visual indication
-      const failedIds = Array.from(pendingChanges.keys());
+      const failedIds = Array.from(changesToProcess.keys());
       setFailedWorkLogIds(new Set(failedIds));
     } finally {
       setIsSubmitting(false);
@@ -796,6 +906,74 @@ export function EnhancedWorkLogTable({
     setGridApi(params.api);
     params.api.sizeColumnsToFit();
   }, []);
+
+  // Sync data when batch editing mode changes
+  const [prevBatchEditingEnabled, setPrevBatchEditingEnabled] = useState(batchEditingEnabled);
+  
+  useEffect(() => {
+    if (batchEditingEnabled !== prevBatchEditingEnabled && gridApi) {
+      // Force grid refresh to ensure proper data sync
+      setTimeout(() => {
+        gridApi.refreshCells({ force: true });
+        gridApi.sizeColumnsToFit();
+        
+        // If entering batch editing mode, ensure all rows have complete data
+        if (batchEditingEnabled) {
+          // Pre-populate pendingChanges with all existing row data
+          // This ensures existing values are recognized during validation
+          const newPendingChanges = new Map<string, Partial<WorkLog>>();
+          
+          gridApi.forEachNode((node) => {
+            if (node.data) {
+              // Ensure projectId and categoryId are properly set
+              if (!node.data.projectId && node.data.projectName) {
+                // Try to find projectId from projectName
+                const project = projects.find(p => p.name === node.data.projectName);
+                if (project) {
+                  node.data.projectId = project.id;
+                }
+              }
+              if (!node.data.categoryId && node.data.categoryName) {
+                // Try to find categoryId from categoryName
+                const category = categories.find(c => c.name === node.data.categoryName);
+                if (category) {
+                  node.data.categoryId = category.id;
+                }
+              }
+              
+              // Ensure projectName and categoryName are set from IDs
+              if (node.data.projectId && !node.data.projectName) {
+                node.data.projectName = projectsMap.get(node.data.projectId) || "Unknown";
+              }
+              if (node.data.categoryId && !node.data.categoryName) {
+                node.data.categoryName = categoriesMap.get(node.data.categoryId) || "Unknown";
+              }
+
+              // Add existing row data to pendingChanges so validation recognizes existing values
+              newPendingChanges.set(node.data.id, {
+                date: node.data.date,
+                hours: node.data.hours,
+                projectId: node.data.projectId,
+                categoryId: node.data.categoryId,
+                details: node.data.details || "",
+              });
+            }
+          });
+          
+          // Set the pre-populated pending changes
+          setPendingChanges(newPendingChanges);
+          
+          // Force another refresh after data sync
+          gridApi.refreshCells({ force: true });
+        } else {
+          // When exiting batch editing mode, clear pending changes
+          setPendingChanges(new Map());
+        }
+      }, 100);
+      
+      setPrevBatchEditingEnabled(batchEditingEnabled);
+    }
+  }, [batchEditingEnabled, prevBatchEditingEnabled, gridApi, projects, categories, projectsMap, categoriesMap]);
 
   if (isLoading) {
     return <div className="text-center py-8">Loading work logs...</div>;

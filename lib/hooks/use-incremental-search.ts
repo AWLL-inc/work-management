@@ -62,7 +62,7 @@ export function useIncrementalSearch<T extends SearchableItem>({
   // Reset pagination when search query changes
   useEffect(() => {
     setCurrentPage(1);
-  }, []);
+  }, [searchQuery]);
 
   // Load more items (increment page)
   const loadMore = useCallback(() => {

@@ -71,6 +71,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
   gridOptions,
   batchEditingEnabled = false,
 }: EnhancedAGGridProps<T>) {
+  // Use ref to get current value in callbacks
+  const batchEditingEnabledRef = useRef(batchEditingEnabled);
+  batchEditingEnabledRef.current = batchEditingEnabled;
+  
   // Grid references
   const gridRef = useRef<AgGridReact>(null);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
@@ -428,6 +432,98 @@ export function EnhancedAGGrid<T extends { id: string }>({
     toast.info("操作をやり直しました");
   }, [historyStack.redoStack, gridApi]);
 
+  // Cell-level copy & paste handler for Community Edition
+  const onCellKeyDown = useCallback((event: any) => {
+    const { event: keyboardEvent, api, node, column } = event;
+    
+    const currentBatchEditingEnabled = batchEditingEnabledRef.current;
+    
+    // Handle Ctrl+C (or Cmd+C on Mac) for cell copy (only in batch editing mode)
+    if ((keyboardEvent.ctrlKey || keyboardEvent.metaKey) && keyboardEvent.key === 'c' && currentBatchEditingEnabled) {
+      keyboardEvent.preventDefault();
+      keyboardEvent.stopPropagation();
+      
+      // Get the current cell value
+      const cellValue = node.data[column.getId()];
+      const textToCopy = cellValue != null ? String(cellValue) : '';
+      
+      // Try multiple methods for clipboard access
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        // Modern clipboard API
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          toast.success(`セル値をコピーしました: "${textToCopy.length > 20 ? textToCopy.substring(0, 20) + '...' : textToCopy}"`);
+        }).catch((err) => {
+          console.error('Failed to write clipboard with navigator.clipboard:', err);
+          // Fallback to execCommand
+          fallbackCopyTextToClipboard(textToCopy);
+        });
+      } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(textToCopy);
+      }
+    }
+    
+    // Handle Ctrl+V (or Cmd+V on Mac) for cell paste (only in batch editing mode)
+    if ((keyboardEvent.ctrlKey || keyboardEvent.metaKey) && keyboardEvent.key === 'v' && currentBatchEditingEnabled) {
+      keyboardEvent.preventDefault();
+      keyboardEvent.stopPropagation();
+      
+      // Check if current column is editable
+      if (!column.getColDef().editable) {
+        toast.warning('このセルは編集できません');
+        return;
+      }
+      
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then((clipboardText) => {
+          if (!clipboardText) return;
+          
+          // For single cell paste, take only the first value (before tab or newline)
+          const firstValue = clipboardText.split(/[\t\n]/)[0];
+          
+          // Set the value to current cell
+          node.setDataValue(column.getId(), firstValue);
+          
+          toast.success('セルに貼り付けました');
+        }).catch((err) => {
+          console.error('Failed to read clipboard:', err);
+          toast.error('クリップボードの読み取りに失敗しました');
+        });
+      } else {
+        toast.error('このブラウザではクリップボード機能がサポートされていません');
+      }
+    }
+  }, []); // Remove batchEditingEnabled from deps since we use ref
+
+  // Fallback copy function for older browsers
+  const fallbackCopyTextToClipboard = useCallback((text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        toast.success(`セル値をコピーしました: "${text.length > 20 ? text.substring(0, 20) + '...' : text}"`);
+      } else {
+        toast.error('コピーに失敗しました');
+      }
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      toast.error('コピーに失敗しました');
+    }
+    
+    document.body.removeChild(textArea);
+  }, []);
+
   // Enhanced grid options (Community edition compatible)
   const enhancedGridOptions: GridOptions = useMemo(
     () => ({
@@ -439,8 +535,16 @@ export function EnhancedAGGrid<T extends { id: string }>({
       undoRedoCellEditing: enableUndoRedo,
       undoRedoCellEditingLimit: maxUndoRedoSteps,
       getRowHeight: getRowHeight,
+      // Custom keyboard handling for clipboard
+      onCellKeyDown: onCellKeyDown,
+      // Enable basic text selection
+      enableCellTextSelection: true,
+      // Suppress default clipboard to use our custom handler
+      suppressCopyRowsToClipboard: true,
+      suppressClipboardPaste: true,
+      suppressClipboardApi: false, // Allow clipboard API access
     }),
-    [gridOptions, enableUndoRedo, maxUndoRedoSteps, getRowHeight],
+    [gridOptions, enableUndoRedo, maxUndoRedoSteps, getRowHeight, onCellKeyDown],
   );
 
   return (

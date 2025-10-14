@@ -12,8 +12,10 @@ import type {
   RowHeightParams,
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useDebouncedCallback } from "use-debounce";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +30,22 @@ import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { CustomDateEditor } from "./custom-date-editor";
+import { SearchControls } from "./search/search-controls";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
+
+// Search filters type
+interface SearchFilters {
+  dateRange: {
+    from: Date | undefined;
+    to: Date | undefined;
+  };
+  projectIds: string[];
+  categoryIds: string[];
+  userId: string | null;
+}
+
+// Import from API file for consistency
+import type { GetWorkLogsOptions } from "@/lib/api/work-logs";
 
 // Column width constants
 const COLUMN_WIDTHS = {
@@ -108,6 +125,7 @@ interface EnhancedWorkLogTableProps {
     }>,
   ) => Promise<void>;
   onRefresh?: () => void;
+  onFilterChange?: (filters: GetWorkLogsOptions) => void;
   isLoading: boolean;
 }
 
@@ -125,6 +143,7 @@ export function EnhancedWorkLogTable({
   onDeleteWorkLog,
   onBatchUpdateWorkLogs,
   onRefresh,
+  onFilterChange,
   isLoading,
 }: EnhancedWorkLogTableProps) {
   const [formOpen, setFormOpen] = useState(false);
@@ -138,6 +157,101 @@ export function EnhancedWorkLogTable({
   const [batchEditingEnabled, setBatchEditingEnabled] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
+
+  // URL state management
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize search filters from URL parameters
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>(() => ({
+    dateRange: {
+      from: searchParams.get("from")
+        ? new Date(searchParams.get("from") as string)
+        : undefined,
+      to: searchParams.get("to")
+        ? new Date(searchParams.get("to") as string)
+        : undefined,
+    },
+    projectIds: searchParams.get("projects")?.split(",").filter(Boolean) || [],
+    categoryIds:
+      searchParams.get("categories")?.split(",").filter(Boolean) || [],
+    userId: searchParams.get("userId") || null,
+  }));
+
+  // Update URL when filters change
+  const updateUrlWithFilters = useCallback(
+    (newFilters: SearchFilters) => {
+      const params = new URLSearchParams();
+
+      if (newFilters.dateRange.from) {
+        params.set(
+          "from",
+          newFilters.dateRange.from.toISOString().split("T")[0],
+        );
+      }
+      if (newFilters.dateRange.to) {
+        params.set("to", newFilters.dateRange.to.toISOString().split("T")[0]);
+      }
+      if (newFilters.projectIds.length > 0) {
+        params.set("projects", newFilters.projectIds.join(","));
+      }
+      if (newFilters.categoryIds.length > 0) {
+        params.set("categories", newFilters.categoryIds.join(","));
+      }
+      if (newFilters.userId) {
+        params.set("userId", newFilters.userId);
+      }
+
+      const newUrl = params.toString()
+        ? `?${params.toString()}`
+        : window.location.pathname;
+      router.push(newUrl, { scroll: false });
+    },
+    [router],
+  );
+
+  // Debounced API filter change to reduce calls
+  const debouncedFilterChange = useDebouncedCallback(
+    (newFilters: SearchFilters) => {
+      if (onFilterChange) {
+        try {
+          const apiFilters: GetWorkLogsOptions = {
+            startDate: newFilters.dateRange.from?.toISOString().split("T")[0],
+            endDate: newFilters.dateRange.to?.toISOString().split("T")[0],
+            projectIds:
+              newFilters.projectIds.length > 0
+                ? newFilters.projectIds.join(",")
+                : undefined,
+            categoryIds:
+              newFilters.categoryIds.length > 0
+                ? newFilters.categoryIds.join(",")
+                : undefined,
+            userId: newFilters.userId || undefined,
+          };
+          onFilterChange(apiFilters);
+        } catch (error) {
+          console.error("Filter application error:", error);
+          toast.error("フィルタの適用に失敗しました。もう一度お試しください。");
+        }
+      }
+    },
+    500, // 500ms待機
+  );
+
+  // Handle filter changes with URL update and debounced API calls
+  const handleFiltersChange = useCallback(
+    (newFilters: SearchFilters) => {
+      try {
+        setSearchFilters(newFilters);
+        updateUrlWithFilters(newFilters);
+        debouncedFilterChange(newFilters); // デバウンスされたAPI呼び出し
+      } catch (error) {
+        console.error("Filter state update error:", error);
+        toast.error("フィルタの更新に失敗しました。");
+      }
+    },
+    [updateUrlWithFilters, debouncedFilterChange],
+  );
 
   // Create project and category lookup maps
   const projectsMap = useMemo(() => {
@@ -400,7 +514,6 @@ export function EnhancedWorkLogTable({
             // In view mode, show project name
             return projectsMap.get(params.value) || "Unknown";
           },
-      filter: true,
     });
 
     columns.push({
@@ -447,7 +560,6 @@ export function EnhancedWorkLogTable({
             // In view mode, show category name
             return categoriesMap.get(params.value) || "Unknown";
           },
-      filter: true,
     });
 
     columns.push({
@@ -520,7 +632,8 @@ export function EnhancedWorkLogTable({
     () => ({
       sortable: true,
       resizable: true,
-      filter: false,
+      filter: false, // Disable filtering for all columns
+      floatingFilter: false, // Disable floating filters
       suppressKeyboardEvent: (params: SuppressKeyboardEventParams) => {
         if (params.event.key === "Enter" && params.editing) {
           return false;
@@ -985,59 +1098,59 @@ export function EnhancedWorkLogTable({
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-lg border-2 border-primary/20 p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-primary mb-2">
-              Enhanced Work Logs Management
-            </h2>
-            <p className="text-muted-foreground">
-              Advanced spreadsheet-like interface with Excel-compatible features
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {!batchEditingEnabled ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => setBatchEditingEnabled(true)}
-                >
-                  一括編集
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => {
-                    setSelectedWorkLog(null);
-                    setFormOpen(true);
-                  }}
-                >
-                  Add Work Log (Dialog)
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="default"
-                  size="lg"
-                  onClick={handleBatchSave}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "保存中..." : "保存"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleCancelBatchEditing}
-                  disabled={isSubmitting}
-                >
-                  キャンセル
-                </Button>
-              </>
-            )}
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold text-primary mb-2">
+            Enhanced Work Logs Management
+          </h2>
+          <p className="text-muted-foreground">
+            Advanced spreadsheet-like interface with Excel-compatible features
+          </p>
         </div>
       </div>
+
+      {/* Search Controls */}
+      <SearchControls
+        filters={searchFilters}
+        onFiltersChange={handleFiltersChange}
+        projects={projects}
+        categories={categories}
+        // users={users} // Will be added when user API is available
+        showUserFilter={false} // Will be true when user role checking is implemented
+        onApplyFilters={() => {
+          if (onFilterChange) {
+            const apiFilters: GetWorkLogsOptions = {
+              startDate: searchFilters.dateRange.from
+                ?.toISOString()
+                .split("T")[0],
+              endDate: searchFilters.dateRange.to?.toISOString().split("T")[0],
+              projectIds:
+                searchFilters.projectIds.length > 0
+                  ? searchFilters.projectIds.join(",")
+                  : undefined,
+              categoryIds:
+                searchFilters.categoryIds.length > 0
+                  ? searchFilters.categoryIds.join(",")
+                  : undefined,
+              userId: searchFilters.userId ?? undefined,
+            };
+            onFilterChange(apiFilters);
+          }
+        }}
+        onClearFilters={() => {
+          const clearedFilters: SearchFilters = {
+            dateRange: { from: undefined, to: undefined },
+            projectIds: [],
+            categoryIds: [],
+            userId: null,
+          };
+          handleFiltersChange(clearedFilters);
+          if (onFilterChange) {
+            onFilterChange({});
+          }
+        }}
+        isLoading={isLoading}
+        className="mb-4"
+      />
 
       <EnhancedAGGrid<WorkLog>
         rowData={rowData}
@@ -1056,6 +1169,19 @@ export function EnhancedWorkLogTable({
         batchEditingEnabled={batchEditingEnabled}
         enableUndoRedo={true}
         maxUndoRedoSteps={20}
+        // Filtering features
+        enableQuickFilter={false}
+        enableFloatingFilter={false}
+        enableFilterToolPanel={false}
+        // Work Log specific toolbar buttons
+        onToggleBatchEdit={() => setBatchEditingEnabled(true)}
+        onAddWorkLog={() => {
+          setSelectedWorkLog(null);
+          setFormOpen(true);
+        }}
+        onBatchSave={handleBatchSave}
+        onCancelBatchEdit={handleCancelBatchEditing}
+        isSavingBatch={isSubmitting}
         gridOptions={{
           rowSelection: "multiple",
           suppressRowClickSelection: false, // Always allow row selection

@@ -10,13 +10,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
+vi.mock("@/lib/auth-helpers", () => ({
+  getAuthenticatedSession: vi.fn(),
+}));
 vi.mock("@/lib/db/repositories/work-log-repository", () => ({
   getWorkLogs: vi.fn(),
   createWorkLog: vi.fn(),
 }));
+vi.mock("@/lib/db/connection", () => ({
+  db: {},
+}));
 
 import { GET, POST } from "@/app/api/work-logs/route";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   createWorkLog,
   getWorkLogs,
@@ -32,7 +38,7 @@ describe("Work Logs API - Collection Routes", () => {
 
   describe("GET /api/work-logs", () => {
     it("should return 401 if user is not authenticated", async () => {
-      vi.mocked(auth).mockResolvedValue(null as any);
+      vi.mocked(getAuthenticatedSession).mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/work-logs");
       const response = await GET(request);
@@ -44,7 +50,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should return work logs for authenticated user", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -121,7 +127,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should allow admin to see all work logs", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "admin-id", email: "admin@example.com", role: "admin" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -153,7 +159,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should support pagination parameters", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -187,7 +193,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should return 400 for invalid pagination parameters", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -204,7 +210,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should support date range filtering", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -238,7 +244,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should support project filtering", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -269,11 +275,206 @@ describe("Work Logs API - Collection Routes", () => {
         }),
       );
     });
+
+    describe("Advanced Filtering", () => {
+      beforeEach(() => {
+        vi.mocked(getAuthenticatedSession).mockResolvedValue({
+          user: { id: "user-id", email: "user@example.com", role: "user" },
+          expires: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        } as any);
+
+        const mockResponse = {
+          data: [],
+          pagination: {
+            page: 1,
+            limit: 20,
+            total: 0,
+            totalPages: 0,
+          },
+        };
+        vi.mocked(getWorkLogs).mockResolvedValue(mockResponse);
+      });
+
+      it("should filter by multiple project IDs", async () => {
+        const projectIds = "proj1,proj2,proj3";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?projectIds=${projectIds}`,
+        );
+        const response = await GET(request);
+        const data = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            projectIds: ["proj1", "proj2", "proj3"],
+          }),
+        );
+      });
+
+      it("should filter by multiple category IDs", async () => {
+        const categoryIds = "cat1,cat2";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?categoryIds=${categoryIds}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            categoryIds: ["cat1", "cat2"],
+          }),
+        );
+      });
+
+      it("should filter by search text in details", async () => {
+        const searchText = "meeting";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?searchText=${searchText}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            searchText: "meeting",
+          }),
+        );
+      });
+
+      it("should allow admin to filter by specific user", async () => {
+        vi.mocked(getAuthenticatedSession).mockResolvedValue({
+          user: { id: "admin-id", email: "admin@example.com", role: "admin" },
+          expires: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        } as any);
+
+        const userId = "550e8400-e29b-41d4-a716-446655440000";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?userId=${userId}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            userId: "550e8400-e29b-41d4-a716-446655440000",
+          }),
+        );
+      });
+
+      it("should ignore userId filter for non-admin users", async () => {
+        const userId = "550e8400-e29b-41d4-a716-446655440001";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?userId=${userId}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        // Non-admin should get their own userId, not the requested one
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            userId: "user-id", // Current user, not requested user
+          }),
+        );
+      });
+
+      it("should combine multiple filters", async () => {
+        const request = new NextRequest(
+          "http://localhost:3000/api/work-logs?startDate=2024-01-01&endDate=2024-12-31&projectIds=proj1,proj2&searchText=development&page=2&limit=10",
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            startDate: expect.any(Date),
+            endDate: expect.any(Date),
+            projectIds: ["proj1", "proj2"],
+            searchText: "development",
+            page: 2,
+            limit: 10,
+            userId: "user-id",
+          }),
+        );
+      });
+
+      it("should return 400 for invalid date format", async () => {
+        const request = new NextRequest(
+          "http://localhost:3000/api/work-logs?startDate=invalid-date",
+        );
+        const response = await GET(request);
+        const data = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(data.success).toBe(false);
+        expect(data.error.code).toBe("VALIDATION_ERROR");
+      });
+
+      it("should handle empty projectIds parameter", async () => {
+        const request = new NextRequest(
+          "http://localhost:3000/api/work-logs?projectIds=",
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            projectIds: expect.anything(),
+          }),
+        );
+      });
+
+      it("should handle empty categoryIds parameter", async () => {
+        const request = new NextRequest(
+          "http://localhost:3000/api/work-logs?categoryIds=",
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            categoryIds: expect.anything(),
+          }),
+        );
+      });
+
+      it("should maintain backward compatibility with single projectId", async () => {
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?projectId=${validProjectId}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            projectId: validProjectId,
+          }),
+        );
+      });
+
+      it("should maintain backward compatibility with single categoryId", async () => {
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?categoryId=${validCategoryId}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            categoryId: validCategoryId,
+          }),
+        );
+      });
+    });
   });
 
   describe("POST /api/work-logs", () => {
     it("should return 401 if user is not authenticated", async () => {
-      vi.mocked(auth).mockResolvedValue(null as any);
+      vi.mocked(getAuthenticatedSession).mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/work-logs", {
         method: "POST",
@@ -294,7 +495,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should create work log with valid data", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -342,7 +543,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should return 400 for invalid hours format", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -366,7 +567,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should return 400 for hours exceeding 24", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -390,7 +591,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should return 400 for invalid project ID format", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -414,7 +615,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should return 400 for invalid date format", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -438,7 +639,7 @@ describe("Work Logs API - Collection Routes", () => {
     });
 
     it("should allow null details", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);

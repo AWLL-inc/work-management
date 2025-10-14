@@ -222,3 +222,60 @@ export type UpdateWorkLogInput = z.infer<typeof updateWorkLogSchema>;
 export type BatchUpdateWorkLogsInput = z.infer<
   typeof batchUpdateWorkLogsSchema
 >;
+
+/**
+ * Work Log Search Validation Schema
+ * For validating query parameters in the work logs API
+ */
+export const workLogSearchSchema = z
+  .object({
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().max(100).default(20),
+    startDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Expected YYYY-MM-DD")
+      .transform((val) => {
+        const date = new Date(val);
+        if (Number.isNaN(date.getTime())) {
+          throw new Error("Invalid date format");
+        }
+        return date;
+      })
+      .optional(),
+    endDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Expected YYYY-MM-DD")
+      .transform((val) => {
+        const date = new Date(val);
+        if (Number.isNaN(date.getTime())) {
+          throw new Error("Invalid date format");
+        }
+        return date;
+      })
+      .optional(),
+    projectId: z.string().uuid().optional(), // Legacy single project filter
+    projectIds: z.string().optional(), // New multiple projects filter (comma-separated)
+    categoryId: z.string().uuid().optional(), // Legacy single category filter
+    categoryIds: z.string().optional(), // New multiple categories filter (comma-separated)
+    userId: z.string().uuid().optional(), // Admin only
+    searchText: z.string().max(500).optional(),
+  })
+  .refine(
+    (data) => {
+      // If both startDate and endDate are provided, startDate should be <= endDate
+      if (data.startDate && data.endDate) {
+        return data.startDate <= data.endDate;
+      }
+      return true;
+    },
+    {
+      message: "Start date must be before or equal to end date",
+      path: ["startDate"],
+    },
+  );
+
+export type WorkLogSearchQuery = z.infer<typeof workLogSearchSchema>;
+
+// Enhanced type exports for better type safety
+export type WorkLogSearchParams = z.input<typeof workLogSearchSchema>;
+export type WorkLogSearchValidated = z.output<typeof workLogSearchSchema>;

@@ -66,7 +66,12 @@
       "Bash(docker compose:*)",
       "Bash(lsof:*)",
       "Bash(kill:*)",
-      "Bash(gh pr list:*)"
+      "Bash(gh pr list:*)",
+      "Bash(npx shadcn-ui@latest add command:*)",
+      "Bash(npx @biomejs/biome check:*)",
+      "Read(//Users/awll/.claude/**)",
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(npx vitest run:*)"
     ],
     "deny": [],
     "ask": []

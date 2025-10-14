@@ -1,14 +1,8 @@
 "use client";
 
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check } from "lucide-react";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +40,7 @@ export function Combobox({
   onLoadMore,
   loading = false,
 }: ComboboxProps) {
-  const [open, setOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
 
@@ -63,7 +57,7 @@ export function Combobox({
   const handleSelect = React.useCallback(
     (selectedValue: string) => {
       onValueChange?.(selectedValue === value ? "" : selectedValue);
-      setOpen(false);
+      setIsOpen(false);
     },
     [onValueChange, value],
   );
@@ -82,83 +76,108 @@ export function Combobox({
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("w-full justify-between", className)}
-          disabled={disabled}
-        >
+    <div className={cn("relative w-full", className)}>
+      {/* Selected Value Display */}
+      <div
+        role="combobox"
+        aria-expanded={isOpen}
+        tabIndex={0}
+        className="w-full p-2 border rounded-md bg-background cursor-pointer flex justify-between items-center"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            !disabled && setIsOpen(!isOpen);
+          }
+        }}
+      >
+        <span className={selectedOption ? "" : "text-muted-foreground"}>
           {selectedOption ? selectedOption.label : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <div className="p-2">
-          <Input
-            placeholder={searchPlaceholder}
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="h-9"
-          />
-        </div>
-        <ScrollArea
-          className="h-60"
-          ref={scrollAreaRef}
-          onScrollCapture={handleScroll}
-        >
-          <div className="p-1">
-            {options.length === 0 && !loading ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                {emptyText}
-              </div>
-            ) : (
-              <>
-                {options.map((option) => (
-                  <div
-                    key={option.value}
-                    onClick={() => handleSelect(option.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleSelect(option.value);
-                      }
-                    }}
-                    role="option"
-                    tabIndex={0}
-                    aria-selected={value === option.value}
-                    className={cn(
-                      "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                      value === option.value &&
-                        "bg-accent text-accent-foreground",
-                    )}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === option.value ? "opacity-100" : "opacity-0",
-                      )}
-                    />
-                    {option.label}
-                  </div>
-                ))}
-                {loading && (
-                  <div className="py-2 text-center text-sm text-muted-foreground">
-                    読み込み中...
-                  </div>
-                )}
-                {hasMore && !loading && (
-                  <div className="py-1 text-center text-xs text-muted-foreground">
-                    スクロールして続きを読み込む
-                  </div>
-                )}
-              </>
-            )}
+        </span>
+        <span className="text-muted-foreground">▼</span>
+      </div>
+
+      {/* Dropdown Options */}
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 border rounded-md bg-background shadow-lg">
+          <div className="p-2">
+            <Input
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="h-9"
+            />
           </div>
-        </ScrollArea>
-      </PopoverContent>
-    </Popover>
+          <ScrollArea
+            className="max-h-60"
+            ref={scrollAreaRef}
+            onScrollCapture={handleScroll}
+          >
+            <div className="p-1">
+              {options.length === 0 && !loading ? (
+                <div className="py-6 text-center text-sm text-muted-foreground">
+                  {emptyText}
+                </div>
+              ) : (
+                <>
+                  {options.map((option) => (
+                    <div
+                      key={option.value}
+                      role="option"
+                      tabIndex={0}
+                      onClick={() => handleSelect(option.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleSelect(option.value);
+                        }
+                      }}
+                      className={cn(
+                        "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                        value === option.value &&
+                          "bg-accent text-accent-foreground",
+                      )}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === option.value ? "opacity-100" : "opacity-0",
+                        )}
+                      />
+                      {option.label}
+                    </div>
+                  ))}
+                  {loading && (
+                    <div className="py-2 text-center text-sm text-muted-foreground">
+                      読み込み中...
+                    </div>
+                  )}
+                  {hasMore && !loading && (
+                    <div className="py-1 text-center text-xs text-muted-foreground">
+                      スクロールして続きを読み込む
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+
+      {/* Backdrop to close dropdown */}
+      {isOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-transparent border-0 cursor-default"
+          tabIndex={-1}
+          onClick={() => setIsOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setIsOpen(false);
+            }
+          }}
+        />
+      )}
+    </div>
   );
 }

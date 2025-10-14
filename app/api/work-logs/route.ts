@@ -3,9 +3,10 @@ import { ZodError } from "zod";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   createWorkLog,
+  type GetWorkLogsOptions,
   getWorkLogs,
 } from "@/lib/db/repositories/work-log-repository";
-import { createWorkLogSchema } from "@/lib/validations";
+import { createWorkLogSchema, workLogSearchSchema } from "@/lib/validations";
 
 // Use Node.js runtime for database operations
 export const runtime = "nodejs";
@@ -32,48 +33,81 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Parse query parameters
+    // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
-    const projectId = searchParams.get("projectId");
 
-    // Validate pagination parameters
-    if (page < 1 || limit < 1 || limit > 100) {
+    // Zodバリデーション - nullをundefinedに変換
+    const validationResult = workLogSearchSchema.safeParse({
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      startDate: searchParams.get("startDate") || undefined,
+      endDate: searchParams.get("endDate") || undefined,
+      projectId: searchParams.get("projectId") || undefined,
+      projectIds: searchParams.get("projectIds") || undefined,
+      categoryId: searchParams.get("categoryId") || undefined,
+      categoryIds: searchParams.get("categoryIds") || undefined,
+      userId: searchParams.get("userId") || undefined,
+      searchText: searchParams.get("searchText") || undefined,
+    });
+
+    if (!validationResult.success) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
-            message: "Invalid pagination parameters",
+            message: "Invalid query parameters",
+            details: validationResult.error.issues,
           },
         },
         { status: 400 },
       );
     }
 
-    // Build options
-    const options: Record<string, unknown> = {
-      page,
-      limit,
+    const validatedParams = validationResult.data;
+
+    // Build options using validated parameters
+    const options: GetWorkLogsOptions = {
+      page: validatedParams.page,
+      limit: validatedParams.limit,
     };
 
     // Non-admin users can only see their own work logs
     if (session.user.role !== "admin") {
       options.userId = session.user.id;
+    } else if (validatedParams.userId) {
+      // Admin can filter by specific user
+      options.userId = validatedParams.userId;
     }
 
-    // Add date filters if provided
-    if (startDate) {
-      options.startDate = new Date(startDate);
+    // Date filtering - dates are already validated and transformed by Zod
+    if (validatedParams.startDate) {
+      options.startDate = validatedParams.startDate;
     }
-    if (endDate) {
-      options.endDate = new Date(endDate);
+
+    if (validatedParams.endDate) {
+      options.endDate = validatedParams.endDate;
     }
-    if (projectId) {
-      options.projectId = projectId;
+
+    // Project filtering - handle both single and multiple
+    const projectIds = validatedParams.projectIds?.split(",").filter(Boolean);
+    if (projectIds && projectIds.length > 0) {
+      options.projectIds = projectIds;
+    } else if (validatedParams.projectId) {
+      options.projectId = validatedParams.projectId;
+    }
+
+    // Category filtering - handle both single and multiple
+    const categoryIds = validatedParams.categoryIds?.split(",").filter(Boolean);
+    if (categoryIds && categoryIds.length > 0) {
+      options.categoryIds = categoryIds;
+    } else if (validatedParams.categoryId) {
+      options.categoryId = validatedParams.categoryId;
+    }
+
+    // Search text filtering
+    if (validatedParams.searchText) {
+      options.searchText = validatedParams.searchText;
     }
 
     // Get work logs from repository

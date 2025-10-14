@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { users, workLogs } from "@/drizzle/schema";
 import { db } from "@/lib/db/connection";
-import { workLogs, users } from "@/drizzle/schema";
 
 export async function GET() {
   try {
@@ -10,15 +10,10 @@ export async function GET() {
       .select({ count: sql`count(*)` })
       .from(workLogs);
 
-    const userCount = await db
-      .select({ count: sql`count(*)` })
-      .from(users);
+    const userCount = await db.select({ count: sql`count(*)` }).from(users);
 
     // Simple select to see actual data
-    const sampleWorkLogs = await db
-      .select()
-      .from(workLogs)
-      .limit(5);
+    const sampleWorkLogs = await db.select().from(workLogs).limit(5);
 
     return NextResponse.json({
       success: true,

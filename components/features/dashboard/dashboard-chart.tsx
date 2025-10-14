@@ -74,7 +74,8 @@ export function DashboardChart({
         dateMap.set(item.date, { date: item.date });
       }
 
-      const existing = dateMap.get(item.date)!;
+      const existing = dateMap.get(item.date);
+      if (!existing) return;
 
       if (view === "project") {
         // For project view, we need to handle stacked data per user within project
@@ -104,8 +105,18 @@ export function DashboardChart({
     return { chartData, legendItems };
   }, [data, view]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
+  interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{
+      dataKey: string;
+      value: string | number;
+      color: string;
+    }>;
+    label?: string;
+  }
+
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
+    if (active && payload && payload.length && label) {
       const date = new Date(label).toLocaleDateString("ja-JP", {
         year: "numeric",
         month: "short",
@@ -115,21 +126,26 @@ export function DashboardChart({
       return (
         <div className="bg-background border border-border rounded-md p-3 shadow-md">
           <p className="font-medium mb-2">{date}</p>
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center gap-2 text-sm">
+          {payload.map((entry, index) => (
+            <div
+              key={`${entry.dataKey}-${index}`}
+              className="flex items-center gap-2 text-sm"
+            >
               <div
                 className="w-3 h-3 rounded"
                 style={{ backgroundColor: entry.color }}
               />
               <span>{entry.dataKey}:</span>
-              <span className="font-medium">{Number(entry.value).toFixed(1)}時間</span>
+              <span className="font-medium">
+                {Number(entry.value).toFixed(1)}時間
+              </span>
             </div>
           ))}
           <div className="mt-2 pt-2 border-t border-border text-sm">
             <span className="font-medium">
               合計:{" "}
               {payload
-                .reduce((sum: number, entry: any) => sum + Number(entry.value), 0)
+                .reduce((sum: number, entry) => sum + Number(entry.value), 0)
                 .toFixed(1)}
               時間
             </span>

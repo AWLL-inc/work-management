@@ -169,23 +169,29 @@ async function seed() {
 
     // Create sample work logs for the last 7 days
     const allUsers = await db.select().from(users);
-    const allProjects = await db.select().from(projects).where(eq(projects.isActive, true));
+    const allProjects = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.isActive, true));
     const allCategories = await db.select().from(workCategories);
 
     console.log("\nCreating sample work logs...");
     const workLogsData = [];
-    
+
     // Generate work logs for the last 7 days
     for (let i = 0; i < 7; i++) {
       const logDate = new Date();
       logDate.setDate(logDate.getDate() - i);
-      
+
       // Create 2-3 work logs per day across different users
       for (let j = 0; j < Math.floor(Math.random() * 3) + 2; j++) {
-        const randomUser = allUsers[Math.floor(Math.random() * allUsers.length)];
-        const randomProject = allProjects[Math.floor(Math.random() * allProjects.length)];
-        const randomCategory = allCategories[Math.floor(Math.random() * allCategories.length)];
-        
+        const randomUser =
+          allUsers[Math.floor(Math.random() * allUsers.length)];
+        const randomProject =
+          allProjects[Math.floor(Math.random() * allProjects.length)];
+        const randomCategory =
+          allCategories[Math.floor(Math.random() * allCategories.length)];
+
         workLogsData.push({
           date: logDate,
           hours: Math.floor(Math.random() * 6) + 2, // 2-8 hours

@@ -18,7 +18,9 @@ vi.mock("@/components/ui/select", () => ({
   SelectItem: ({ children, value }: any) => (
     <div data-value={value}>{children}</div>
   ),
-  SelectTrigger: ({ children }: any) => <button>{children}</button>,
+  SelectTrigger: ({ children }: any) => (
+    <button type="button">{children}</button>
+  ),
   SelectValue: () => <span>Selected</span>,
 }));
 

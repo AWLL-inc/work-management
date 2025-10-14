@@ -1,4 +1,4 @@
-import { sql, eq, gte, lte, and } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { projects, users, workLogs } from "@/drizzle/schema";
@@ -84,13 +84,13 @@ export async function GET(request: NextRequest) {
     endDate.setHours(23, 59, 59, 999);
 
     const isAdmin = session.user.role === "admin";
-    
+
     // Build where conditions
     const whereConditions = [
       gte(workLogs.date, startDate),
-      lte(workLogs.date, endDate)
+      lte(workLogs.date, endDate),
     ];
-    
+
     if (!isAdmin) {
       whereConditions.push(eq(workLogs.userId, session.user.id));
     }
@@ -102,14 +102,16 @@ export async function GET(request: NextRequest) {
           date: sql<string>`to_char(${workLogs.date}, 'YYYY-MM-DD')`.as("date"),
           userId: workLogs.userId,
           userName: users.name,
-          hours: sql<number>`sum(${workLogs.hours}::numeric)`.as(
-            "hours",
-          ),
+          hours: sql<number>`sum(${workLogs.hours}::numeric)`.as("hours"),
         })
         .from(workLogs)
         .innerJoin(users, eq(workLogs.userId, users.id))
         .where(and(...whereConditions))
-        .groupBy(sql`to_char(${workLogs.date}, 'YYYY-MM-DD')`, workLogs.userId, users.name)
+        .groupBy(
+          sql`to_char(${workLogs.date}, 'YYYY-MM-DD')`,
+          workLogs.userId,
+          users.name,
+        )
         .orderBy(sql`to_char(${workLogs.date}, 'YYYY-MM-DD')`, users.name);
 
       const totalHours = userViewData.reduce(
@@ -142,9 +144,7 @@ export async function GET(request: NextRequest) {
           projectName: projects.name,
           userId: workLogs.userId,
           userName: users.name,
-          hours: sql<number>`sum(${workLogs.hours}::numeric)`.as(
-            "hours",
-          ),
+          hours: sql<number>`sum(${workLogs.hours}::numeric)`.as("hours"),
         })
         .from(workLogs)
         .innerJoin(users, eq(workLogs.userId, users.id))
@@ -157,7 +157,11 @@ export async function GET(request: NextRequest) {
           workLogs.userId,
           users.name,
         )
-        .orderBy(sql`to_char(${workLogs.date}, 'YYYY-MM-DD')`, projects.name, users.name);
+        .orderBy(
+          sql`to_char(${workLogs.date}, 'YYYY-MM-DD')`,
+          projects.name,
+          users.name,
+        );
 
       const totalHours = projectViewData.reduce(
         (sum, item) => sum + Number(item.hours),

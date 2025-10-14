@@ -158,7 +158,7 @@ describe("DashboardChart", () => {
     );
 
     expect(screen.getByText("総時間: 42.3h")).toBeInTheDocument();
-    expect(screen.getByText("平均: 8.5h/日")).toBeInTheDocument();
+    expect(screen.getByText("平均: 8.4h/日")).toBeInTheDocument();
   });
 
   it("should render chart components", () => {

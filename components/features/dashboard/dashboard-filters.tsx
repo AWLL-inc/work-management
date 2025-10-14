@@ -1,6 +1,7 @@
 "use client";
 
 import { Calendar, RotateCcw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,9 @@ export function DashboardFilters({
   isLoading = false,
   className,
 }: DashboardFiltersProps) {
+  const t = useTranslations("dashboard.filters");
+  const tDashboard = useTranslations("dashboard");
+
   const formatDate = (date: Date) => {
     return date.toISOString().split("T")[0];
   };
@@ -84,22 +88,26 @@ export function DashboardFilters({
           {/* View Toggle */}
           <div>
             <Label htmlFor="view-select" className="text-sm font-medium">
-              表示方法
+              {t("viewMethod")}
             </Label>
             <Select value={filters.view} onValueChange={handleViewChange}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user">ユーザー別</SelectItem>
-                <SelectItem value="project">プロジェクト別</SelectItem>
+                <SelectItem value="user">{tDashboard("userView")}</SelectItem>
+                <SelectItem value="project">
+                  {tDashboard("projectView")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Date Range */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">期間選択</Label>
+            <Label className="text-sm font-medium mb-2 block">
+              {t("periodSelection")}
+            </Label>
 
             {/* Preset Buttons */}
             <div className="flex flex-wrap gap-2 mb-3">
@@ -110,7 +118,7 @@ export function DashboardFilters({
                 onClick={() => handlePresetClick(7)}
                 className="text-xs"
               >
-                過去7日
+                {t("last7Days")}
               </Button>
               <Button
                 type="button"
@@ -119,7 +127,7 @@ export function DashboardFilters({
                 onClick={() => handlePresetClick(30)}
                 className="text-xs"
               >
-                過去30日
+                {t("last30Days")}
               </Button>
               <Button
                 type="button"
@@ -128,7 +136,7 @@ export function DashboardFilters({
                 onClick={() => handlePresetClick(90)}
                 className="text-xs"
               >
-                過去90日
+                {t("last90Days")}
               </Button>
             </div>
 
@@ -139,7 +147,7 @@ export function DashboardFilters({
                   htmlFor="start-date"
                   className="text-xs text-muted-foreground"
                 >
-                  開始日
+                  {t("startDate")}
                 </Label>
                 <Input
                   id="start-date"
@@ -156,7 +164,7 @@ export function DashboardFilters({
                   htmlFor="end-date"
                   className="text-xs text-muted-foreground"
                 >
-                  終了日
+                  {t("endDate")}
                 </Label>
                 <Input
                   id="end-date"
@@ -180,7 +188,7 @@ export function DashboardFilters({
               className="flex items-center gap-1"
             >
               <RotateCcw className="h-3 w-3" />
-              リセット
+              {t("reset")}
             </Button>
 
             {onApplyFilters && (
@@ -191,7 +199,7 @@ export function DashboardFilters({
                 className="flex items-center gap-1"
               >
                 <Calendar className="h-3 w-3" />
-                {isLoading ? "読み込み中..." : "適用"}
+                {isLoading ? t("loading") : t("apply")}
               </Button>
             )}
           </div>

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/routing";
 
 export default function DashboardLayout({
   children,
@@ -7,28 +7,28 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex bg-background">
       {/* Sidebar */}
-      <aside className="w-64 border-r bg-card">
+      <aside className="w-64 border-r bg-card min-h-screen">
         <div className="p-6">
           <h2 className="text-lg font-semibold">Work Management</h2>
         </div>
         <nav className="px-4 space-y-2">
           <Link href="/dashboard">
             <Button variant="ghost" className="w-full justify-start">
-              ダッシュボード
+              Dashboard
             </Button>
           </Link>
           <Link href="/dashboard/user-request">
             <Button variant="ghost" className="w-full justify-start">
-              ユーザー申請
+              User Request
             </Button>
           </Link>
         </nav>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto p-6">{children}</main>
     </div>
   );
 }

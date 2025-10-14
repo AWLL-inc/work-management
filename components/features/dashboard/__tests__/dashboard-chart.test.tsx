@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { renderWithIntl } from "@/tests/test-utils";
 import type {
   DashboardProjectData,
   DashboardSummary,
@@ -73,21 +74,19 @@ describe("DashboardChart", () => {
   };
 
   it("should render chart with user data", () => {
-    render(
+    renderWithIntl(
       <DashboardChart data={mockUserData} view="user" summary={mockSummary} />,
     );
 
-    expect(
-      screen.getByText("作業時間チャート (ユーザー別)"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("総時間: 21.5h")).toBeInTheDocument();
-    expect(screen.getByText("平均: 10.8h/日")).toBeInTheDocument();
+    expect(screen.getByText("Work Hours Chart (By User)")).toBeInTheDocument();
+    expect(screen.getByText("Total: 21.5h")).toBeInTheDocument();
+    expect(screen.getByText("Average: 10.8h/day")).toBeInTheDocument();
     expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
     expect(screen.getByTestId("responsive-container")).toBeInTheDocument();
   });
 
   it("should render chart with project data", () => {
-    render(
+    renderWithIntl(
       <DashboardChart
         data={mockProjectData}
         view="project"
@@ -96,13 +95,13 @@ describe("DashboardChart", () => {
     );
 
     expect(
-      screen.getByText("作業時間チャート (プロジェクト別)"),
+      screen.getByText("Work Hours Chart (By Project)"),
     ).toBeInTheDocument();
     expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
   });
 
   it("should show loading state", () => {
-    render(
+    renderWithIntl(
       <DashboardChart
         data={[]}
         view="user"
@@ -111,12 +110,12 @@ describe("DashboardChart", () => {
       />,
     );
 
-    expect(screen.getByText("作業時間チャート")).toBeInTheDocument();
-    expect(screen.getByText("読み込み中...")).toBeInTheDocument();
+    expect(screen.getByText("Work Hours Chart (By User)")).toBeInTheDocument();
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
   it("should show empty state when no data", () => {
-    render(
+    renderWithIntl(
       <DashboardChart
         data={[]}
         view="user"
@@ -128,12 +127,12 @@ describe("DashboardChart", () => {
       />,
     );
 
-    expect(screen.getByText("作業時間チャート")).toBeInTheDocument();
-    expect(screen.getByText("データがありません")).toBeInTheDocument();
+    expect(screen.getByText("Work Hours Chart (By User)")).toBeInTheDocument();
+    expect(screen.getByText("No data available")).toBeInTheDocument();
   });
 
   it("should render user bars for user view", () => {
-    render(
+    renderWithIntl(
       <DashboardChart data={mockUserData} view="user" summary={mockSummary} />,
     );
 
@@ -149,7 +148,7 @@ describe("DashboardChart", () => {
       averageHoursPerDay: 8.45,
     };
 
-    render(
+    renderWithIntl(
       <DashboardChart
         data={mockUserData}
         view="user"
@@ -157,12 +156,12 @@ describe("DashboardChart", () => {
       />,
     );
 
-    expect(screen.getByText("総時間: 42.3h")).toBeInTheDocument();
-    expect(screen.getByText("平均: 8.4h/日")).toBeInTheDocument();
+    expect(screen.getByText("Total: 42.3h")).toBeInTheDocument();
+    expect(screen.getByText("Average: 8.4h/day")).toBeInTheDocument();
   });
 
   it("should render chart components", () => {
-    render(
+    renderWithIntl(
       <DashboardChart data={mockUserData} view="user" summary={mockSummary} />,
     );
 
@@ -180,7 +179,7 @@ describe("DashboardChart", () => {
       averageHoursPerDay: 0,
     };
 
-    render(
+    renderWithIntl(
       <DashboardChart
         data={[]}
         view="user"
@@ -189,11 +188,11 @@ describe("DashboardChart", () => {
       />,
     );
 
-    expect(screen.getByText("データがありません")).toBeInTheDocument();
+    expect(screen.getByText("No data available")).toBeInTheDocument();
   });
 
   it("should handle project view with stacked bars", () => {
-    render(
+    renderWithIntl(
       <DashboardChart
         data={mockProjectData}
         view="project"
@@ -202,7 +201,7 @@ describe("DashboardChart", () => {
     );
 
     expect(
-      screen.getByText("作業時間チャート (プロジェクト別)"),
+      screen.getByText("Work Hours Chart (By Project)"),
     ).toBeInTheDocument();
     expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
   });
@@ -214,7 +213,7 @@ describe("DashboardChart", () => {
       averageHoursPerDay: 5.226,
     };
 
-    render(
+    renderWithIntl(
       <DashboardChart
         data={mockUserData}
         view="user"
@@ -222,7 +221,7 @@ describe("DashboardChart", () => {
       />,
     );
 
-    expect(screen.getByText("総時間: 15.7h")).toBeInTheDocument();
-    expect(screen.getByText("平均: 5.2h/日")).toBeInTheDocument();
+    expect(screen.getByText("Total: 15.7h")).toBeInTheDocument();
+    expect(screen.getByText("Average: 5.2h/day")).toBeInTheDocument();
   });
 });

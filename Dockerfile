@@ -13,6 +13,9 @@ RUN apk add --no-cache \
     make \
     g++
 
+# Install pnpm
+RUN npm install -g pnpm
+
 WORKDIR /app
 
 # Set environment to production by default
@@ -24,10 +27,10 @@ ENV NODE_ENV=production
 FROM base AS deps
 
 # Copy package files
-COPY package.json package-lock.json* ./
+COPY package.json pnpm-lock.yaml* ./
 
 # Install dependencies
-RUN npm ci
+RUN pnpm install --frozen-lockfile --prod
 
 # ============================================
 # Development stage - For local development with HMR
@@ -37,13 +40,10 @@ FROM base AS development
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json* ./
+COPY package.json pnpm-lock.yaml* ./
 
 # Install all dependencies (including devDependencies)
-RUN npm ci --include=dev
-
-# Install specific dependencies that might be missing
-RUN npm install @radix-ui/react-popover @radix-ui/react-icons cmdk react-day-picker date-fns recharts use-debounce
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -75,7 +75,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build the Next.js application
 # This will create .next/standalone directory
-RUN npm run build
+RUN pnpm run build
 
 # ============================================
 # Production stage - Minimal production image

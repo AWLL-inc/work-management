@@ -75,7 +75,19 @@
       "Bash(dotenv -e .env.local -- tsx scripts/create-indexes.ts:*)",
       "Bash(npx dotenv -e .env.local:*)",
       "Bash(npm cache clean:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(npx next dev:*)",
+      "Bash(pkill:*)",
+      "Bash(test:*)",
+      "Bash(npm --version)",
+      "Bash(sudo chown:*)",
+      "Bash(pnpm run type-check:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx typescript:*)",
+      "Bash(npx -p typescript tsc:*)",
+      "Bash(pnpm run lint:*)",
+      "Bash(git restore:*)",
+      "Bash(pnpm install:*)"
     ],
     "deny": [],
     "ask": []

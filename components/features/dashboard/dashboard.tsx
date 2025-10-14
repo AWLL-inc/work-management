@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
@@ -15,6 +16,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ className }: DashboardProps) {
+  const t = useTranslations("dashboard");
   const [filters, setFilters] = useState<DashboardFiltersType>({
     view: "user",
   });
@@ -74,11 +76,11 @@ export function Dashboard({ className }: DashboardProps) {
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         const errorMessage =
-          error instanceof Error ? error.message : "データの取得に失敗しました";
+          error instanceof Error
+            ? error.message
+            : t("error.fetchFailed", { message: "Unknown error" });
         setError(errorMessage);
-        toast.error(
-          `ダッシュボードデータの取得に失敗しました: ${errorMessage}`,
-        );
+        toast.error(t("error.fetchFailed", { message: errorMessage }));
       } finally {
         setIsLoading(false);
       }
@@ -115,10 +117,8 @@ export function Dashboard({ className }: DashboardProps) {
     <div className={className}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">ダッシュボード</h1>
-          <p className="text-muted-foreground">
-            作業時間の傾向と分析を確認できます
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         <DashboardFilters
@@ -133,7 +133,7 @@ export function Dashboard({ className }: DashboardProps) {
             <div className="flex">
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-destructive">
-                  エラーが発生しました
+                  {t("error.title")}
                 </h3>
                 <div className="mt-2 text-sm text-destructive/80">{error}</div>
               </div>

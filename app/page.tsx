@@ -1,57 +1,87 @@
-import Link from "next/link";
-import { Dashboard } from "@/components/features/dashboard/dashboard";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Link } from "@/i18n/routing";
 
-export default async function HomePage() {
-  const session = await auth();
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "dashboard" });
 
-  if (!session) {
-    // This should not happen due to middleware redirect, but just in case
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">アクセスが拒否されました</h1>
-          <p className="mb-4">このページにアクセスするには認証が必要です。</p>
-          <Link href="/auth/signin">
-            <Button>サインイン</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  return {
+    title: t("title"),
+    description: "Work management application with time tracking",
+  };
+}
+
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-muted-foreground">
-                ようこそ、{session.user?.name || session.user?.email}さん
-              </p>
-              <p className="text-sm text-muted-foreground">
-                権限: {session.user?.role || "user"}
-              </p>
-            </div>
-            <div className="flex space-x-2">
-              <Link href="/work-logs">
-                <Button variant="outline" size="sm">
-                  作業ログ
-                </Button>
-              </Link>
-              <Link href="/auth/signout">
-                <Button variant="outline" size="sm">
-                  サインアウト
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </header>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold tracking-tight">{t("home.title")}</h1>
+        <p className="text-xl text-muted-foreground mt-2">
+          {t("home.subtitle")}
+        </p>
+      </div>
 
-        <main>
-          <Dashboard />
-        </main>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("nav.dashboard")}</CardTitle>
+            <CardDescription>
+              {t("home.cards.dashboard.description")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/dashboard">{t("nav.dashboard")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("nav.workLogs")}</CardTitle>
+            <CardDescription>
+              {t("home.cards.workLogs.description")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/work-logs">{t("nav.workLogs")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("nav.admin")}</CardTitle>
+            <CardDescription>
+              {t("home.cards.admin.description")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/admin/projects">{t("nav.admin")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

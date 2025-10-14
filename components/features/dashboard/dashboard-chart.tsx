@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import {
   Bar,
@@ -53,6 +54,7 @@ export function DashboardChart({
   summary,
   loading = false,
 }: DashboardChartProps) {
+  const t = useTranslations("dashboard.chart");
   const { chartData, legendItems } = useMemo(() => {
     if (!data.length) {
       return { chartData: [], legendItems: [] };
@@ -117,7 +119,7 @@ export function DashboardChart({
 
   const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length && label) {
-      const date = new Date(label).toLocaleDateString("ja-JP", {
+      const date = new Date(label).toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -137,17 +139,18 @@ export function DashboardChart({
               />
               <span>{entry.dataKey}:</span>
               <span className="font-medium">
-                {Number(entry.value).toFixed(1)}時間
+                {t("hoursUnit", { value: Number(entry.value).toFixed(1) })}
               </span>
             </div>
           ))}
           <div className="mt-2 pt-2 border-t border-border text-sm">
             <span className="font-medium">
-              合計:{" "}
-              {payload
-                .reduce((sum: number, entry) => sum + Number(entry.value), 0)
-                .toFixed(1)}
-              時間
+              {t("total")}:{" "}
+              {t("hoursUnit", {
+                value: payload
+                  .reduce((sum: number, entry) => sum + Number(entry.value), 0)
+                  .toFixed(1),
+              })}
             </span>
           </div>
         </div>
@@ -160,11 +163,15 @@ export function DashboardChart({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>作業時間チャート</CardTitle>
+          <CardTitle>
+            {t("title", {
+              view: view === "user" ? t("byUser") : t("byProject"),
+            })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 flex items-center justify-center">
-            <div className="text-muted-foreground">読み込み中...</div>
+            <div className="text-muted-foreground">{t("loading")}</div>
           </div>
         </CardContent>
       </Card>
@@ -175,11 +182,15 @@ export function DashboardChart({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>作業時間チャート</CardTitle>
+          <CardTitle>
+            {t("title", {
+              view: view === "user" ? t("byUser") : t("byProject"),
+            })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 flex items-center justify-center">
-            <div className="text-muted-foreground">データがありません</div>
+            <div className="text-muted-foreground">{t("noData")}</div>
           </div>
         </CardContent>
       </Card>
@@ -191,15 +202,16 @@ export function DashboardChart({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>
-            作業時間チャート (
-            {view === "user" ? "ユーザー別" : "プロジェクト別"})
+            {t("title", {
+              view: view === "user" ? t("byUser") : t("byProject"),
+            })}
           </span>
           <div className="flex gap-2 text-sm">
             <Badge variant="outline">
-              総時間: {summary.totalHours.toFixed(1)}h
+              {t("totalHours", { hours: summary.totalHours.toFixed(1) })}
             </Badge>
             <Badge variant="outline">
-              平均: {summary.averageHoursPerDay.toFixed(1)}h/日
+              {t("average", { hours: summary.averageHoursPerDay.toFixed(1) })}
             </Badge>
           </div>
         </CardTitle>
@@ -226,7 +238,11 @@ export function DashboardChart({
                 fontSize={12}
               />
               <YAxis
-                label={{ value: "時間", angle: -90, position: "insideLeft" }}
+                label={{
+                  value: t("hours"),
+                  angle: -90,
+                  position: "insideLeft",
+                }}
                 fontSize={12}
               />
               <Tooltip content={<CustomTooltip />} />

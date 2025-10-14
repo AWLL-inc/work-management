@@ -22,7 +22,6 @@ vi.mock("@/lib/db/connection", () => ({
 }));
 
 import { GET, POST } from "@/app/api/work-logs/route";
-import { auth } from "@/lib/auth";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   createWorkLog,

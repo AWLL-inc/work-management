@@ -153,7 +153,7 @@ describe("SearchControls", () => {
   });
 
   it.skip("should handle date range changes", () => {
-    // This test is skipped as the DateRangePicker component 
+    // This test is skipped as the DateRangePicker component
     // handles its own internal state management
     // Date range functionality is tested through E2E tests
   });
@@ -170,7 +170,7 @@ describe("SearchControls", () => {
     expect(screen.getByText("選択中の条件:")).toBeInTheDocument();
 
     // Check that project badge is displayed
-    const projectElements = screen.getAllByText((content, element) => {
+    const projectElements = screen.getAllByText((_content, element) => {
       return element?.textContent?.includes("Project A") ?? false;
     });
     expect(projectElements.length).toBeGreaterThan(0);
@@ -188,12 +188,12 @@ describe("SearchControls", () => {
     expect(screen.getByText("選択中の条件:")).toBeInTheDocument();
 
     // Check that category badges are displayed
-    const developmentElements = screen.getAllByText((content, element) => {
+    const developmentElements = screen.getAllByText((_content, element) => {
       return element?.textContent?.includes("Development") ?? false;
     });
     expect(developmentElements.length).toBeGreaterThan(0);
-    
-    const testingElements = screen.getAllByText((content, element) => {
+
+    const testingElements = screen.getAllByText((_content, element) => {
       return element?.textContent?.includes("Testing") ?? false;
     });
     expect(testingElements.length).toBeGreaterThan(0);
@@ -211,7 +211,7 @@ describe("SearchControls", () => {
     render(<SearchControls {...mockProps} filters={filtersWithDateRange} />);
 
     // Check that date range badge is displayed (format may vary by locale)
-    const dateElements = screen.getAllByText((content, element) => {
+    const dateElements = screen.getAllByText((_content, element) => {
       return element?.textContent?.includes("2024") ?? false;
     });
     expect(dateElements.length).toBeGreaterThan(0);
@@ -229,7 +229,7 @@ describe("SearchControls", () => {
     render(<SearchControls {...mockProps} filters={filtersWithSingleDate} />);
 
     // Check that single date badge is displayed
-    const singleDateElements = screen.getAllByText((content, element) => {
+    const singleDateElements = screen.getAllByText((_content, element) => {
       return element?.textContent?.includes("2024") ?? false;
     });
     expect(singleDateElements.length).toBeGreaterThan(0);
@@ -257,7 +257,7 @@ describe("SearchControls", () => {
 
     // Verify initial state
     expect(screen.getByText("選択中の条件:")).toBeInTheDocument();
-    const initialProjectElements = screen.getAllByText((content, element) => {
+    const initialProjectElements = screen.getAllByText((_content, element) => {
       return element?.textContent?.includes("Project A") ?? false;
     });
     expect(initialProjectElements.length).toBeGreaterThan(0);
@@ -267,9 +267,11 @@ describe("SearchControls", () => {
 
     // Verify state is maintained
     expect(screen.getByText("選択中の条件:")).toBeInTheDocument();
-    const rerenderedProjectElements = screen.getAllByText((content, element) => {
-      return element?.textContent?.includes("Project A") ?? false;
-    });
+    const rerenderedProjectElements = screen.getAllByText(
+      (_content, element) => {
+        return element?.textContent?.includes("Project A") ?? false;
+      },
+    );
     expect(rerenderedProjectElements.length).toBeGreaterThan(0);
   });
 });

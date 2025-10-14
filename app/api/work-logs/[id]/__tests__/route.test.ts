@@ -21,7 +21,6 @@ vi.mock("@/lib/db/connection", () => ({
   db: {},
 }));
 
-import { auth } from "@/lib/auth";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   deleteWorkLog,

@@ -2,10 +2,12 @@
 
 import {
   Copy,
+  Edit,
   Filter,
   Info,
   Plus,
   Redo,
+  RefreshCw,
   Search,
   Trash2,
   Undo,
@@ -36,10 +38,17 @@ export function GridToolbar({
   quickFilterText = "",
   onQuickFilterChange,
   enableFilterToolPanel = false,
+  onToggleBatchEdit,
+  onAddWorkLog,
+  onBatchSave,
+  onCancelBatchEdit,
+  isSavingBatch = false,
 }: ToolbarProps) {
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-2 p-4 border-b bg-muted/50">
+      <div className="flex items-center justify-between p-4 border-b bg-muted/50">
+        {/* Left side - Standard grid operations */}
+        <div className="flex items-center gap-2">
         {/* Row Operations */}
         <div className="flex items-center gap-1 border-r pr-3">
           <Tooltip>
@@ -307,6 +316,95 @@ export function GridToolbar({
         {selectedRowCount > 0 && (
           <div className="text-sm text-muted-foreground">
             {selectedRowCount}行選択中
+          </div>
+        )}
+        </div>
+
+        {/* Right side - Work Log specific buttons */}
+        {(onToggleBatchEdit || onAddWorkLog || onBatchSave || onCancelBatchEdit) && (
+          <div className="flex items-center gap-2">
+            {!batchEditingEnabled ? (
+              <>
+                {onToggleBatchEdit && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onToggleBatchEdit}
+                        className="h-8 px-3"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        一括編集
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>一括編集モードを有効にします</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                {onAddWorkLog && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        onClick={onAddWorkLog}
+                        className="h-8 px-3"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        追加
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>新しい作業ログを追加します</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </>
+            ) : (
+              <>
+                {onBatchSave && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={onBatchSave}
+                        disabled={isSavingBatch}
+                        className="h-8 px-3"
+                      >
+                        {isSavingBatch && (
+                          <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                        )}
+                        {isSavingBatch ? "保存中..." : "保存"}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>編集内容を保存します</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                {onCancelBatchEdit && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onCancelBatchEdit}
+                        disabled={isSavingBatch}
+                        className="h-8 px-3"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        キャンセル
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>編集をキャンセルします</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>

@@ -58,6 +58,12 @@ interface EnhancedAGGridProps<T extends { id: string }>
   enableQuickFilter?: boolean;
   enableFloatingFilter?: boolean;
   enableFilterToolPanel?: boolean;
+  // Work Log specific toolbar buttons
+  onToggleBatchEdit?: () => void;
+  onAddWorkLog?: () => void;
+  onBatchSave?: () => void;
+  onCancelBatchEdit?: () => void;
+  isSavingBatch?: boolean;
 }
 
 export function EnhancedAGGrid<T extends { id: string }>({
@@ -82,6 +88,11 @@ export function EnhancedAGGrid<T extends { id: string }>({
   enableQuickFilter = true,
   enableFloatingFilter = true,
   enableFilterToolPanel = false,
+  onToggleBatchEdit,
+  onAddWorkLog,
+  onBatchSave,
+  onCancelBatchEdit,
+  isSavingBatch,
 }: EnhancedAGGridProps<T>) {
   // Use ref to get current value in callbacks
   const batchEditingEnabledRef = useRef(batchEditingEnabled);
@@ -659,6 +670,11 @@ export function EnhancedAGGrid<T extends { id: string }>({
           quickFilterText={quickFilterText}
           onQuickFilterChange={onQuickFilterChange}
           enableFilterToolPanel={enableFilterToolPanel}
+          onToggleBatchEdit={onToggleBatchEdit}
+          onAddWorkLog={onAddWorkLog}
+          onBatchSave={onBatchSave}
+          onCancelBatchEdit={onCancelBatchEdit}
+          isSavingBatch={isSavingBatch}
         />
       )}
 

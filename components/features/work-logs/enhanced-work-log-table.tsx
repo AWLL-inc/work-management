@@ -1014,57 +1014,13 @@ export function EnhancedWorkLogTable({
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-lg border-2 border-primary/20 p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-primary mb-2">
-              Enhanced Work Logs Management
-            </h2>
-            <p className="text-muted-foreground">
-              Advanced spreadsheet-like interface with Excel-compatible features
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {!batchEditingEnabled ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => setBatchEditingEnabled(true)}
-                >
-                  一括編集
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => {
-                    setSelectedWorkLog(null);
-                    setFormOpen(true);
-                  }}
-                >
-                  Add Work Log (Dialog)
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="default"
-                  size="lg"
-                  onClick={handleBatchSave}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "保存中..." : "保存"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleCancelBatchEditing}
-                  disabled={isSubmitting}
-                >
-                  キャンセル
-                </Button>
-              </>
-            )}
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold text-primary mb-2">
+            Enhanced Work Logs Management
+          </h2>
+          <p className="text-muted-foreground">
+            Advanced spreadsheet-like interface with Excel-compatible features
+          </p>
         </div>
       </div>
 
@@ -1124,8 +1080,17 @@ export function EnhancedWorkLogTable({
         maxUndoRedoSteps={20}
         // Filtering features
         enableQuickFilter={false}
-        enableFloatingFilter={true}
+        enableFloatingFilter={false}
         enableFilterToolPanel={false}
+        // Work Log specific toolbar buttons
+        onToggleBatchEdit={() => setBatchEditingEnabled(true)}
+        onAddWorkLog={() => {
+          setSelectedWorkLog(null);
+          setFormOpen(true);
+        }}
+        onBatchSave={handleBatchSave}
+        onCancelBatchEdit={handleCancelBatchEditing}
+        isSavingBatch={isSubmitting}
         gridOptions={{
           rowSelection: "multiple",
           suppressRowClickSelection: false, // Always allow row selection

@@ -1,12 +1,13 @@
 "use client";
 
 import { RefreshCw, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Project, User, WorkCategory } from "@/drizzle/schema";
-import { CategoryMultiSelect } from "./category-multi-select";
+import { CategoryIncrementalSearch } from "./category-incremental-search";
 import { DateRangePicker } from "./date-range-picker";
-import { ProjectMultiSelect } from "./project-multi-select";
+import { ProjectIncrementalSearch } from "./project-incremental-search";
 import { UserSelect } from "./user-select";
 
 interface DateRange {
@@ -91,9 +92,87 @@ export function SearchControls({
     onClearFilters?.();
   };
 
+  // Get selected items for display
+  const selectedProjects = projects.filter((project) =>
+    filters.projectIds.includes(project.id),
+  );
+  const selectedCategories = categories.filter((category) =>
+    filters.categoryIds.includes(category.id),
+  );
+  const selectedUser = users.find((user) => user.id === filters.userId);
+
+  const handleRemoveProject = (projectId: string) => {
+    handleProjectIdsChange(filters.projectIds.filter(id => id !== projectId));
+  };
+
+  const handleRemoveCategory = (categoryId: string) => {
+    handleCategoryIdsChange(filters.categoryIds.filter(id => id !== categoryId));
+  };
+
   return (
     <Card className={className}>
       <CardContent className="p-4">
+        {/* Selected Items Display */}
+        {hasActiveFilters && (
+          <div className="mb-4 p-3 bg-muted/50 rounded-md">
+            <div className="text-sm font-medium mb-2">選択中の条件:</div>
+            <div className="flex flex-wrap gap-1">
+              {/* Date Range */}
+              {filters.dateRange.from && (
+                <Badge variant="outline" className="text-xs">
+                  📅 {filters.dateRange.from.toLocaleDateString("ja-JP")}
+                  {filters.dateRange.to &&
+                    ` ～ ${filters.dateRange.to.toLocaleDateString("ja-JP")}`}
+                </Badge>
+              )}
+              
+              {/* Selected Projects */}
+              {selectedProjects.map((project) => (
+                <Badge key={project.id} variant="secondary" className="text-xs flex items-center gap-1">
+                  🏗️ {project.name}
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => handleRemoveProject(project.id)}
+                  />
+                </Badge>
+              ))}
+
+              {/* Selected Categories */}
+              {selectedCategories.map((category) => (
+                <Badge key={category.id} variant="secondary" className="text-xs flex items-center gap-1">
+                  📋 {category.name}
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => handleRemoveCategory(category.id)}
+                  />
+                </Badge>
+              ))}
+
+              {/* Selected User */}
+              {selectedUser && (
+                <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                  👤 {selectedUser.name}
+                  <X 
+                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => handleUserIdChange(null)}
+                  />
+                </Badge>
+              )}
+
+              {/* Clear All Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAllFilters}
+                className="text-xs text-destructive h-6 px-2"
+              >
+                <X className="h-3 w-3 mr-1" />
+                すべて解除
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-4 items-end">
           {/* Date Range Filter */}
           <div className="flex-1 min-w-[200px]">
@@ -110,7 +189,7 @@ export function SearchControls({
             <label className="block text-sm font-medium mb-2">
               プロジェクト
             </label>
-            <ProjectMultiSelect
+            <ProjectIncrementalSearch
               projects={projects}
               selectedProjectIds={filters.projectIds}
               onSelectionChange={handleProjectIdsChange}
@@ -121,7 +200,7 @@ export function SearchControls({
           {/* Category Filter */}
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium mb-2">カテゴリ</label>
-            <CategoryMultiSelect
+            <CategoryIncrementalSearch
               categories={categories}
               selectedCategoryIds={filters.categoryIds}
               onSelectionChange={handleCategoryIdsChange}
@@ -171,40 +250,6 @@ export function SearchControls({
           </div>
         </div>
 
-        {/* Active Filters Summary */}
-        {hasActiveFilters && (
-          <div className="mt-4 pt-4 border-t">
-            <div className="text-sm text-muted-foreground mb-2">
-              適用中のフィルター:
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {filters.dateRange.from && (
-                <div className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">
-                  日付: {filters.dateRange.from.toLocaleDateString("ja-JP")}
-                  {filters.dateRange.to &&
-                    ` ～ ${filters.dateRange.to.toLocaleDateString("ja-JP")}`}
-                </div>
-              )}
-              {filters.projectIds.length > 0 && (
-                <div className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">
-                  プロジェクト: {filters.projectIds.length}件選択
-                </div>
-              )}
-              {filters.categoryIds.length > 0 && (
-                <div className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">
-                  カテゴリ: {filters.categoryIds.length}件選択
-                </div>
-              )}
-              {filters.userId && (
-                <div className="bg-primary/10 text-primary px-2 py-1 rounded text-xs">
-                  ユーザー:{" "}
-                  {users.find((u) => u.id === filters.userId)?.name ||
-                    "Unknown"}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

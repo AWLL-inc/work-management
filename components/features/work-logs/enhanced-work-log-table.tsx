@@ -156,8 +156,6 @@ export function EnhancedWorkLogTable({
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
-  // Quick Filter state
-  const [quickFilterText, setQuickFilterText] = useState("");
 
   // Search filters state
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
@@ -1125,9 +1123,7 @@ export function EnhancedWorkLogTable({
         enableUndoRedo={true}
         maxUndoRedoSteps={20}
         // Filtering features
-        enableQuickFilter={true}
-        quickFilterText={quickFilterText}
-        onQuickFilterChange={setQuickFilterText}
+        enableQuickFilter={false}
         enableFloatingFilter={true}
         enableFilterToolPanel={false}
         gridOptions={{

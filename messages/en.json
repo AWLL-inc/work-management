@@ -38,6 +38,21 @@
     "signOut": "Sign Out",
     "signIn": "Sign In"
   },
+  "home": {
+    "title": "Work Management",
+    "subtitle": "Modern work management application with time tracking",
+    "cards": {
+      "dashboard": {
+        "description": "View work hours and analytics"
+      },
+      "workLogs": {
+        "description": "Manage your work log entries"
+      },
+      "admin": {
+        "description": "Manage projects and categories"
+      }
+    }
+  },
   "auth": {
     "signIn": {
       "title": "Sign In",

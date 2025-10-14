@@ -56,19 +56,15 @@ function mergeResponses(
   // Both responses exist - merge headers
   const mergedResponse = authResponse;
 
-  // Copy locale cookie from intl response if it exists
+  // Extract locale cookie from intl response
   const localeCookie = intlResponse.headers.get("set-cookie");
   if (localeCookie?.includes("locale=")) {
-    // Preserve existing cookies and add locale cookie
     const existingCookies = mergedResponse.headers.get("set-cookie");
-    if (existingCookies && !existingCookies.includes("locale=")) {
-      // Combine cookies if both exist
-      mergedResponse.headers.set(
-        "set-cookie",
-        `${existingCookies}, ${localeCookie}`,
-      );
-    } else {
-      mergedResponse.headers.set("set-cookie", localeCookie);
+
+    // Only add locale cookie if it doesn't already exist
+    if (!existingCookies?.includes("locale=")) {
+      // Use append() for multiple cookies instead of string concatenation
+      mergedResponse.headers.append("set-cookie", localeCookie);
     }
   }
 

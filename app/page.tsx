@@ -34,11 +34,9 @@ export default async function HomePage({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">
-          {t("dashboard.title")}
-        </h1>
+        <h1 className="text-4xl font-bold tracking-tight">{t("home.title")}</h1>
         <p className="text-xl text-muted-foreground mt-2">
-          Modern work management application with time tracking
+          {t("home.subtitle")}
         </p>
       </div>
 
@@ -46,7 +44,9 @@ export default async function HomePage({
         <Card>
           <CardHeader>
             <CardTitle>{t("nav.dashboard")}</CardTitle>
-            <CardDescription>View work hours and analytics</CardDescription>
+            <CardDescription>
+              {t("home.cards.dashboard.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
@@ -58,7 +58,9 @@ export default async function HomePage({
         <Card>
           <CardHeader>
             <CardTitle>{t("nav.workLogs")}</CardTitle>
-            <CardDescription>Manage your work log entries</CardDescription>
+            <CardDescription>
+              {t("home.cards.workLogs.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
@@ -70,7 +72,9 @@ export default async function HomePage({
         <Card>
           <CardHeader>
             <CardTitle>{t("nav.admin")}</CardTitle>
-            <CardDescription>Manage projects and categories</CardDescription>
+            <CardDescription>
+              {t("home.cards.admin.description")}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">

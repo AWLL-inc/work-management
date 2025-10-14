@@ -38,6 +38,21 @@
     "signOut": "サインアウト",
     "signIn": "サインイン"
   },
+  "home": {
+    "title": "Work Management",
+    "subtitle": "タイムトラッキング機能を備えた最新の作業管理アプリケーション",
+    "cards": {
+      "dashboard": {
+        "description": "作業時間と分析を表示"
+      },
+      "workLogs": {
+        "description": "作業ログエントリを管理"
+      },
+      "admin": {
+        "description": "プロジェクトとカテゴリを管理"
+      }
+    }
+  },
   "auth": {
     "signIn": {
       "title": "サインイン",

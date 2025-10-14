@@ -6,47 +6,109 @@ import { routing } from "./i18n/routing";
 
 /**
  * Combined middleware for internationalization and authentication
+ * 
+ * Architecture:
  * 1. Handles locale via cookies (not in URL path)
  * 2. Protects routes that require authentication
+ * 3. Applies middlewares in order: i18n first, then auth
  */
 
 // Create the internationalization middleware with cookie-based locale
 const intlMiddleware = createMiddleware(routing);
 
+// Define public paths that don't require authentication
+const PUBLIC_PATHS = [
+  "/api/health",
+  "/auth/signin",
+  "/auth/signup",
+  "/auth/error",
+];
+
+// Define API paths that bypass i18n middleware
+const API_PATHS = ["/api/"];
+
+/**
+ * Check if a path is public (doesn't require authentication)
+ */
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some(path => pathname.startsWith(path));
+}
+
+/**
+ * Check if a path is an API route
+ */
+function isApiPath(pathname: string): boolean {
+  return API_PATHS.some(path => pathname.startsWith(path));
+}
+
+/**
+ * Merge response headers from two NextResponse objects
+ * Prioritizes cookies from the second response if both exist
+ */
+function mergeResponses(
+  intlResponse: NextResponse | null,
+  authResponse: NextResponse | null,
+): NextResponse {
+  // If only one response exists, return it
+  if (!intlResponse) return authResponse || NextResponse.next();
+  if (!authResponse) return intlResponse;
+
+  // Both responses exist - merge headers
+  const mergedResponse = authResponse;
+  
+  // Copy locale cookie from intl response if it exists
+  const localeCookie = intlResponse.headers.get("set-cookie");
+  if (localeCookie?.includes("locale=")) {
+    // Preserve existing cookies and add locale cookie
+    const existingCookies = mergedResponse.headers.get("set-cookie");
+    if (existingCookies && !existingCookies.includes("locale=")) {
+      // Combine cookies if both exist
+      mergedResponse.headers.set("set-cookie", `${existingCookies}, ${localeCookie}`);
+    } else {
+      mergedResponse.headers.set("set-cookie", localeCookie);
+    }
+  }
+
+  return mergedResponse;
+}
+
 // Combined middleware function
 export default async function middleware(request: NextRequest) {
-  // Check if the request is for API routes (no locale handling needed)
-  if (request.nextUrl.pathname.startsWith("/api/")) {
+  const { pathname } = request.nextUrl;
+
+  // API routes: skip i18n, apply auth only
+  if (isApiPath(pathname)) {
+    // Skip auth for public API endpoints
+    if (isPublicPath(pathname)) {
+      return NextResponse.next();
+    }
+    // Apply auth for protected API routes
     // biome-ignore lint/suspicious/noExplicitAny: NextAuth requires any type for middleware
     return auth(request as any);
   }
 
-  // Handle internationalization with cookie-based locale
+  // Apply i18n middleware first (for all non-API routes)
   const intlResponse = intlMiddleware(request);
 
-  // Apply authentication after i18n processing
+  // Public paths: only apply i18n
+  if (isPublicPath(pathname)) {
+    return intlResponse || NextResponse.next();
+  }
+
+  // Protected paths: apply both i18n and auth
   // biome-ignore lint/suspicious/noExplicitAny: NextAuth requires any type for middleware
   const authResponse = await auth(request as any);
 
-  // If auth returns a response (like a redirect), handle it
-  if (authResponse instanceof NextResponse) {
-    // If we have both responses, preserve locale cookie from intl response
-    if (intlResponse) {
-      const localeCookie = intlResponse.headers.get("set-cookie");
-      if (localeCookie?.includes("locale=")) {
-        authResponse.headers.set("set-cookie", localeCookie);
-      }
-    }
-    return authResponse;
-  }
-
-  // Return intl response if available, otherwise pass through
-  return intlResponse || NextResponse.next();
+  // Merge responses to preserve both locale and auth headers
+  return mergeResponses(
+    intlResponse,
+    authResponse instanceof NextResponse ? authResponse : null,
+  );
 }
 
 /**
  * Matcher configuration for middleware
- * Runs on all routes except static files and API routes that don't need locale handling
+ * Runs on all routes except static files and specific file types
  */
 export const config = {
   matcher: [

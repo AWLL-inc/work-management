@@ -78,7 +78,7 @@ describe("UserSelect", () => {
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("Jane Manager")).toBeInTheDocument();
     expect(screen.getByText("Bob Admin")).toBeInTheDocument();
-    expect(screen.getByText("選択なし")).toBeInTheDocument();
+    expect(screen.getAllByText("選択なし")).toHaveLength(2); // One in trigger, one in dropdown
   });
 
   it("should show only admin and manager when showAdminOnly is true", () => {
@@ -99,7 +99,7 @@ describe("UserSelect", () => {
     expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
     expect(screen.getByText("Jane Manager")).toBeInTheDocument();
     expect(screen.getByText("Bob Admin")).toBeInTheDocument();
-    expect(screen.getByText("選択なし")).toBeInTheDocument();
+    expect(screen.getAllByText("選択なし")).toHaveLength(2); // One in trigger, one in dropdown
   });
 
   it("should call onSelectionChange with user id when user is selected", () => {
@@ -134,8 +134,9 @@ describe("UserSelect", () => {
     // Click to open dropdown
     fireEvent.click(screen.getByRole("combobox"));
 
-    // Click on "選択なし"
-    fireEvent.click(screen.getByText("選択なし"));
+    // Find the clickable option with role="option" and text "選択なし"
+    const noneOption = screen.getByRole("option", { name: /選択なし/ });
+    fireEvent.click(noneOption);
 
     expect(onSelectionChange).toHaveBeenCalledWith(null);
   });
@@ -217,8 +218,8 @@ describe("UserSelect", () => {
       />,
     );
 
-    // Should show the selected user's name
-    expect(screen.getByDisplayValue("2")).toBeInTheDocument();
+    // Should show the selected user's name in the trigger
+    expect(screen.getByText("Jane Manager")).toBeInTheDocument();
   });
 
   it("should handle empty users array", () => {
@@ -234,7 +235,7 @@ describe("UserSelect", () => {
     // Click to open dropdown
     fireEvent.click(screen.getByRole("combobox"));
 
-    // Should only show "選択なし" option
-    expect(screen.getByText("選択なし")).toBeInTheDocument();
+    // Should show "選択なし" options (one in trigger, one in dropdown)
+    expect(screen.getAllByText("選択なし")).toHaveLength(2);
   });
 });

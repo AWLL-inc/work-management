@@ -40,10 +40,10 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install all dependencies (including devDependencies)
-RUN npm ci
+RUN npm ci --include=dev
 
 # Install specific dependencies that might be missing
-RUN npm install @radix-ui/react-popover @radix-ui/react-icons cmdk react-day-picker date-fns
+RUN npm install @radix-ui/react-popover @radix-ui/react-icons cmdk react-day-picker date-fns recharts use-debounce
 
 # Copy source code
 COPY . .

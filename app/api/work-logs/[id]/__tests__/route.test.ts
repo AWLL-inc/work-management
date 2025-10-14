@@ -6,6 +6,9 @@ import { DELETE, PUT } from "../route";
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
+vi.mock("@/lib/auth-helpers", () => ({
+  getAuthenticatedSession: vi.fn(),
+}));
 
 // Mock the repository
 vi.mock("@/lib/db/repositories/work-log-repository", () => ({
@@ -14,8 +17,12 @@ vi.mock("@/lib/db/repositories/work-log-repository", () => ({
   deleteWorkLog: vi.fn(),
   isWorkLogOwner: vi.fn(),
 }));
+vi.mock("@/lib/db/connection", () => ({
+  db: {},
+}));
 
 import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   deleteWorkLog,
   getWorkLogById,
@@ -73,7 +80,7 @@ describe("PUT /api/work-logs/[id]", () => {
   });
 
   it("should return 401 when user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null as any);
+    vi.mocked(getAuthenticatedSession).mockResolvedValue(null);
 
     const request = new NextRequest(
       `http://localhost:3000/api/work-logs/${validUuid}`,
@@ -93,7 +100,7 @@ describe("PUT /api/work-logs/[id]", () => {
   });
 
   it("should return 400 for invalid UUID format", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -121,7 +128,7 @@ describe("PUT /api/work-logs/[id]", () => {
   });
 
   it("should return 404 when work log not found", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -149,7 +156,7 @@ describe("PUT /api/work-logs/[id]", () => {
   });
 
   it("should return 403 when non-admin user tries to update others work log", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "other-user-id",
         email: "other@example.com",
@@ -184,7 +191,7 @@ describe("PUT /api/work-logs/[id]", () => {
       updatedAt: new Date(),
     };
 
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -220,7 +227,7 @@ describe("PUT /api/work-logs/[id]", () => {
       updatedAt: new Date(),
     };
 
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "admin-id",
         email: "admin@example.com",
@@ -251,7 +258,7 @@ describe("PUT /api/work-logs/[id]", () => {
   });
 
   it("should return 400 for invalid data", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -280,7 +287,7 @@ describe("PUT /api/work-logs/[id]", () => {
   });
 
   it("should return 500 when repository throws error", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -358,7 +365,7 @@ describe("DELETE /api/work-logs/[id]", () => {
   });
 
   it("should return 401 when user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null as any);
+    vi.mocked(getAuthenticatedSession).mockResolvedValue(null);
 
     const request = new NextRequest(
       `http://localhost:3000/api/work-logs/${validUuid}`,
@@ -377,7 +384,7 @@ describe("DELETE /api/work-logs/[id]", () => {
   });
 
   it("should return 400 for invalid UUID format", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -404,7 +411,7 @@ describe("DELETE /api/work-logs/[id]", () => {
   });
 
   it("should return 404 when work log not found", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -431,7 +438,7 @@ describe("DELETE /api/work-logs/[id]", () => {
   });
 
   it("should return 403 when non-admin user tries to delete others work log", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "other-user-id",
         email: "other@example.com",
@@ -459,7 +466,7 @@ describe("DELETE /api/work-logs/[id]", () => {
   });
 
   it("should allow user to delete their own work log", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -486,7 +493,7 @@ describe("DELETE /api/work-logs/[id]", () => {
   });
 
   it("should allow admin to delete any work log", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "admin-id",
         email: "admin@example.com",
@@ -514,7 +521,7 @@ describe("DELETE /api/work-logs/[id]", () => {
   });
 
   it("should return 500 when repository throws error", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",

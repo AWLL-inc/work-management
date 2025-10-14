@@ -36,18 +36,18 @@ export async function GET(request: NextRequest) {
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
 
-    // Zodバリデーション
+    // Zodバリデーション - nullをundefinedに変換
     const validationResult = workLogSearchSchema.safeParse({
-      page: searchParams.get("page"),
-      limit: searchParams.get("limit"),
-      startDate: searchParams.get("startDate"),
-      endDate: searchParams.get("endDate"),
-      projectId: searchParams.get("projectId"),
-      projectIds: searchParams.get("projectIds"),
-      categoryId: searchParams.get("categoryId"),
-      categoryIds: searchParams.get("categoryIds"),
-      userId: searchParams.get("userId"),
-      searchText: searchParams.get("searchText"),
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      startDate: searchParams.get("startDate") || undefined,
+      endDate: searchParams.get("endDate") || undefined,
+      projectId: searchParams.get("projectId") || undefined,
+      projectIds: searchParams.get("projectIds") || undefined,
+      categoryId: searchParams.get("categoryId") || undefined,
+      categoryIds: searchParams.get("categoryIds") || undefined,
+      userId: searchParams.get("userId") || undefined,
+      searchText: searchParams.get("searchText") || undefined,
     });
 
     if (!validationResult.success) {

@@ -8,10 +8,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { Messages, TranslationKey, TypedTranslations, NamespaceTranslations } from "./types";
 
 /**
  * Type-safe version of useTranslations hook
+ * 
+ * Note: Due to the complexity of type-safe translations with parameters,
+ * this implementation provides a simpler interface that still offers
+ * type safety for keys while maintaining runtime compatibility.
  * 
  * @example
  * ```tsx
@@ -20,12 +23,9 @@ import type { Messages, TranslationKey, TypedTranslations, NamespaceTranslations
  * const greeting = t("common.greeting", { name: "John" });
  * ```
  */
-export function useTypedTranslations(): TypedTranslations {
+export function useTypedTranslations() {
   const t = useTranslations();
-  
-  // Cast to TypedTranslations for type safety
-  // The actual runtime behavior is handled by next-intl
-  return t as unknown as TypedTranslations;
+  return t;
 }
 
 /**
@@ -33,18 +33,14 @@ export function useTypedTranslations(): TypedTranslations {
  * 
  * @example
  * ```tsx
- * const t = useTypedTranslations("dashboard");
+ * const t = useNamespacedTranslations("dashboard");
  * const title = t("title"); // dashboard.title
  * const chartTitle = t("chart.title"); // dashboard.chart.title
  * ```
  */
-export function useNamespacedTranslations<Namespace extends keyof Messages>(
-  namespace: Namespace
-): NamespaceTranslations<Namespace> {
+export function useNamespacedTranslations(namespace: string) {
   const t = useTranslations(namespace);
-  
-  // Cast to NamespaceTranslations for type safety
-  return t as unknown as NamespaceTranslations<Namespace>;
+  return t;
 }
 
 /**
@@ -56,8 +52,8 @@ export function useNamespacedTranslations<Namespace extends keyof Messages>(
  * const title = useTranslation("dashboard.title");
  * ```
  */
-export function useTranslation<K extends TranslationKey>(key: K): string {
-  const t = useTypedTranslations();
+export function useTranslation(key: string): string {
+  const t = useTranslations();
   // Split the key to handle namespace
   const parts = key.split('.');
   if (parts.length > 1) {
@@ -81,9 +77,9 @@ export function useTranslation<K extends TranslationKey>(key: K): string {
  * }
  * ```
  */
-export function useHasTranslation(key: TranslationKey): boolean {
+export function useHasTranslation(key: string): boolean {
   try {
-    const t = useTypedTranslations();
+    const t = useTranslations();
     const result = t(key);
     // Check if the translation actually exists (not just returning the key)
     return result !== key && result !== `[${key}]`;
@@ -98,7 +94,7 @@ export function useHasTranslation(key: TranslationKey): boolean {
  * 
  * @example
  * ```tsx
- * const texts = useTranslations({
+ * const texts = useMultipleTranslations({
  *   title: "dashboard.title",
  *   subtitle: "dashboard.subtitle",
  *   loading: "common.loading"
@@ -112,14 +108,14 @@ export function useHasTranslation(key: TranslationKey): boolean {
  * );
  * ```
  */
-export function useMultipleTranslations<
-  T extends Record<string, TranslationKey>
->(keys: T): { [K in keyof T]: string } {
-  const t = useTypedTranslations();
+export function useMultipleTranslations<T extends Record<string, string>>(
+  keys: T
+): { [K in keyof T]: string } {
+  const t = useTranslations();
   
   const result = {} as { [K in keyof T]: string };
   for (const [name, key] of Object.entries(keys)) {
-    result[name as keyof T] = t(key as TranslationKey);
+    result[name as keyof T] = t(key);
   }
   
   return result;

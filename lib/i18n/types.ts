@@ -27,54 +27,11 @@ type NestedKeyOf<ObjectType extends object> = {
 export type TranslationKey = NestedKeyOf<Messages>;
 
 /**
- * Extract the parameters from a translation message
- * Example: "Hello {name}" -> { name: string }
- */
-type ExtractParams<T extends string> = T extends `${string}{${infer Param}}${infer Rest}`
-  ? { [K in Param]: string | number } & ExtractParams<Rest>
-  : {};
-
-/**
- * Get the type of parameters for a specific translation key
- */
-export type TranslationParams<Key extends TranslationKey> = Key extends keyof Messages
-  ? Messages[Key] extends string
-    ? ExtractParams<Messages[Key]>
-    : Key extends `${infer Parent}.${infer Child}`
-    ? Parent extends keyof Messages
-      ? Messages[Parent] extends object
-        ? Child extends NestedKeyOf<Messages[Parent]>
-          ? ExtractMessageParams<Messages[Parent], Child>
-          : never
-        : never
-      : never
-    : never
-  : never;
-
-/**
- * Helper type to extract params from nested messages
- */
-type ExtractMessageParams<
-  Obj extends object,
-  Path extends string
-> = Path extends `${infer Key}.${infer Rest}`
-  ? Key extends keyof Obj
-    ? Obj[Key] extends object
-      ? ExtractMessageParams<Obj[Key], Rest>
-      : never
-    : never
-  : Path extends keyof Obj
-  ? Obj[Path] extends string
-    ? ExtractParams<Obj[Path]>
-    : never
-  : never;
-
-/**
  * Type guard to check if a string is a valid translation key
  */
 export function isTranslationKey(key: string): key is TranslationKey {
   // This is a runtime check - in practice, you'd validate against actual keys
-  return typeof key === 'string' && key.includes('.');
+  return typeof key === 'string' && key.length > 0;
 }
 
 /**
@@ -84,42 +41,6 @@ export function isTranslationKey(key: string): key is TranslationKey {
 export function translationKey<K extends TranslationKey>(key: K): K {
   return key;
 }
-
-/**
- * Type-safe translation hook return type
- */
-export interface TypedTranslations {
-  <K extends TranslationKey>(
-    key: K,
-    ...args: keyof TranslationParams<K> extends never
-      ? []
-      : [params: TranslationParams<K>]
-  ): string;
-  rich: <K extends TranslationKey>(
-    key: K,
-    ...args: keyof TranslationParams<K> extends never
-      ? []
-      : [params: TranslationParams<K>]
-  ) => React.ReactNode;
-}
-
-/**
- * Namespace-specific translation type
- */
-export type NamespaceTranslations<Namespace extends keyof Messages> = {
-  <K extends NestedKeyOf<Messages[Namespace]>>(
-    key: K,
-    ...args: keyof ExtractMessageParams<Messages[Namespace], K> extends never
-      ? []
-      : [params: ExtractMessageParams<Messages[Namespace], K>]
-  ): string;
-  rich: <K extends NestedKeyOf<Messages[Namespace]>>(
-    key: K,
-    ...args: keyof ExtractMessageParams<Messages[Namespace], K> extends never
-      ? []
-      : [params: ExtractMessageParams<Messages[Namespace], K>]
-  ) => React.ReactNode;
-};
 
 /**
  * Export commonly used translation keys as constants

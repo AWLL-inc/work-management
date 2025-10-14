@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { eq } from "drizzle-orm";
 import { hashPassword } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
 import {
@@ -165,6 +166,48 @@ async function seed() {
 
       console.log(`✓ Created category: ${createdCategory.name}`);
     }
+
+    // Create sample work logs for the last 7 days
+    const allUsers = await db.select().from(users);
+    const allProjects = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.isActive, true));
+    const allCategories = await db.select().from(workCategories);
+
+    console.log("\nCreating sample work logs...");
+    const workLogsData = [];
+
+    // Generate work logs for the last 7 days
+    for (let i = 0; i < 7; i++) {
+      const logDate = new Date();
+      logDate.setDate(logDate.getDate() - i);
+
+      // Create 2-3 work logs per day across different users
+      for (let j = 0; j < Math.floor(Math.random() * 3) + 2; j++) {
+        const randomUser =
+          allUsers[Math.floor(Math.random() * allUsers.length)];
+        const randomProject =
+          allProjects[Math.floor(Math.random() * allProjects.length)];
+        const randomCategory =
+          allCategories[Math.floor(Math.random() * allCategories.length)];
+
+        workLogsData.push({
+          date: logDate,
+          hours: Math.floor(Math.random() * 6) + 2, // 2-8 hours
+          description: `Sample work on ${randomProject.name} - ${randomCategory.name}`,
+          userId: randomUser.id,
+          projectId: randomProject.id,
+          categoryId: randomCategory.id,
+        });
+      }
+    }
+
+    for (const workLog of workLogsData) {
+      await db.insert(workLogs).values(workLog);
+    }
+
+    console.log(`✓ Created ${workLogsData.length} sample work logs`);
 
     console.log("\n✅ Seeding completed successfully!");
     console.log("\n📝 Test credentials:");

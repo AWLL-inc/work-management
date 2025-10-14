@@ -9,6 +9,9 @@ const mockUsers: User[] = [
     id: "1",
     name: "John Doe",
     email: "john@example.com",
+    emailVerified: null,
+    image: null,
+    passwordHash: null,
     role: "user",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -17,6 +20,9 @@ const mockUsers: User[] = [
     id: "2",
     name: "Jane Manager",
     email: "jane@example.com",
+    emailVerified: null,
+    image: null,
+    passwordHash: null,
     role: "manager",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -25,6 +31,9 @@ const mockUsers: User[] = [
     id: "3",
     name: "Bob Admin",
     email: "bob@example.com",
+    emailVerified: null,
+    image: null,
+    passwordHash: null,
     role: "admin",
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -165,12 +174,15 @@ describe("UserSelect", () => {
     expect(screen.getByText("admin")).toBeInTheDocument();
   });
 
-  it("should handle users without email", () => {
-    const usersWithoutEmail: User[] = [
+  it("should display user with email properly", () => {
+    const usersWithEmail: User[] = [
       {
         id: "1",
-        name: "No Email User",
-        email: null,
+        name: "User With Email",
+        email: "user@example.com",
+        emailVerified: null,
+        image: null,
+        passwordHash: null,
         role: "user",
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -180,7 +192,7 @@ describe("UserSelect", () => {
     const onSelectionChange = vi.fn();
     render(
       <UserSelect
-        users={usersWithoutEmail}
+        users={usersWithEmail}
         selectedUserId={null}
         onSelectionChange={onSelectionChange}
       />,
@@ -189,8 +201,9 @@ describe("UserSelect", () => {
     // Click to open dropdown
     fireEvent.click(screen.getByRole("combobox"));
 
-    // Should show user name without email
-    expect(screen.getByText("No Email User")).toBeInTheDocument();
+    // Should show user name and email
+    expect(screen.getByText("User With Email")).toBeInTheDocument();
+    expect(screen.getByText("user@example.com")).toBeInTheDocument();
     expect(screen.getByText("user")).toBeInTheDocument();
   });
 

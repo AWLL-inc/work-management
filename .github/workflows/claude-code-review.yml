@@ -36,17 +36,23 @@ jobs:
           const claudeComments = comments.filter(comment =>
             comment.user.login === 'github-actions[bot]' &&
             (comment.body.includes('🤖 AI Code Review') ||
-             comment.body.includes('Claude Code Review'))
+             comment.body.includes('🤖 AI コードレビュー') ||
+             comment.body.includes('Claude Code Review') ||
+             comment.body.includes('Claude finished')) &&
+            !comment.body.includes('[vc]:') // Exclude Vercel comments
           );
 
           // Delete all previous Claude comments
+          console.log(`Found ${claudeComments.length} previous Claude comments to delete`);
           for (const comment of claudeComments) {
+            console.log(`Deleting comment ${comment.id} from ${comment.user.login}`);
             await github.rest.issues.deleteComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: comment.id
             });
           }
+          console.log(`Successfully deleted ${claudeComments.length} previous comments`);
 
     # Extract issue numbers from PR title and description
     - name: Extract issue numbers

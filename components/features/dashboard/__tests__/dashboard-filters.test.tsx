@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { renderWithIntl } from "@/tests/test-utils";
 import type { DashboardFilters as DashboardFiltersType } from "@/types/dashboard";
 import { DashboardFilters } from "../dashboard-filters";
 
@@ -41,32 +42,34 @@ describe("DashboardFilters", () => {
   });
 
   it("should render all filter controls", () => {
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
       />,
     );
 
-    expect(screen.getByText("表示方法")).toBeInTheDocument();
-    expect(screen.getByText("期間選択")).toBeInTheDocument();
-    expect(screen.getByText("過去7日")).toBeInTheDocument();
-    expect(screen.getByText("過去30日")).toBeInTheDocument();
-    expect(screen.getByText("過去90日")).toBeInTheDocument();
-    expect(screen.getByLabelText("開始日")).toBeInTheDocument();
-    expect(screen.getByLabelText("終了日")).toBeInTheDocument();
+    expect(screen.getByText("View Method")).toBeInTheDocument();
+    expect(screen.getByText("Period Selection")).toBeInTheDocument();
+    expect(screen.getByText("Last 7 Days")).toBeInTheDocument();
+    expect(screen.getByText("Last 30 Days")).toBeInTheDocument();
+    expect(screen.getByText("Last 90 Days")).toBeInTheDocument();
+    expect(screen.getByLabelText("Start Date")).toBeInTheDocument();
+    expect(screen.getByLabelText("End Date")).toBeInTheDocument();
   });
 
   it("should display current filter values", () => {
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
       />,
     );
 
-    const startDateInput = screen.getByLabelText("開始日") as HTMLInputElement;
-    const endDateInput = screen.getByLabelText("終了日") as HTMLInputElement;
+    const startDateInput = screen.getByLabelText(
+      "Start Date",
+    ) as HTMLInputElement;
+    const endDateInput = screen.getByLabelText("End Date") as HTMLInputElement;
 
     expect(startDateInput.value).toBe("2024-10-01");
     expect(endDateInput.value).toBe("2024-10-31");
@@ -75,14 +78,14 @@ describe("DashboardFilters", () => {
   it("should call onFiltersChange when start date is changed", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
       />,
     );
 
-    const startDateInput = screen.getByLabelText("開始日");
+    const startDateInput = screen.getByLabelText("Start Date");
 
     // Simulate onChange event directly
     await user.click(startDateInput);
@@ -99,14 +102,14 @@ describe("DashboardFilters", () => {
   it("should call onFiltersChange when end date is changed", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
       />,
     );
 
-    const endDateInput = screen.getByLabelText("終了日");
+    const endDateInput = screen.getByLabelText("End Date");
 
     // Simulate onChange event directly
     await user.click(endDateInput);
@@ -123,7 +126,7 @@ describe("DashboardFilters", () => {
   it("should call onFiltersChange when view is changed", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
@@ -142,14 +145,14 @@ describe("DashboardFilters", () => {
   it("should set preset date ranges when preset buttons are clicked", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
       />,
     );
 
-    const past7DaysButton = screen.getByText("過去7日");
+    const past7DaysButton = screen.getByText("Last 7 Days");
     await user.click(past7DaysButton);
 
     expect(mockOnFiltersChange).toHaveBeenCalledWith(
@@ -164,14 +167,14 @@ describe("DashboardFilters", () => {
   it("should reset filters when reset button is clicked", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
       />,
     );
 
-    const resetButton = screen.getByText("リセット");
+    const resetButton = screen.getByText("Reset");
     await user.click(resetButton);
 
     expect(mockOnFiltersChange).toHaveBeenCalledWith({
@@ -182,7 +185,7 @@ describe("DashboardFilters", () => {
   });
 
   it("should show apply button when onApplyFilters is provided", () => {
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
@@ -190,13 +193,13 @@ describe("DashboardFilters", () => {
       />,
     );
 
-    expect(screen.getByText("適用")).toBeInTheDocument();
+    expect(screen.getByText("Apply")).toBeInTheDocument();
   });
 
   it("should call onApplyFilters when apply button is clicked", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
@@ -204,14 +207,14 @@ describe("DashboardFilters", () => {
       />,
     );
 
-    const applyButton = screen.getByText("適用");
+    const applyButton = screen.getByText("Apply");
     await user.click(applyButton);
 
     expect(mockOnApplyFilters).toHaveBeenCalled();
   });
 
   it("should disable buttons when loading", () => {
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
@@ -220,8 +223,8 @@ describe("DashboardFilters", () => {
       />,
     );
 
-    const resetButton = screen.getByText("リセット");
-    const applyButton = screen.getByText("読み込み中...");
+    const resetButton = screen.getByText("Reset");
+    const applyButton = screen.getByText("Loading...");
 
     expect(resetButton).toBeDisabled();
     expect(applyButton).toBeDisabled();
@@ -232,15 +235,17 @@ describe("DashboardFilters", () => {
       view: "user",
     };
 
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={filtersWithoutDates}
         onFiltersChange={mockOnFiltersChange}
       />,
     );
 
-    const startDateInput = screen.getByLabelText("開始日") as HTMLInputElement;
-    const endDateInput = screen.getByLabelText("終了日") as HTMLInputElement;
+    const startDateInput = screen.getByLabelText(
+      "Start Date",
+    ) as HTMLInputElement;
+    const endDateInput = screen.getByLabelText("End Date") as HTMLInputElement;
 
     expect(startDateInput.value).toBe("");
     expect(endDateInput.value).toBe("");
@@ -249,14 +254,14 @@ describe("DashboardFilters", () => {
   it("should handle clearing date inputs", async () => {
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <DashboardFilters
         filters={defaultFilters}
         onFiltersChange={mockOnFiltersChange}
       />,
     );
 
-    const startDateInput = screen.getByLabelText("開始日");
+    const startDateInput = screen.getByLabelText("Start Date");
     await user.clear(startDateInput);
 
     expect(mockOnFiltersChange).toHaveBeenCalledWith({

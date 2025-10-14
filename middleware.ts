@@ -14,7 +14,7 @@ import { routing } from "./i18n/routing";
 const intlMiddleware = createMiddleware(routing);
 
 // Combined middleware function
-export default function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   // Check if the request is for API routes (no locale handling needed)
   if (request.nextUrl.pathname.startsWith("/api/")) {
     // biome-ignore lint/suspicious/noExplicitAny: NextAuth requires any type for middleware
@@ -26,20 +26,22 @@ export default function middleware(request: NextRequest) {
 
   // Apply authentication after i18n processing
   // biome-ignore lint/suspicious/noExplicitAny: NextAuth requires any type for middleware
-  const authResponse = auth(request as any);
-  
-  // Combine responses if both exist
-  if (authResponse && intlResponse) {
-    // Use auth response but preserve locale cookie from intl response if set
-    const localeCookie = intlResponse.headers.get("set-cookie");
-    if (localeCookie && localeCookie.includes("locale=")) {
-      authResponse.headers.set("set-cookie", localeCookie);
+  const authResponse = await auth(request as any);
+
+  // If auth returns a response (like a redirect), handle it
+  if (authResponse instanceof NextResponse) {
+    // If we have both responses, preserve locale cookie from intl response
+    if (intlResponse) {
+      const localeCookie = intlResponse.headers.get("set-cookie");
+      if (localeCookie?.includes("locale=")) {
+        authResponse.headers.set("set-cookie", localeCookie);
+      }
     }
     return authResponse;
   }
 
-  // Return whichever response exists
-  return authResponse || intlResponse || NextResponse.next();
+  // Return intl response if available, otherwise pass through
+  return intlResponse || NextResponse.next();
 }
 
 /**

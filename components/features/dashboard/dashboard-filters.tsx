@@ -33,7 +33,7 @@ export function DashboardFilters({
 }: DashboardFiltersProps) {
   const t = useTranslations("dashboard.filters");
   const tDashboard = useTranslations("dashboard");
-  
+
   const formatDate = (date: Date) => {
     return date.toISOString().split("T")[0];
   };
@@ -96,14 +96,18 @@ export function DashboardFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="user">{tDashboard("userView")}</SelectItem>
-                <SelectItem value="project">{tDashboard("projectView")}</SelectItem>
+                <SelectItem value="project">
+                  {tDashboard("projectView")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Date Range */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">{t("periodSelection")}</Label>
+            <Label className="text-sm font-medium mb-2 block">
+              {t("periodSelection")}
+            </Label>
 
             {/* Preset Buttons */}
             <div className="flex flex-wrap gap-2 mb-3">

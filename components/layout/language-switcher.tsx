@@ -1,8 +1,10 @@
 "use client";
 
+import { Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { Globe } from "lucide-react";
+import { setLocale } from "@/actions/set-locale";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -10,16 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 
 export function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
 
-  const handleLocaleChange = (newLocale: string) => {
-    // Set the locale cookie
-    document.cookie = `locale=${newLocale};path=/;max-age=31536000;samesite=lax`;
-    
+  const handleLocaleChange = async (newLocale: string) => {
+    // Set the locale cookie using server action
+    await setLocale(newLocale);
+
     // Refresh the page to apply the new locale
     router.refresh();
   };
@@ -42,11 +43,11 @@ export function LanguageSwitcherButton() {
   const locale = useLocale();
   const router = useRouter();
 
-  const toggleLocale = () => {
+  const toggleLocale = async () => {
     const newLocale = locale === "ja" ? "en" : "ja";
-    // Set the locale cookie
-    document.cookie = `locale=${newLocale};path=/;max-age=31536000;samesite=lax`;
-    
+    // Set the locale cookie using server action
+    await setLocale(newLocale);
+
     // Refresh the page to apply the new locale
     router.refresh();
   };

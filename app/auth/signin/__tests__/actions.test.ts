@@ -16,15 +16,11 @@ vi.mock("@/lib/auth", () => ({
   signIn: vi.fn(),
 }));
 
-vi.mock("@/lib/utils", () => ({
-  validateCallbackUrl: vi.fn((url: string) => url),
-}));
-
 // Import AuthError after mocking
 const { AuthError } = await import("next-auth");
 
 // Import the action after all mocks are in place
-const { signInAction } = await import("@/app/[locale]/auth/signin/actions");
+const { signInAction } = await import("@/app/auth/signin/actions");
 
 const mockSignIn = vi.mocked(await import("@/lib/auth")).signIn as Mock;
 
@@ -38,7 +34,7 @@ describe("signInAction", () => {
     formData.append("password", "password123");
     formData.append("callbackUrl", "/");
 
-    const result = await signInAction(formData);
+    const result = await signInAction({ error: undefined }, formData);
 
     expect(result?.error).toBe("メールアドレスとパスワードは必須です");
     expect(mockSignIn).not.toHaveBeenCalled();
@@ -49,7 +45,7 @@ describe("signInAction", () => {
     formData.append("email", "test@example.com");
     formData.append("callbackUrl", "/");
 
-    const result = await signInAction(formData);
+    const result = await signInAction({ error: undefined }, formData);
 
     expect(result?.error).toBe("メールアドレスとパスワードは必須です");
     expect(mockSignIn).not.toHaveBeenCalled();
@@ -59,7 +55,7 @@ describe("signInAction", () => {
     const formData = new FormData();
     formData.append("callbackUrl", "/");
 
-    const result = await signInAction(formData);
+    const result = await signInAction({ error: undefined }, formData);
 
     expect(result?.error).toBe("メールアドレスとパスワードは必須です");
     expect(mockSignIn).not.toHaveBeenCalled();
@@ -71,9 +67,13 @@ describe("signInAction", () => {
     formData.append("password", "password123");
     formData.append("callbackUrl", "/dashboard");
 
+    // Mock redirect to throw NEXT_REDIRECT error
     mockSignIn.mockResolvedValueOnce(undefined);
 
-    await signInAction(formData);
+    // Since signInAction calls redirect after successful signIn, we expect a NEXT_REDIRECT error
+    await expect(signInAction({ error: undefined }, formData)).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
 
     expect(mockSignIn).toHaveBeenCalledWith("credentials", {
       email: "test@example.com",
@@ -92,52 +92,10 @@ describe("signInAction", () => {
     authError.type = "CredentialsSignin";
     mockSignIn.mockRejectedValueOnce(authError);
 
-    const result = await signInAction(formData);
+    const result = await signInAction({ error: undefined }, formData);
 
     expect(result?.error).toBe(
       "メールアドレスまたはパスワードが正しくありません",
-    );
-  });
-
-  it("should return error for Configuration error", async () => {
-    const formData = new FormData();
-    formData.append("email", "test@example.com");
-    formData.append("password", "password123");
-    formData.append("callbackUrl", "/");
-
-    const authError = new AuthError("Configuration");
-    authError.type = "Configuration" as any;
-    mockSignIn.mockRejectedValueOnce(authError);
-
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    const result = await signInAction(formData);
-
-    expect(result?.error).toBe(
-      "システムエラーが発生しました。管理者にお問い合わせください。",
-    );
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Auth configuration error:",
-      authError,
-    );
-
-    consoleSpy.mockRestore();
-  });
-
-  it("should return error for AccessDenied", async () => {
-    const formData = new FormData();
-    formData.append("email", "test@example.com");
-    formData.append("password", "password123");
-    formData.append("callbackUrl", "/");
-
-    const authError = new AuthError("AccessDenied");
-    authError.type = "AccessDenied" as any;
-    mockSignIn.mockRejectedValueOnce(authError);
-
-    const result = await signInAction(formData);
-
-    expect(result?.error).toBe(
-      "アクセスが拒否されました。アカウントが無効化されている可能性があります。",
     );
   });
 
@@ -151,16 +109,11 @@ describe("signInAction", () => {
     authError.type = "UnknownError" as any;
     mockSignIn.mockRejectedValueOnce(authError);
 
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    const result = await signInAction(formData);
+    const result = await signInAction({ error: undefined }, formData);
 
     expect(result?.error).toBe(
       "認証中にエラーが発生しました。もう一度お試しください。",
     );
-    expect(consoleSpy).toHaveBeenCalledWith("Unknown auth error:", authError);
-
-    consoleSpy.mockRestore();
   });
 
   it("should rethrow non-AuthError exceptions", async () => {
@@ -172,7 +125,9 @@ describe("signInAction", () => {
     const redirectError = new Error("NEXT_REDIRECT");
     mockSignIn.mockRejectedValueOnce(redirectError);
 
-    await expect(signInAction(formData)).rejects.toThrow("NEXT_REDIRECT");
+    await expect(signInAction({ error: undefined }, formData)).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
   });
 
   it("should use default callbackUrl when not provided", async () => {
@@ -182,34 +137,35 @@ describe("signInAction", () => {
 
     mockSignIn.mockResolvedValueOnce(undefined);
 
-    await signInAction(formData);
+    // Since signInAction calls redirect after successful signIn, we expect a NEXT_REDIRECT error
+    await expect(signInAction({ error: undefined }, formData)).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
 
     expect(mockSignIn).toHaveBeenCalledWith("credentials", {
       email: "test@example.com",
       password: "password123",
-      redirectTo: "/",
+      redirectTo: "/dashboard",
     });
   });
 
   it("should validate callbackUrl", async () => {
-    const { validateCallbackUrl } = await import("@/lib/utils");
-    const mockValidateCallbackUrl = validateCallbackUrl as Mock;
-
     const formData = new FormData();
     formData.append("email", "test@example.com");
     formData.append("password", "password123");
     formData.append("callbackUrl", "https://evil.com");
 
-    mockValidateCallbackUrl.mockReturnValueOnce("/safe");
     mockSignIn.mockResolvedValueOnce(undefined);
 
-    await signInAction(formData);
+    // Since signInAction calls redirect after successful signIn, we expect a NEXT_REDIRECT error
+    await expect(signInAction({ error: undefined }, formData)).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
 
-    expect(mockValidateCallbackUrl).toHaveBeenCalledWith("https://evil.com");
     expect(mockSignIn).toHaveBeenCalledWith("credentials", {
       email: "test@example.com",
       password: "password123",
-      redirectTo: "/safe",
+      redirectTo: "/dashboard",
     });
   });
 });

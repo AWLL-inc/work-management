@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -146,10 +146,10 @@ export function DashboardChart({
           <div className="mt-2 pt-2 border-t border-border text-sm">
             <span className="font-medium">
               {t("total")}:{" "}
-              {t("hoursUnit", { 
+              {t("hoursUnit", {
                 value: payload
                   .reduce((sum: number, entry) => sum + Number(entry.value), 0)
-                  .toFixed(1)
+                  .toFixed(1),
               })}
             </span>
           </div>
@@ -163,7 +163,11 @@ export function DashboardChart({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t("title", { view: view === "user" ? t("byUser") : t("byProject") })}</CardTitle>
+          <CardTitle>
+            {t("title", {
+              view: view === "user" ? t("byUser") : t("byProject"),
+            })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 flex items-center justify-center">
@@ -178,7 +182,11 @@ export function DashboardChart({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t("title", { view: view === "user" ? t("byUser") : t("byProject") })}</CardTitle>
+          <CardTitle>
+            {t("title", {
+              view: view === "user" ? t("byUser") : t("byProject"),
+            })}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64 flex items-center justify-center">
@@ -194,7 +202,9 @@ export function DashboardChart({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>
-            {t("title", { view: view === "user" ? t("byUser") : t("byProject") })}
+            {t("title", {
+              view: view === "user" ? t("byUser") : t("byProject"),
+            })}
           </span>
           <div className="flex gap-2 text-sm">
             <Badge variant="outline">
@@ -228,7 +238,11 @@ export function DashboardChart({
                 fontSize={12}
               />
               <YAxis
-                label={{ value: t("hours"), angle: -90, position: "insideLeft" }}
+                label={{
+                  value: t("hours"),
+                  angle: -90,
+                  position: "insideLeft",
+                }}
                 fontSize={12}
               />
               <Tooltip content={<CustomTooltip />} />

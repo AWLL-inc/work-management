@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import type {
@@ -76,11 +76,11 @@ export function Dashboard({ className }: DashboardProps) {
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         const errorMessage =
-          error instanceof Error ? error.message : t("error.fetchFailed", { message: "Unknown error" });
+          error instanceof Error
+            ? error.message
+            : t("error.fetchFailed", { message: "Unknown error" });
         setError(errorMessage);
-        toast.error(
-          t("error.fetchFailed", { message: errorMessage }),
-        );
+        toast.error(t("error.fetchFailed", { message: errorMessage }));
       } finally {
         setIsLoading(false);
       }
@@ -118,9 +118,7 @@ export function Dashboard({ className }: DashboardProps) {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">
-            {t("subtitle")}
-          </p>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         <DashboardFilters

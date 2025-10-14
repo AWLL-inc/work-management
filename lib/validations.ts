@@ -233,11 +233,25 @@ export const workLogSearchSchema = z
     limit: z.coerce.number().int().positive().max(100).default(20),
     startDate: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Expected YYYY-MM-DD")
+      .transform((val) => {
+        const date = new Date(val);
+        if (Number.isNaN(date.getTime())) {
+          throw new Error("Invalid date format");
+        }
+        return date;
+      })
       .optional(),
     endDate: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Expected YYYY-MM-DD")
+      .transform((val) => {
+        const date = new Date(val);
+        if (Number.isNaN(date.getTime())) {
+          throw new Error("Invalid date format");
+        }
+        return date;
+      })
       .optional(),
     projectId: z.string().uuid().optional(), // Legacy single project filter
     projectIds: z.string().optional(), // New multiple projects filter (comma-separated)
@@ -250,7 +264,7 @@ export const workLogSearchSchema = z
     (data) => {
       // If both startDate and endDate are provided, startDate should be <= endDate
       if (data.startDate && data.endDate) {
-        return new Date(data.startDate) <= new Date(data.endDate);
+        return data.startDate <= data.endDate;
       }
       return true;
     },

@@ -12,6 +12,7 @@ import type {
   RowHeightParams,
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
@@ -156,16 +157,66 @@ export function EnhancedWorkLogTable({
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
-  // Search filters state
-  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+  // URL state management
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize search filters from URL parameters
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>(() => ({
     dateRange: {
-      from: undefined,
-      to: undefined,
+      from: searchParams.get("from")
+        ? new Date(searchParams.get("from") as string)
+        : undefined,
+      to: searchParams.get("to")
+        ? new Date(searchParams.get("to") as string)
+        : undefined,
     },
-    projectIds: [],
-    categoryIds: [],
-    userId: null,
-  });
+    projectIds: searchParams.get("projects")?.split(",").filter(Boolean) || [],
+    categoryIds:
+      searchParams.get("categories")?.split(",").filter(Boolean) || [],
+    userId: searchParams.get("userId") || null,
+  }));
+
+  // Update URL when filters change
+  const updateUrlWithFilters = useCallback(
+    (newFilters: SearchFilters) => {
+      const params = new URLSearchParams();
+
+      if (newFilters.dateRange.from) {
+        params.set(
+          "from",
+          newFilters.dateRange.from.toISOString().split("T")[0],
+        );
+      }
+      if (newFilters.dateRange.to) {
+        params.set("to", newFilters.dateRange.to.toISOString().split("T")[0]);
+      }
+      if (newFilters.projectIds.length > 0) {
+        params.set("projects", newFilters.projectIds.join(","));
+      }
+      if (newFilters.categoryIds.length > 0) {
+        params.set("categories", newFilters.categoryIds.join(","));
+      }
+      if (newFilters.userId) {
+        params.set("userId", newFilters.userId);
+      }
+
+      const newUrl = params.toString()
+        ? `?${params.toString()}`
+        : window.location.pathname;
+      router.push(newUrl, { scroll: false });
+    },
+    [router],
+  );
+
+  // Handle filter changes with URL update
+  const handleFiltersChange = useCallback(
+    (newFilters: SearchFilters) => {
+      setSearchFilters(newFilters);
+      updateUrlWithFilters(newFilters);
+    },
+    [updateUrlWithFilters],
+  );
 
   // Create project and category lookup maps
   const projectsMap = useMemo(() => {
@@ -1025,7 +1076,7 @@ export function EnhancedWorkLogTable({
       {/* Search Controls */}
       <SearchControls
         filters={searchFilters}
-        onFiltersChange={setSearchFilters}
+        onFiltersChange={handleFiltersChange}
         projects={projects}
         categories={categories}
         // users={users} // Will be added when user API is available
@@ -1051,6 +1102,13 @@ export function EnhancedWorkLogTable({
           }
         }}
         onClearFilters={() => {
+          const clearedFilters: SearchFilters = {
+            dateRange: { from: undefined, to: undefined },
+            projectIds: [],
+            categoryIds: [],
+            userId: null,
+          };
+          handleFiltersChange(clearedFilters);
           if (onFilterChange) {
             onFilterChange({});
           }

@@ -80,39 +80,13 @@ export async function GET(request: NextRequest) {
       options.userId = validatedParams.userId;
     }
 
-    // Date filtering with validation
+    // Date filtering - dates are already validated and transformed by Zod
     if (validatedParams.startDate) {
-      const parsedStartDate = new Date(validatedParams.startDate);
-      if (Number.isNaN(parsedStartDate.getTime())) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: "VALIDATION_ERROR",
-              message: "Invalid startDate format. Expected YYYY-MM-DD",
-            },
-          },
-          { status: 400 },
-        );
-      }
-      options.startDate = parsedStartDate;
+      options.startDate = validatedParams.startDate;
     }
 
     if (validatedParams.endDate) {
-      const parsedEndDate = new Date(validatedParams.endDate);
-      if (Number.isNaN(parsedEndDate.getTime())) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: "VALIDATION_ERROR",
-              message: "Invalid endDate format. Expected YYYY-MM-DD",
-            },
-          },
-          { status: 400 },
-        );
-      }
-      options.endDate = parsedEndDate;
+      options.endDate = validatedParams.endDate;
     }
 
     // Project filtering - handle both single and multiple

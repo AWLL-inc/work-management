@@ -1,6 +1,13 @@
 "use client";
 
-import { RefreshCw, X } from "lucide-react";
+import {
+  Calendar,
+  Folder,
+  RefreshCw,
+  Tag,
+  User as UserIcon,
+  X,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -121,8 +128,12 @@ export function SearchControls({
             <div className="flex flex-wrap gap-1">
               {/* Date Range */}
               {filters.dateRange.from && (
-                <Badge variant="outline" className="text-xs">
-                  📅 {filters.dateRange.from.toLocaleDateString("ja-JP")}
+                <Badge
+                  variant="outline"
+                  className="text-xs flex items-center gap-1"
+                >
+                  <Calendar className="h-3 w-3" />
+                  {filters.dateRange.from.toLocaleDateString("ja-JP")}
                   {filters.dateRange.to &&
                     ` ～ ${filters.dateRange.to.toLocaleDateString("ja-JP")}`}
                 </Badge>
@@ -135,7 +146,8 @@ export function SearchControls({
                   variant="secondary"
                   className="text-xs flex items-center gap-1"
                 >
-                  🏗️ {project.name}
+                  <Folder className="h-3 w-3" />
+                  {project.name}
                   <X
                     className="h-3 w-3 cursor-pointer hover:text-destructive"
                     onClick={() => handleRemoveProject(project.id)}
@@ -150,7 +162,8 @@ export function SearchControls({
                   variant="secondary"
                   className="text-xs flex items-center gap-1"
                 >
-                  📋 {category.name}
+                  <Tag className="h-3 w-3" />
+                  {category.name}
                   <X
                     className="h-3 w-3 cursor-pointer hover:text-destructive"
                     onClick={() => handleRemoveCategory(category.id)}
@@ -164,7 +177,8 @@ export function SearchControls({
                   variant="secondary"
                   className="text-xs flex items-center gap-1"
                 >
-                  👤 {selectedUser.name}
+                  <UserIcon className="h-3 w-3" />
+                  {selectedUser.name}
                   <X
                     className="h-3 w-3 cursor-pointer hover:text-destructive"
                     onClick={() => handleUserIdChange(null)}

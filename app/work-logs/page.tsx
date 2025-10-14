@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { AGGridWorkLogTable } from "@/components/features/work-logs/ag-grid-work-log-table";
@@ -14,6 +14,7 @@ import {
   deleteWorkLog,
   getWorkLogs,
   updateWorkLog,
+  type GetWorkLogsOptions,
 } from "@/lib/api/work-logs";
 
 export default function WorkLogsPage() {
@@ -21,11 +22,28 @@ export default function WorkLogsPage() {
     "enhanced" | "ag-grid" | "standard"
   >("enhanced");
 
+  // Filter state for API calls
+  const [apiFilters, setApiFilters] = useState<GetWorkLogsOptions>({});
+
+  // Build query parameters for SWR
+  const buildQueryParams = useCallback((filters: GetWorkLogsOptions) => {
+    const params = new URLSearchParams();
+    if (filters.startDate) params.set("startDate", filters.startDate);
+    if (filters.endDate) params.set("endDate", filters.endDate);
+    if (filters.projectIds) params.set("projectIds", filters.projectIds);
+    if (filters.categoryIds) params.set("categoryIds", filters.categoryIds);
+    if (filters.userId) params.set("userId", filters.userId);
+    return params.toString();
+  }, []);
+
+  const queryString = buildQueryParams(apiFilters);
+  const workLogsKey = queryString ? `/api/work-logs?${queryString}` : "/api/work-logs";
+
   const {
     data: workLogs,
     isLoading: isLoadingWorkLogs,
     mutate: mutateWorkLogs,
-  } = useSWR("/api/work-logs", getWorkLogs, {
+  } = useSWR(workLogsKey, () => getWorkLogs(apiFilters), {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -105,6 +123,11 @@ export default function WorkLogsPage() {
     }
   };
 
+  // Handle filter changes
+  const handleFilterChange = useCallback((filters: GetWorkLogsOptions) => {
+    setApiFilters(filters);
+  }, []);
+
   const isLoading =
     isLoadingWorkLogs || isLoadingProjects || isLoadingCategories;
 
@@ -143,6 +166,7 @@ export default function WorkLogsPage() {
           onUpdateWorkLog={handleUpdateWorkLog}
           onDeleteWorkLog={handleDeleteWorkLog}
           onRefresh={mutateWorkLogs}
+          onFilterChange={handleFilterChange}
           isLoading={isLoading}
         />
       ) : tableType === "ag-grid" ? (

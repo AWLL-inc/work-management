@@ -42,14 +42,8 @@ interface SearchFilters {
   userId: string | null;
 }
 
-// API filters type
-interface ApiFilters {
-  startDate?: string;
-  endDate?: string;
-  projectIds?: string;
-  categoryIds?: string;
-  userId?: string | null;
-}
+// Import from API file for consistency
+import type { GetWorkLogsOptions } from "@/lib/api/work-logs";
 
 // Column width constants
 const COLUMN_WIDTHS = {
@@ -129,7 +123,7 @@ interface EnhancedWorkLogTableProps {
     }>,
   ) => Promise<void>;
   onRefresh?: () => void;
-  onFilterChange?: (filters: ApiFilters) => void;
+  onFilterChange?: (filters: GetWorkLogsOptions) => void;
   isLoading: boolean;
 }
 
@@ -1086,7 +1080,7 @@ export function EnhancedWorkLogTable({
         showUserFilter={false} // Will be true when user role checking is implemented
         onApplyFilters={() => {
           if (onFilterChange) {
-            const apiFilters = {
+            const apiFilters: GetWorkLogsOptions = {
               startDate: searchFilters.dateRange.from
                 ?.toISOString()
                 .split("T")[0],
@@ -1106,13 +1100,7 @@ export function EnhancedWorkLogTable({
         }}
         onClearFilters={() => {
           if (onFilterChange) {
-            onFilterChange({
-              startDate: undefined,
-              endDate: undefined,
-              projectIds: undefined,
-              categoryIds: undefined,
-              userId: undefined,
-            });
+            onFilterChange({});
           }
         }}
         isLoading={isLoading}

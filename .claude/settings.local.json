@@ -75,7 +75,8 @@
       "Bash(dotenv -e .env.local -- tsx scripts/create-indexes.ts:*)",
       "Bash(npx dotenv -e .env.local:*)",
       "Bash(npm cache clean:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(npx next dev:*)"
     ],
     "deny": [],
     "ask": []

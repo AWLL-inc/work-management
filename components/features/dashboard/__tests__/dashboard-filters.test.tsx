@@ -10,6 +10,7 @@ vi.mock("@/components/ui/select", () => ({
     <div
       data-testid="select-trigger"
       onClick={() => onValueChange?.(value === "user" ? "project" : "user")}
+      onKeyDown={() => {}}
     >
       {children}
     </div>

@@ -173,56 +173,59 @@ export function SearchControls({
           </div>
         )}
 
-        <div className="flex flex-wrap gap-4 items-end">
-          {/* Date Range Filter */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium mb-2">日付範囲</label>
-            <DateRangePicker
-              value={filters.dateRange}
-              onChange={handleDateRangeChange}
-              className="w-full"
-            />
-          </div>
-
-          {/* Project Filter */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium mb-2">
-              プロジェクト
-            </label>
-            <ProjectIncrementalSearch
-              projects={projects}
-              selectedProjectIds={filters.projectIds}
-              onSelectionChange={handleProjectIdsChange}
-              className="w-full"
-            />
-          </div>
-
-          {/* Category Filter */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium mb-2">カテゴリ</label>
-            <CategoryIncrementalSearch
-              categories={categories}
-              selectedCategoryIds={filters.categoryIds}
-              onSelectionChange={handleCategoryIdsChange}
-              className="w-full"
-            />
-          </div>
-
-          {/* User Filter (Admin only) */}
-          {showUserFilter && users.length > 0 && (
+        <div className="space-y-4">
+          {/* Filter Controls */}
+          <div className="flex flex-wrap gap-4 items-end">
+            {/* Date Range Filter */}
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium mb-2">ユーザー</label>
-              <UserSelect
-                users={users}
-                selectedUserId={filters.userId}
-                onSelectionChange={handleUserIdChange}
+              <label className="block text-sm font-medium mb-2">日付範囲</label>
+              <DateRangePicker
+                value={filters.dateRange}
+                onChange={handleDateRangeChange}
                 className="w-full"
               />
             </div>
-          )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
+            {/* Project Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium mb-2">
+                プロジェクト
+              </label>
+              <ProjectIncrementalSearch
+                projects={projects}
+                selectedProjectIds={filters.projectIds}
+                onSelectionChange={handleProjectIdsChange}
+                className="w-full"
+              />
+            </div>
+
+            {/* Category Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium mb-2">カテゴリ</label>
+              <CategoryIncrementalSearch
+                categories={categories}
+                selectedCategoryIds={filters.categoryIds}
+                onSelectionChange={handleCategoryIdsChange}
+                className="w-full"
+              />
+            </div>
+
+            {/* User Filter (Admin only) */}
+            {showUserFilter && users.length > 0 && (
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-sm font-medium mb-2">ユーザー</label>
+                <UserSelect
+                  users={users}
+                  selectedUserId={filters.userId}
+                  onSelectionChange={handleUserIdChange}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons Row */}
+          <div className="flex justify-end gap-2">
             {onApplyFilters && (
               <Button
                 onClick={onApplyFilters}

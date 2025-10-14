@@ -3,8 +3,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
-import { useState, useMemo } from "react";
+import { X, ChevronUp } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import type { WorkCategory } from "@/drizzle/schema";
 import { cn } from "@/lib/utils";
 
@@ -68,10 +68,30 @@ export function CategoryIncrementalSearch({
     setIsDropdownOpen(true);
   };
 
-  const handleInputBlur = () => {
+  const handleInputBlur = (e: React.FocusEvent) => {
+    // Don't close if focus is moving to a dropdown item
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    if (relatedTarget && relatedTarget.closest('[data-dropdown-content]')) {
+      return;
+    }
     // Delay to allow click events on dropdown items
     setTimeout(() => setIsDropdownOpen(false), 200);
   };
+
+  const handleCloseDropdown = () => {
+    setIsDropdownOpen(false);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isDropdownOpen) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isDropdownOpen]);
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -88,7 +108,22 @@ export function CategoryIncrementalSearch({
 
         {/* Dropdown Results */}
         {isDropdownOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-y-auto">
+          <div 
+            className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-y-auto"
+            data-dropdown-content
+            onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking in dropdown
+          >
+            {/* Close Button */}
+            <div className="flex justify-end p-1 border-b">
+              <button
+                onClick={handleCloseDropdown}
+                className="text-muted-foreground hover:text-foreground p-1"
+                aria-label="Close dropdown"
+              >
+                <ChevronUp className="h-4 w-4" />
+              </button>
+            </div>
+            
             {filteredCategories.length > 0 ? (
               <div className="p-1">
                 {filteredCategories.map((category) => (

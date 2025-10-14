@@ -1,41 +1,45 @@
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
 import { auth } from "@/lib/auth-config";
-import createMiddleware from 'next-intl/middleware';
-import { routing } from './i18n/routing';
-import { NextRequest, NextResponse } from 'next/server';
+import { routing } from "./i18n/routing";
 
 /**
  * Combined middleware for internationalization and authentication
- * 1. Handles locale routing with next-intl
+ * 1. Handles locale via cookies (not in URL path)
  * 2. Protects routes that require authentication
  */
 
-// Create the internationalization middleware
+// Create the internationalization middleware with cookie-based locale
 const intlMiddleware = createMiddleware(routing);
 
 // Combined middleware function
 export default function middleware(request: NextRequest) {
   // Check if the request is for API routes (no locale handling needed)
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    // biome-ignore lint/suspicious/noExplicitAny: NextAuth requires any type for middleware
     return auth(request as any);
   }
 
-  // Handle internationalization first
+  // Handle internationalization with cookie-based locale
   const intlResponse = intlMiddleware(request);
+
+  // Apply authentication after i18n processing
+  // biome-ignore lint/suspicious/noExplicitAny: NextAuth requires any type for middleware
+  const authResponse = auth(request as any);
   
-  // If intl middleware returns a response (redirect), use it
-  if (intlResponse && intlResponse.headers.get('location')) {
-    return intlResponse;
+  // Combine responses if both exist
+  if (authResponse && intlResponse) {
+    // Use auth response but preserve locale cookie from intl response if set
+    const localeCookie = intlResponse.headers.get("set-cookie");
+    if (localeCookie && localeCookie.includes("locale=")) {
+      authResponse.headers.set("set-cookie", localeCookie);
+    }
+    return authResponse;
   }
 
-  // For localized routes, apply authentication
-  const locale = request.nextUrl.pathname.split('/')[1];
-  if (routing.locales.includes(locale as any)) {
-    // Apply auth middleware to localized routes
-    return auth(request as any);
-  }
-
-  // Default response for other cases
-  return intlResponse || NextResponse.next();
+  // Return whichever response exists
+  return authResponse || intlResponse || NextResponse.next();
 }
 
 /**

@@ -69,6 +69,7 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "subtitle": "View work time trends and analysis",
     "workHoursChart": "Work Hours Chart",
     "userView": "By User",
     "projectView": "By Project",
@@ -84,6 +85,19 @@
       "apply": "Apply",
       "loading": "Loading..."
     },
+    "chart": {
+      "title": "Work Hours Chart ({view})",
+      "byUser": "By User",
+      "byProject": "By Project",
+      "totalHours": "Total: {hours}h",
+      "average": "Average: {hours}h/day",
+      "loading": "Loading...",
+      "noData": "No data available",
+      "hours": "Hours",
+      "hoursUnit": "{value} hours",
+      "date": "Date",
+      "total": "Total"
+    },
     "summary": {
       "totalHours": "Total: {hours}h",
       "averagePerDay": "Average: {hours}h/day"
@@ -91,6 +105,10 @@
     "noData": "No data available",
     "tooltip": {
       "total": "Total: {hours} hours"
+    },
+    "error": {
+      "title": "An error occurred",
+      "fetchFailed": "Failed to fetch dashboard data: {message}"
     }
   },
   "workLogs": {

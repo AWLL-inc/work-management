@@ -76,7 +76,9 @@
       "Bash(npx dotenv -e .env.local:*)",
       "Bash(npm cache clean:*)",
       "Bash(psql:*)",
-      "Bash(npx next dev:*)"
+      "Bash(npx next dev:*)",
+      "Bash(pkill:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

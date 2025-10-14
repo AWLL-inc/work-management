@@ -24,7 +24,7 @@ vi.mock("@/lib/utils", () => ({
 const { AuthError } = await import("next-auth");
 
 // Import the action after all mocks are in place
-const { signInAction } = await import("../actions");
+const { signInAction } = await import("@/app/[locale]/auth/signin/actions");
 
 const mockSignIn = vi.mocked(await import("@/lib/auth")).signIn as Mock;
 

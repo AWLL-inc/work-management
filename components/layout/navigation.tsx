@@ -1,10 +1,11 @@
 "use client";
 
 import { ClipboardList, FolderKanban, LogOut, Tags } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
+import { LanguageSwitcherButton } from "./language-switcher";
 
 interface NavigationProps {
   userEmail?: string | null;
@@ -12,6 +13,12 @@ interface NavigationProps {
 }
 
 const navigationItems = [
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: ClipboardList,
+    roles: ["user", "manager", "admin"],
+  },
   {
     name: "Work Logs",
     href: "/work-logs",
@@ -38,7 +45,10 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
   const isAdmin = userRole === "admin";
 
   return (
-    <nav className="bg-white border-b border-border shadow-sm">
+    <nav
+      id="main-navigation"
+      className="bg-white border-b border-border shadow-sm"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -112,6 +122,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
 
           {/* User Info */}
           <div className="flex items-center space-x-4">
+            <LanguageSwitcherButton />
             {userEmail && (
               <span className="text-sm text-muted-foreground">{userEmail}</span>
             )}

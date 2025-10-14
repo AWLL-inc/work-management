@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
-import { Navigation } from "@/components/layout/navigation";
 import { auth } from "@/lib/auth";
 
 export default async function AdminLayout({
@@ -21,8 +20,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <Navigation userEmail={session.user.email} userRole={session.user.role} />
+    <div className="bg-muted/30">
       <Breadcrumbs />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">{children}</main>
     </div>

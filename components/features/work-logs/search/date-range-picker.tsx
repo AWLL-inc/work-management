@@ -14,14 +14,12 @@ interface DateRange {
 interface DateRangePickerProps {
   value: DateRange;
   onChange: (dateRange: DateRange) => void;
-  placeholder?: string;
   className?: string;
 }
 
 export function DateRangePicker({
   value,
   onChange,
-  placeholder: _placeholder = "日付範囲を選択",
   className,
 }: DateRangePickerProps) {
   const [error, setError] = useState<string | null>(null);

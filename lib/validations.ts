@@ -275,3 +275,7 @@ export const workLogSearchSchema = z
   );
 
 export type WorkLogSearchQuery = z.infer<typeof workLogSearchSchema>;
+
+// Enhanced type exports for better type safety
+export type WorkLogSearchParams = z.input<typeof workLogSearchSchema>;
+export type WorkLogSearchValidated = z.output<typeof workLogSearchSchema>;

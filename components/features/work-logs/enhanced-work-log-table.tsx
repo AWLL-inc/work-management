@@ -15,6 +15,7 @@ import type {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useDebouncedCallback } from "use-debounce";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -209,13 +210,47 @@ export function EnhancedWorkLogTable({
     [router],
   );
 
-  // Handle filter changes with URL update
+  // Debounced API filter change to reduce calls
+  const debouncedFilterChange = useDebouncedCallback(
+    (newFilters: SearchFilters) => {
+      if (onFilterChange) {
+        try {
+          const apiFilters: GetWorkLogsOptions = {
+            startDate: newFilters.dateRange.from?.toISOString().split("T")[0],
+            endDate: newFilters.dateRange.to?.toISOString().split("T")[0],
+            projectIds:
+              newFilters.projectIds.length > 0
+                ? newFilters.projectIds.join(",")
+                : undefined,
+            categoryIds:
+              newFilters.categoryIds.length > 0
+                ? newFilters.categoryIds.join(",")
+                : undefined,
+            userId: newFilters.userId || undefined,
+          };
+          onFilterChange(apiFilters);
+        } catch (error) {
+          console.error("Filter application error:", error);
+          toast.error("フィルタの適用に失敗しました。もう一度お試しください。");
+        }
+      }
+    },
+    500, // 500ms待機
+  );
+
+  // Handle filter changes with URL update and debounced API calls
   const handleFiltersChange = useCallback(
     (newFilters: SearchFilters) => {
-      setSearchFilters(newFilters);
-      updateUrlWithFilters(newFilters);
+      try {
+        setSearchFilters(newFilters);
+        updateUrlWithFilters(newFilters);
+        debouncedFilterChange(newFilters); // デバウンスされたAPI呼び出し
+      } catch (error) {
+        console.error("Filter state update error:", error);
+        toast.error("フィルタの更新に失敗しました。");
+      }
     },
-    [updateUrlWithFilters],
+    [updateUrlWithFilters, debouncedFilterChange],
   );
 
   // Create project and category lookup maps

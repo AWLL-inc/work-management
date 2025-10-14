@@ -6,7 +6,7 @@ import { routing } from "./i18n/routing";
 
 /**
  * Combined middleware for internationalization and authentication
- * 
+ *
  * Architecture:
  * 1. Handles locale via cookies (not in URL path)
  * 2. Protects routes that require authentication
@@ -31,14 +31,14 @@ const API_PATHS = ["/api/"];
  * Check if a path is public (doesn't require authentication)
  */
 function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some(path => pathname.startsWith(path));
+  return PUBLIC_PATHS.some((path) => pathname.startsWith(path));
 }
 
 /**
  * Check if a path is an API route
  */
 function isApiPath(pathname: string): boolean {
-  return API_PATHS.some(path => pathname.startsWith(path));
+  return API_PATHS.some((path) => pathname.startsWith(path));
 }
 
 /**
@@ -55,7 +55,7 @@ function mergeResponses(
 
   // Both responses exist - merge headers
   const mergedResponse = authResponse;
-  
+
   // Copy locale cookie from intl response if it exists
   const localeCookie = intlResponse.headers.get("set-cookie");
   if (localeCookie?.includes("locale=")) {
@@ -63,7 +63,10 @@ function mergeResponses(
     const existingCookies = mergedResponse.headers.get("set-cookie");
     if (existingCookies && !existingCookies.includes("locale=")) {
       // Combine cookies if both exist
-      mergedResponse.headers.set("set-cookie", `${existingCookies}, ${localeCookie}`);
+      mergedResponse.headers.set(
+        "set-cookie",
+        `${existingCookies}, ${localeCookie}`,
+      );
     } else {
       mergedResponse.headers.set("set-cookie", localeCookie);
     }

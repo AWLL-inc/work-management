@@ -78,7 +78,16 @@
       "Bash(psql:*)",
       "Bash(npx next dev:*)",
       "Bash(pkill:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(npm --version)",
+      "Bash(sudo chown:*)",
+      "Bash(pnpm run type-check:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx typescript:*)",
+      "Bash(npx -p typescript tsc:*)",
+      "Bash(pnpm run lint:*)",
+      "Bash(git restore:*)",
+      "Bash(pnpm install:*)"
     ],
     "deny": [],
     "ask": []

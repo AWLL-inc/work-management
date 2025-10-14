@@ -1,6 +1,6 @@
 /**
  * Type-safe wrapper for next-intl translations
- * 
+ *
  * This module provides a typed version of useTranslations hook
  * that ensures compile-time safety for translation keys.
  */
@@ -11,11 +11,11 @@ import { useTranslations } from "next-intl";
 
 /**
  * Type-safe version of useTranslations hook
- * 
+ *
  * Note: Due to the complexity of type-safe translations with parameters,
  * this implementation provides a simpler interface that still offers
  * type safety for keys while maintaining runtime compatibility.
- * 
+ *
  * @example
  * ```tsx
  * const t = useTypedTranslations();
@@ -30,7 +30,7 @@ export function useTypedTranslations() {
 
 /**
  * Type-safe version of useTranslations hook with namespace
- * 
+ *
  * @example
  * ```tsx
  * const t = useNamespacedTranslations("dashboard");
@@ -46,7 +46,7 @@ export function useNamespacedTranslations(namespace: string) {
 /**
  * Hook to get a specific translation with type safety
  * Useful when you only need a single translation
- * 
+ *
  * @example
  * ```tsx
  * const title = useTranslation("dashboard.title");
@@ -54,21 +54,15 @@ export function useNamespacedTranslations(namespace: string) {
  */
 export function useTranslation(key: string): string {
   const t = useTranslations();
-  // Split the key to handle namespace
-  const parts = key.split('.');
-  if (parts.length > 1) {
-    const namespace = parts[0];
-    const subKey = parts.slice(1).join('.');
-    const namespacedT = useTranslations(namespace);
-    return namespacedT(subKey);
-  }
+  // For nested keys, we use the full key directly
+  // The translation function handles dot notation internally
   return t(key);
 }
 
 /**
  * Hook to check if a translation key exists
  * Useful for conditional rendering based on translation availability
- * 
+ *
  * @example
  * ```tsx
  * const hasDescription = useHasTranslation("feature.description");
@@ -78,8 +72,8 @@ export function useTranslation(key: string): string {
  * ```
  */
 export function useHasTranslation(key: string): boolean {
+  const t = useTranslations();
   try {
-    const t = useTranslations();
     const result = t(key);
     // Check if the translation actually exists (not just returning the key)
     return result !== key && result !== `[${key}]`;
@@ -91,7 +85,7 @@ export function useHasTranslation(key: string): boolean {
 /**
  * Hook to get multiple translations at once
  * Useful for getting all translations for a component
- * 
+ *
  * @example
  * ```tsx
  * const texts = useMultipleTranslations({
@@ -99,7 +93,7 @@ export function useHasTranslation(key: string): boolean {
  *   subtitle: "dashboard.subtitle",
  *   loading: "common.loading"
  * });
- * 
+ *
  * return (
  *   <div>
  *     <h1>{texts.title}</h1>
@@ -109,14 +103,14 @@ export function useHasTranslation(key: string): boolean {
  * ```
  */
 export function useMultipleTranslations<T extends Record<string, string>>(
-  keys: T
+  keys: T,
 ): { [K in keyof T]: string } {
   const t = useTranslations();
-  
+
   const result = {} as { [K in keyof T]: string };
   for (const [name, key] of Object.entries(keys)) {
     result[name as keyof T] = t(key);
   }
-  
+
   return result;
 }

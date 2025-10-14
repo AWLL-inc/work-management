@@ -547,9 +547,8 @@ export function EnhancedWorkLogTable({
     () => ({
       sortable: true,
       resizable: true,
-      filter: true, // Enable filtering for all columns
-      floatingFilter: true, // Enable floating filters
-      menuTabs: ["filterMenuTab"], // Show filter menu tab
+      filter: false, // Disable filtering for all columns
+      floatingFilter: false, // Disable floating filters
       suppressKeyboardEvent: (params: SuppressKeyboardEventParams) => {
         if (params.event.key === "Enter" && params.editing) {
           return false;

@@ -280,30 +280,6 @@ export function GridToolbar({
                     <span>Ctrl+V</span>
                     <span>ペースト</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Ctrl+N</span>
-                    <span>行追加</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Ctrl+D</span>
-                    <span>行複製</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Delete</span>
-                    <span>行削除</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Ctrl+Z</span>
-                    <span>元に戻す</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Ctrl+Y</span>
-                    <span>やり直し</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Enter</span>
-                    <span>次の行に移動</span>
-                  </div>
                 </div>
               </div>
             </TooltipContent>

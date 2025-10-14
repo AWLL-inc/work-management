@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { AGGridWorkLogTable } from "@/components/features/work-logs/ag-grid-work-log-table";
@@ -12,9 +12,9 @@ import { getWorkCategories } from "@/lib/api/work-categories";
 import {
   createWorkLog,
   deleteWorkLog,
+  type GetWorkLogsOptions,
   getWorkLogs,
   updateWorkLog,
-  type GetWorkLogsOptions,
 } from "@/lib/api/work-logs";
 
 export default function WorkLogsPage() {
@@ -37,7 +37,9 @@ export default function WorkLogsPage() {
   }, []);
 
   const queryString = buildQueryParams(apiFilters);
-  const workLogsKey = queryString ? `/api/work-logs?${queryString}` : "/api/work-logs";
+  const workLogsKey = queryString
+    ? `/api/work-logs?${queryString}`
+    : "/api/work-logs";
 
   const {
     data: workLogs,

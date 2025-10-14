@@ -78,9 +78,18 @@ export function Combobox({
   return (
     <div className={cn("relative w-full", className)}>
       {/* Selected Value Display */}
-      <div 
+      <div
+        role="combobox"
+        aria-expanded={isOpen}
+        tabIndex={0}
         className="w-full p-2 border rounded-md bg-background cursor-pointer flex justify-between items-center"
         onClick={() => !disabled && setIsOpen(!isOpen)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            !disabled && setIsOpen(!isOpen);
+          }
+        }}
       >
         <span className={selectedOption ? "" : "text-muted-foreground"}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -114,7 +123,15 @@ export function Combobox({
                   {options.map((option) => (
                     <div
                       key={option.value}
+                      role="option"
+                      tabIndex={0}
                       onClick={() => handleSelect(option.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleSelect(option.value);
+                        }
+                      }}
                       className={cn(
                         "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
                         value === option.value &&
@@ -149,9 +166,16 @@ export function Combobox({
 
       {/* Backdrop to close dropdown */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-transparent border-0 cursor-default"
+          tabIndex={-1}
           onClick={() => setIsOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setIsOpen(false);
+            }
+          }}
         />
       )}
     </div>

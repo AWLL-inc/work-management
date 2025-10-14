@@ -102,11 +102,13 @@ export function SearchControls({
   const selectedUser = users.find((user) => user.id === filters.userId);
 
   const handleRemoveProject = (projectId: string) => {
-    handleProjectIdsChange(filters.projectIds.filter(id => id !== projectId));
+    handleProjectIdsChange(filters.projectIds.filter((id) => id !== projectId));
   };
 
   const handleRemoveCategory = (categoryId: string) => {
-    handleCategoryIdsChange(filters.categoryIds.filter(id => id !== categoryId));
+    handleCategoryIdsChange(
+      filters.categoryIds.filter((id) => id !== categoryId),
+    );
   };
 
   return (
@@ -125,13 +127,17 @@ export function SearchControls({
                     ` ～ ${filters.dateRange.to.toLocaleDateString("ja-JP")}`}
                 </Badge>
               )}
-              
+
               {/* Selected Projects */}
               {selectedProjects.map((project) => (
-                <Badge key={project.id} variant="secondary" className="text-xs flex items-center gap-1">
+                <Badge
+                  key={project.id}
+                  variant="secondary"
+                  className="text-xs flex items-center gap-1"
+                >
                   🏗️ {project.name}
-                  <X 
-                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                  <X
+                    className="h-3 w-3 cursor-pointer hover:text-destructive"
                     onClick={() => handleRemoveProject(project.id)}
                   />
                 </Badge>
@@ -139,10 +145,14 @@ export function SearchControls({
 
               {/* Selected Categories */}
               {selectedCategories.map((category) => (
-                <Badge key={category.id} variant="secondary" className="text-xs flex items-center gap-1">
+                <Badge
+                  key={category.id}
+                  variant="secondary"
+                  className="text-xs flex items-center gap-1"
+                >
                   📋 {category.name}
-                  <X 
-                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                  <X
+                    className="h-3 w-3 cursor-pointer hover:text-destructive"
                     onClick={() => handleRemoveCategory(category.id)}
                   />
                 </Badge>
@@ -150,10 +160,13 @@ export function SearchControls({
 
               {/* Selected User */}
               {selectedUser && (
-                <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                <Badge
+                  variant="secondary"
+                  className="text-xs flex items-center gap-1"
+                >
                   👤 {selectedUser.name}
-                  <X 
-                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                  <X
+                    className="h-3 w-3 cursor-pointer hover:text-destructive"
                     onClick={() => handleUserIdChange(null)}
                   />
                 </Badge>
@@ -178,7 +191,6 @@ export function SearchControls({
           <div className="flex flex-wrap gap-4 items-end">
             {/* Date Range Filter */}
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium mb-2">日付範囲</label>
               <DateRangePicker
                 value={filters.dateRange}
                 onChange={handleDateRangeChange}
@@ -188,9 +200,6 @@ export function SearchControls({
 
             {/* Project Filter */}
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium mb-2">
-                プロジェクト
-              </label>
               <ProjectIncrementalSearch
                 projects={projects}
                 selectedProjectIds={filters.projectIds}
@@ -201,7 +210,6 @@ export function SearchControls({
 
             {/* Category Filter */}
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium mb-2">カテゴリ</label>
               <CategoryIncrementalSearch
                 categories={categories}
                 selectedCategoryIds={filters.categoryIds}
@@ -213,7 +221,6 @@ export function SearchControls({
             {/* User Filter (Admin only) */}
             {showUserFilter && users.length > 0 && (
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-medium mb-2">ユーザー</label>
                 <UserSelect
                   users={users}
                   selectedUserId={filters.userId}
@@ -252,7 +259,6 @@ export function SearchControls({
             )}
           </div>
         </div>
-
       </CardContent>
     </Card>
   );

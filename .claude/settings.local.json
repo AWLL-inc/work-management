@@ -67,7 +67,8 @@
       "Bash(lsof:*)",
       "Bash(kill:*)",
       "Bash(gh pr list:*)",
-      "Bash(npx shadcn-ui@latest add command:*)"
+      "Bash(npx shadcn-ui@latest add command:*)",
+      "Bash(npx @biomejs/biome check:*)"
     ],
     "deny": [],
     "ask": []

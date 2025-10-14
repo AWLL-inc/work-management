@@ -1,11 +1,11 @@
 "use client";
 
+import { X } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X } from "lucide-react";
-import { useState } from "react";
 import type { Project } from "@/drizzle/schema";
 import { cn } from "@/lib/utils";
 
@@ -59,8 +59,8 @@ export function ProjectMultiSelect({
                 className="text-xs flex items-center gap-1"
               >
                 {project.name}
-                <X 
-                  className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                <X
+                  className="h-3 w-3 cursor-pointer hover:text-destructive"
                   onClick={() => removeProject(project.id)}
                 />
               </Badge>
@@ -111,7 +111,7 @@ export function ProjectMultiSelect({
                     <Checkbox
                       id={`project-${project.id}`}
                       checked={selectedProjectIds.includes(project.id)}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         handleSelect(project.id, checked as boolean)
                       }
                     />

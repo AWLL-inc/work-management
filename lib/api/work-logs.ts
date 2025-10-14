@@ -28,12 +28,14 @@ export interface GetWorkLogsOptions {
   searchText?: string;
 }
 
-export async function getWorkLogs(options?: GetWorkLogsOptions): Promise<WorkLog[]> {
+export async function getWorkLogs(
+  options?: GetWorkLogsOptions,
+): Promise<WorkLog[]> {
   let url = "/api/work-logs";
-  
+
   if (options) {
     const params = new URLSearchParams();
-    
+
     if (options.startDate) params.set("startDate", options.startDate);
     if (options.endDate) params.set("endDate", options.endDate);
     if (options.projectIds) params.set("projectIds", options.projectIds);
@@ -42,13 +44,13 @@ export async function getWorkLogs(options?: GetWorkLogsOptions): Promise<WorkLog
     if (options.page) params.set("page", options.page.toString());
     if (options.limit) params.set("limit", options.limit.toString());
     if (options.searchText) params.set("searchText", options.searchText);
-    
+
     const paramString = params.toString();
     if (paramString) {
       url += `?${paramString}`;
     }
   }
-  
+
   const response = await fetch(url);
   return handleApiResponse<WorkLog[]>(response, "Failed to fetch work logs");
 }

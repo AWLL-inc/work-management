@@ -1,10 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { ChevronUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { X, ChevronUp } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
 import type { WorkCategory } from "@/drizzle/schema";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +24,7 @@ export function CategoryIncrementalSearch({
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const selectedCategories = categories.filter((category) =>
+  const _selectedCategories = categories.filter((category) =>
     selectedCategoryIds.includes(category.id),
   );
 
@@ -38,11 +36,12 @@ export function CategoryIncrementalSearch({
         .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
         .slice(0, 20); // Show first 20 when no search
     }
-    
+
     return categories
-      .filter((category) => 
-        category.isActive &&
-        category.name.toLowerCase().includes(searchQuery.toLowerCase())
+      .filter(
+        (category) =>
+          category.isActive &&
+          category.name.toLowerCase().includes(searchQuery.toLowerCase()),
       )
       .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
       .slice(0, 20); // Limit to 20 results
@@ -50,17 +49,17 @@ export function CategoryIncrementalSearch({
 
   const handleCategoryToggle = (categoryId: string) => {
     if (selectedCategoryIds.includes(categoryId)) {
-      onSelectionChange(selectedCategoryIds.filter(id => id !== categoryId));
+      onSelectionChange(selectedCategoryIds.filter((id) => id !== categoryId));
     } else {
       onSelectionChange([...selectedCategoryIds, categoryId]);
     }
   };
 
-  const handleRemoveCategory = (categoryId: string) => {
-    onSelectionChange(selectedCategoryIds.filter(id => id !== categoryId));
+  const _handleRemoveCategory = (categoryId: string) => {
+    onSelectionChange(selectedCategoryIds.filter((id) => id !== categoryId));
   };
 
-  const clearAll = () => {
+  const _clearAll = () => {
     onSelectionChange([]);
   };
 
@@ -71,7 +70,7 @@ export function CategoryIncrementalSearch({
   const handleInputBlur = (e: React.FocusEvent) => {
     // Don't close if focus is moving to a dropdown item
     const relatedTarget = e.relatedTarget as HTMLElement;
-    if (relatedTarget && relatedTarget.closest('[data-dropdown-content]')) {
+    if (relatedTarget?.closest("[data-dropdown-content]")) {
       return;
     }
     // Delay to allow click events on dropdown items
@@ -84,13 +83,13 @@ export function CategoryIncrementalSearch({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isDropdownOpen) {
+      if (event.key === "Escape" && isDropdownOpen) {
         setIsDropdownOpen(false);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isDropdownOpen]);
 
   return (
@@ -98,7 +97,7 @@ export function CategoryIncrementalSearch({
       {/* Search Input */}
       <div className="relative">
         <Input
-          placeholder="カテゴリ名で検索..."
+          placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={handleInputFocus}
@@ -108,14 +107,16 @@ export function CategoryIncrementalSearch({
 
         {/* Dropdown Results */}
         {isDropdownOpen && (
-          <div 
+          <div
             className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-y-auto"
             data-dropdown-content
+            role="listbox"
             onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking in dropdown
           >
             {/* Close Button */}
             <div className="flex justify-end p-1 border-b">
               <button
+                type="button"
                 onClick={handleCloseDropdown}
                 className="text-muted-foreground hover:text-foreground p-1"
                 aria-label="Close dropdown"
@@ -123,24 +124,33 @@ export function CategoryIncrementalSearch({
                 <ChevronUp className="h-4 w-4" />
               </button>
             </div>
-            
+
             {filteredCategories.length > 0 ? (
               <div className="p-1">
                 {filteredCategories.map((category) => (
                   <div
                     key={category.id}
+                    role="option"
+                    tabIndex={0}
                     onClick={() => handleCategoryToggle(category.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleCategoryToggle(category.id);
+                      }
+                    }}
                     className={cn(
                       "flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded hover:bg-accent",
-                      selectedCategoryIds.includes(category.id) && "bg-accent/50"
+                      selectedCategoryIds.includes(category.id) &&
+                        "bg-accent/50",
                     )}
                   >
                     <div
                       className={cn(
                         "w-4 h-4 border rounded",
-                        selectedCategoryIds.includes(category.id) 
-                          ? "bg-primary border-primary" 
-                          : "border-gray-300"
+                        selectedCategoryIds.includes(category.id)
+                          ? "bg-primary border-primary"
+                          : "border-gray-300",
                       )}
                     >
                       {selectedCategoryIds.includes(category.id) && (
@@ -160,13 +170,14 @@ export function CategoryIncrementalSearch({
               </div>
             ) : (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                {searchQuery ? "該当するカテゴリが見つかりません" : "カテゴリを読み込み中..."}
+                {searchQuery
+                  ? "該当するカテゴリが見つかりません"
+                  : "カテゴリを読み込み中..."}
               </div>
             )}
           </div>
         )}
       </div>
-
     </div>
   );
 }

@@ -15,7 +15,8 @@ import { authConfig } from "./auth-config";
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  adapter: DrizzleAdapter(db) as any,
+  // @ts-expect-error NextAuth v5 beta type compatibility issue with DrizzleAdapter
+  adapter: DrizzleAdapter(db),
   providers: [
     Credentials({
       name: "credentials",

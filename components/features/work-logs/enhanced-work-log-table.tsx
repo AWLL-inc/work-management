@@ -156,7 +156,6 @@ export function EnhancedWorkLogTable({
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
-
   // Search filters state
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     dateRange: {

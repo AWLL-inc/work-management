@@ -1,11 +1,11 @@
 "use client";
 
+import { X } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X } from "lucide-react";
-import { useState } from "react";
 import type { WorkCategory } from "@/drizzle/schema";
 import { cn } from "@/lib/utils";
 
@@ -59,8 +59,8 @@ export function CategoryMultiSelect({
                 className="text-xs flex items-center gap-1"
               >
                 {category.name}
-                <X 
-                  className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                <X
+                  className="h-3 w-3 cursor-pointer hover:text-destructive"
                   onClick={() => removeCategory(category.id)}
                 />
               </Badge>
@@ -108,11 +108,14 @@ export function CategoryMultiSelect({
                 .filter((category) => category.isActive)
                 .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
                 .map((category) => (
-                  <div key={category.id} className="flex items-center space-x-2">
+                  <div
+                    key={category.id}
+                    className="flex items-center space-x-2"
+                  >
                     <Checkbox
                       id={`category-${category.id}`}
                       checked={selectedCategoryIds.includes(category.id)}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         handleSelect(category.id, checked as boolean)
                       }
                     />

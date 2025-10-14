@@ -223,7 +223,9 @@ describe("DateRangePicker", () => {
     const fromInput = screen.getByLabelText("開始日");
     fireEvent.change(fromInput, { target: { value: "2024-01-15" } });
 
-    expect(screen.getByText("開始日は終了日以前を選択してください")).toBeInTheDocument();
+    expect(
+      screen.getByText("開始日は終了日以前を選択してください"),
+    ).toBeInTheDocument();
     expect(onChange).not.toHaveBeenCalled();
   });
 
@@ -239,7 +241,9 @@ describe("DateRangePicker", () => {
     const toInput = screen.getByLabelText("終了日");
     fireEvent.change(toInput, { target: { value: "2024-01-01" } });
 
-    expect(screen.getByText("終了日は開始日以降を選択してください")).toBeInTheDocument();
+    expect(
+      screen.getByText("終了日は開始日以降を選択してください"),
+    ).toBeInTheDocument();
     expect(onChange).not.toHaveBeenCalled();
   });
 
@@ -253,14 +257,18 @@ describe("DateRangePicker", () => {
     render(<DateRangePicker value={value} onChange={onChange} />);
 
     const toInput = screen.getByLabelText("終了日");
-    
+
     // First enter invalid date to trigger error
     fireEvent.change(toInput, { target: { value: "2024-01-01" } });
-    expect(screen.getByText("終了日は開始日以降を選択してください")).toBeInTheDocument();
-    
+    expect(
+      screen.getByText("終了日は開始日以降を選択してください"),
+    ).toBeInTheDocument();
+
     // Then enter valid date to clear error
     fireEvent.change(toInput, { target: { value: "2024-01-31" } });
-    expect(screen.queryByText("終了日は開始日以降を選択してください")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("終了日は開始日以降を選択してください"),
+    ).not.toBeInTheDocument();
     expect(onChange).toHaveBeenLastCalledWith({
       from: new Date("2024-01-15"),
       to: new Date("2024-01-31"),
@@ -277,16 +285,20 @@ describe("DateRangePicker", () => {
     render(<DateRangePicker value={value} onChange={onChange} />);
 
     const toInput = screen.getByLabelText("終了日");
-    
+
     // First enter invalid date to trigger error
     fireEvent.change(toInput, { target: { value: "2024-01-01" } });
-    expect(screen.getByText("終了日は開始日以降を選択してください")).toBeInTheDocument();
-    
+    expect(
+      screen.getByText("終了日は開始日以降を選択してください"),
+    ).toBeInTheDocument();
+
     // Click clear button to clear error
     const clearButton = screen.getByText("日付をクリア");
     fireEvent.click(clearButton);
-    
-    expect(screen.queryByText("終了日は開始日以降を選択してください")).not.toBeInTheDocument();
+
+    expect(
+      screen.queryByText("終了日は開始日以降を選択してください"),
+    ).not.toBeInTheDocument();
     expect(onChange).toHaveBeenLastCalledWith({
       from: undefined,
       to: undefined,
@@ -305,7 +317,9 @@ describe("DateRangePicker", () => {
     const toInput = screen.getByLabelText("終了日");
     fireEvent.change(toInput, { target: { value: "2024-01-15" } });
 
-    expect(screen.queryByText("終了日は開始日以降を選択してください")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("終了日は開始日以降を選択してください"),
+    ).not.toBeInTheDocument();
     expect(onChange).toHaveBeenCalledWith({
       from: new Date("2024-01-15"),
       to: new Date("2024-01-15"),

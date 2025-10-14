@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -36,13 +36,13 @@ export function DateRangePicker({
 
   const handleFromChange = (dateString: string) => {
     const fromDate = parseDate(dateString);
-    
+
     // バリデーション: 開始日が終了日より後の場合
     if (value.to && fromDate && fromDate > value.to) {
       setError("開始日は終了日以前を選択してください");
       return;
     }
-    
+
     setError(null);
     onChange({
       from: fromDate,
@@ -52,13 +52,13 @@ export function DateRangePicker({
 
   const handleToChange = (dateString: string) => {
     const toDate = parseDate(dateString);
-    
+
     // バリデーション: 終了日が開始日より前の場合
     if (value.from && toDate && toDate < value.from) {
       setError("終了日は開始日以降を選択してください");
       return;
     }
-    
+
     setError(null);
     onChange({
       from: value.from,
@@ -121,9 +121,7 @@ export function DateRangePicker({
         </Button>
       )}
 
-      {error && (
-        <p className="text-xs text-destructive">{error}</p>
-      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

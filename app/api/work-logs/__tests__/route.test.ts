@@ -269,6 +269,201 @@ describe("Work Logs API - Collection Routes", () => {
         }),
       );
     });
+
+    describe("Advanced Filtering", () => {
+      beforeEach(() => {
+        vi.mocked(auth).mockResolvedValue({
+          user: { id: "user-id", email: "user@example.com", role: "user" },
+          expires: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        } as any);
+
+        const mockResponse = {
+          data: [],
+          pagination: {
+            page: 1,
+            limit: 20,
+            total: 0,
+            totalPages: 0,
+          },
+        };
+        vi.mocked(getWorkLogs).mockResolvedValue(mockResponse);
+      });
+
+      it("should filter by multiple project IDs", async () => {
+        const projectIds = "proj1,proj2,proj3";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?projectIds=${projectIds}`,
+        );
+        const response = await GET(request);
+        const data = await response.json();
+
+        expect(response.status).toBe(200);
+        expect(data.success).toBe(true);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            projectIds: ["proj1", "proj2", "proj3"],
+          }),
+        );
+      });
+
+      it("should filter by multiple category IDs", async () => {
+        const categoryIds = "cat1,cat2";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?categoryIds=${categoryIds}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            categoryIds: ["cat1", "cat2"],
+          }),
+        );
+      });
+
+      it("should filter by search text in details", async () => {
+        const searchText = "meeting";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?searchText=${searchText}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            searchText: "meeting",
+          }),
+        );
+      });
+
+      it("should allow admin to filter by specific user", async () => {
+        vi.mocked(auth).mockResolvedValue({
+          user: { id: "admin-id", email: "admin@example.com", role: "admin" },
+          expires: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        } as any);
+
+        const userId = "target-user-id";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?userId=${userId}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            userId: "target-user-id",
+          }),
+        );
+      });
+
+      it("should ignore userId filter for non-admin users", async () => {
+        const userId = "target-user-id";
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?userId=${userId}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        // Non-admin should get their own userId, not the requested one
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            userId: "user-id", // Current user, not requested user
+          }),
+        );
+      });
+
+      it("should combine multiple filters", async () => {
+        const request = new NextRequest(
+          "http://localhost:3000/api/work-logs?startDate=2024-01-01&endDate=2024-12-31&projectIds=proj1,proj2&searchText=development&page=2&limit=10",
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            startDate: expect.any(Date),
+            endDate: expect.any(Date),
+            projectIds: ["proj1", "proj2"],
+            searchText: "development",
+            page: 2,
+            limit: 10,
+            userId: "user-id",
+          }),
+        );
+      });
+
+      it("should return 400 for invalid date format", async () => {
+        const request = new NextRequest(
+          "http://localhost:3000/api/work-logs?startDate=invalid-date",
+        );
+        const response = await GET(request);
+        const data = await response.json();
+
+        expect(response.status).toBe(400);
+        expect(data.success).toBe(false);
+        expect(data.error.code).toBe("VALIDATION_ERROR");
+      });
+
+      it("should handle empty projectIds parameter", async () => {
+        const request = new NextRequest(
+          "http://localhost:3000/api/work-logs?projectIds=",
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            projectIds: expect.anything(),
+          }),
+        );
+      });
+
+      it("should handle empty categoryIds parameter", async () => {
+        const request = new NextRequest(
+          "http://localhost:3000/api/work-logs?categoryIds=",
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            categoryIds: expect.anything(),
+          }),
+        );
+      });
+
+      it("should maintain backward compatibility with single projectId", async () => {
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?projectId=${validProjectId}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            projectId: validProjectId,
+          }),
+        );
+      });
+
+      it("should maintain backward compatibility with single categoryId", async () => {
+        const request = new NextRequest(
+          `http://localhost:3000/api/work-logs?categoryId=${validCategoryId}`,
+        );
+        const response = await GET(request);
+
+        expect(response.status).toBe(200);
+        expect(getWorkLogs).toHaveBeenCalledWith(
+          expect.objectContaining({
+            categoryId: validCategoryId,
+          }),
+        );
+      });
+    });
   });
 
   describe("POST /api/work-logs", () => {

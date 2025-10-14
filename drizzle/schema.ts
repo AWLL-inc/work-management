@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -147,6 +148,20 @@ export const workLogs = pgTable(
     ),
     projectIdIdx: index("work_logs_project_id_idx").on(table.projectId),
     categoryIdIdx: index("work_logs_category_id_idx").on(table.categoryId),
+    // Search performance indexes
+    dateUserIdx: index("work_logs_date_user_idx").on(
+      table.date.desc(),
+      table.userId,
+    ),
+    projectCategoryIdx: index("work_logs_project_category_idx").on(
+      table.projectId,
+      table.categoryId,
+    ),
+    // Full-text search index for details (PostgreSQL specific)
+    detailsGinIdx: index("work_logs_details_gin_idx").using(
+      "gin",
+      sql`to_tsvector('simple', ${table.details})`,
+    ),
   }),
 );
 

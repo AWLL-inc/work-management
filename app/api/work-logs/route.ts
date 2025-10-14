@@ -3,9 +3,10 @@ import { ZodError } from "zod";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   createWorkLog,
+  type GetWorkLogsOptions,
   getWorkLogs,
 } from "@/lib/db/repositories/work-log-repository";
-import { createWorkLogSchema } from "@/lib/validations";
+import { createWorkLogSchema, workLogSearchSchema } from "@/lib/validations";
 
 // Use Node.js runtime for database operations
 export const runtime = "nodejs";
@@ -32,79 +33,107 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Parse query parameters
+    // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "20", 10);
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
-    const projectId = searchParams.get("projectId");
-    // New filtering parameters
-    const projectIds = searchParams
-      .get("projectIds")
-      ?.split(",")
-      .filter(Boolean);
-    const categoryId = searchParams.get("categoryId");
-    const categoryIds = searchParams
-      .get("categoryIds")
-      ?.split(",")
-      .filter(Boolean);
-    const userId = searchParams.get("userId");
-    const searchText = searchParams.get("searchText");
 
-    // Validate pagination parameters
-    if (page < 1 || limit < 1 || limit > 100) {
+    // Zodバリデーション
+    const validationResult = workLogSearchSchema.safeParse({
+      page: searchParams.get("page"),
+      limit: searchParams.get("limit"),
+      startDate: searchParams.get("startDate"),
+      endDate: searchParams.get("endDate"),
+      projectId: searchParams.get("projectId"),
+      projectIds: searchParams.get("projectIds"),
+      categoryId: searchParams.get("categoryId"),
+      categoryIds: searchParams.get("categoryIds"),
+      userId: searchParams.get("userId"),
+      searchText: searchParams.get("searchText"),
+    });
+
+    if (!validationResult.success) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
-            message: "Invalid pagination parameters",
+            message: "Invalid query parameters",
+            details: validationResult.error.issues,
           },
         },
         { status: 400 },
       );
     }
 
-    // Build options
-    const options: Record<string, unknown> = {
-      page,
-      limit,
+    const validatedParams = validationResult.data;
+
+    // Build options using validated parameters
+    const options: GetWorkLogsOptions = {
+      page: validatedParams.page,
+      limit: validatedParams.limit,
     };
 
     // Non-admin users can only see their own work logs
     if (session.user.role !== "admin") {
       options.userId = session.user.id;
-    } else if (userId) {
+    } else if (validatedParams.userId) {
       // Admin can filter by specific user
-      options.userId = userId;
+      options.userId = validatedParams.userId;
     }
 
-    // Add date filters if provided
-    if (startDate) {
-      options.startDate = new Date(startDate);
-    }
-    if (endDate) {
-      options.endDate = new Date(endDate);
+    // Date filtering with validation
+    if (validatedParams.startDate) {
+      const parsedStartDate = new Date(validatedParams.startDate);
+      if (Number.isNaN(parsedStartDate.getTime())) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid startDate format. Expected YYYY-MM-DD",
+            },
+          },
+          { status: 400 },
+        );
+      }
+      options.startDate = parsedStartDate;
     }
 
-    // Project filtering - support both single and multiple
+    if (validatedParams.endDate) {
+      const parsedEndDate = new Date(validatedParams.endDate);
+      if (Number.isNaN(parsedEndDate.getTime())) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Invalid endDate format. Expected YYYY-MM-DD",
+            },
+          },
+          { status: 400 },
+        );
+      }
+      options.endDate = parsedEndDate;
+    }
+
+    // Project filtering - handle both single and multiple
+    const projectIds = validatedParams.projectIds?.split(",").filter(Boolean);
     if (projectIds && projectIds.length > 0) {
       options.projectIds = projectIds;
-    } else if (projectId) {
-      options.projectId = projectId;
+    } else if (validatedParams.projectId) {
+      options.projectId = validatedParams.projectId;
     }
 
-    // Category filtering - support both single and multiple
+    // Category filtering - handle both single and multiple
+    const categoryIds = validatedParams.categoryIds?.split(",").filter(Boolean);
     if (categoryIds && categoryIds.length > 0) {
       options.categoryIds = categoryIds;
-    } else if (categoryId) {
-      options.categoryId = categoryId;
+    } else if (validatedParams.categoryId) {
+      options.categoryId = validatedParams.categoryId;
     }
 
-    // Full text search in details
-    if (searchText) {
-      options.searchText = searchText;
+    // Search text filtering
+    if (validatedParams.searchText) {
+      options.searchText = validatedParams.searchText;
     }
 
     // Get work logs from repository

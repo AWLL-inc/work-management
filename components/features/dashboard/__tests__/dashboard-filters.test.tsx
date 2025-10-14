@@ -7,13 +7,14 @@ import { DashboardFilters } from "../dashboard-filters";
 // Mock the Select component
 vi.mock("@/components/ui/select", () => ({
   Select: ({ children, value, onValueChange }: any) => (
-    <div
+    <button
+      type="button"
       data-testid="select-trigger"
       onClick={() => onValueChange?.(value === "user" ? "project" : "user")}
       onKeyDown={() => {}}
     >
       {children}
-    </div>
+    </button>
   ),
   SelectContent: ({ children }: any) => <div>{children}</div>,
   SelectItem: ({ children, value }: any) => (

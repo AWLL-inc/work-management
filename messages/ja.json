@@ -1,0 +1,239 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "search": "検索",
+    "filter": "フィルター",
+    "reset": "リセット",
+    "apply": "適用",
+    "close": "閉じる",
+    "confirm": "確認",
+    "yes": "はい",
+    "no": "いいえ",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "page": "ページ",
+    "of": "の",
+    "total": "合計",
+    "actions": "アクション",
+    "status": "ステータス",
+    "name": "名前",
+    "description": "説明",
+    "createdAt": "作成日",
+    "updatedAt": "更新日",
+    "active": "有効",
+    "inactive": "無効"
+  },
+  "nav": {
+    "dashboard": "ダッシュボード",
+    "workLogs": "作業ログ",
+    "admin": "管理",
+    "projects": "プロジェクト",
+    "workCategories": "作業カテゴリ",
+    "signOut": "サインアウト",
+    "signIn": "サインイン"
+  },
+  "auth": {
+    "signIn": {
+      "title": "サインイン",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "signInButton": "サインイン",
+      "emailPlaceholder": "your-email@example.com",
+      "passwordPlaceholder": "パスワードを入力してください"
+    },
+    "signOut": {
+      "title": "サインアウト",
+      "message": "サインアウトしてもよろしいですか？",
+      "signOutButton": "サインアウト"
+    },
+    "error": {
+      "title": "認証エラー",
+      "default": "認証中にエラーが発生しました。",
+      "signin": "サインインできませんでした。",
+      "oauthsignin": "OAuth プロバイダーでのサインインに失敗しました。",
+      "oauthcallback": "OAuth コールバックでエラーが発生しました。",
+      "oauthcreateaccount": "OAuth アカウントの作成に失敗しました。",
+      "emailcreateaccount": "メールアカウントの作成に失敗しました。",
+      "callback": "コールバックでエラーが発生しました。",
+      "oauthaccountnotlinked": "このアカウントは既に別の方法でリンクされています。",
+      "emailsignin": "メールの送信に失敗しました。",
+      "credentialssignin": "認証情報が正しくありません。もう一度お試しください。",
+      "sessionrequired": "このページにアクセスするにはサインインが必要です。"
+    }
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "workHoursChart": "作業時間チャート",
+    "userView": "ユーザー別",
+    "projectView": "プロジェクト別",
+    "filters": {
+      "viewMethod": "表示方法",
+      "periodSelection": "期間選択",
+      "last7Days": "過去7日",
+      "last30Days": "過去30日",
+      "last90Days": "過去90日",
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "reset": "リセット",
+      "apply": "適用",
+      "loading": "読み込み中..."
+    },
+    "summary": {
+      "totalHours": "総時間: {hours}h",
+      "averagePerDay": "平均: {hours}h/日"
+    },
+    "noData": "データがありません",
+    "tooltip": {
+      "total": "合計: {hours}時間"
+    }
+  },
+  "workLogs": {
+    "title": "作業ログ",
+    "addNew": "新しい作業ログを追加",
+    "editTitle": "作業ログを編集",
+    "createTitle": "作業ログを作成",
+    "fields": {
+      "date": "日付",
+      "project": "プロジェクト",
+      "category": "カテゴリ",
+      "hours": "時間",
+      "description": "説明",
+      "user": "ユーザー"
+    },
+    "placeholders": {
+      "selectProject": "プロジェクトを選択",
+      "selectCategory": "カテゴリを選択",
+      "selectUser": "ユーザーを選択",
+      "enterHours": "時間を入力",
+      "enterDescription": "説明を入力"
+    },
+    "validation": {
+      "dateRequired": "日付は必須です",
+      "projectRequired": "プロジェクトは必須です",
+      "categoryRequired": "カテゴリは必須です",
+      "hoursRequired": "時間は必須です",
+      "hoursInvalid": "有効な時間を入力してください",
+      "hoursMin": "時間は0より大きい値を入力してください",
+      "hoursMax": "時間は24時間以下で入力してください"
+    },
+    "search": {
+      "placeholder": "検索...",
+      "projects": "プロジェクト",
+      "users": "ユーザー",
+      "dateRange": "期間",
+      "from": "開始日",
+      "to": "終了日"
+    },
+    "table": {
+      "date": "日付",
+      "project": "プロジェクト",
+      "category": "カテゴリ",
+      "hours": "時間",
+      "description": "説明",
+      "user": "ユーザー",
+      "actions": "アクション",
+      "noResults": "結果がありません"
+    },
+    "messages": {
+      "created": "作業ログが作成されました",
+      "updated": "作業ログが更新されました",
+      "deleted": "作業ログが削除されました",
+      "createError": "作業ログの作成に失敗しました",
+      "updateError": "作業ログの更新に失敗しました",
+      "deleteError": "作業ログの削除に失敗しました"
+    }
+  },
+  "admin": {
+    "title": "管理画面",
+    "projects": {
+      "title": "プロジェクト管理",
+      "addNew": "新しいプロジェクト",
+      "editTitle": "プロジェクトを編集",
+      "createTitle": "プロジェクトを作成",
+      "fields": {
+        "name": "プロジェクト名",
+        "description": "説明",
+        "isActive": "有効"
+      },
+      "placeholders": {
+        "name": "プロジェクト名を入力",
+        "description": "プロジェクトの説明を入力"
+      },
+      "validation": {
+        "nameRequired": "プロジェクト名は必須です",
+        "nameMinLength": "プロジェクト名は1文字以上で入力してください"
+      },
+      "table": {
+        "name": "名前",
+        "description": "説明",
+        "status": "ステータス",
+        "createdAt": "作成日",
+        "actions": "アクション"
+      },
+      "messages": {
+        "created": "プロジェクトが作成されました",
+        "updated": "プロジェクトが更新されました",
+        "deleted": "プロジェクトが削除されました",
+        "createError": "プロジェクトの作成に失敗しました",
+        "updateError": "プロジェクトの更新に失敗しました",
+        "deleteError": "プロジェクトの削除に失敗しました"
+      }
+    },
+    "workCategories": {
+      "title": "作業カテゴリ管理",
+      "addNew": "新しい作業カテゴリ",
+      "editTitle": "作業カテゴリを編集",
+      "createTitle": "作業カテゴリを作成",
+      "fields": {
+        "name": "カテゴリ名",
+        "description": "説明",
+        "isActive": "有効",
+        "displayOrder": "表示順"
+      },
+      "placeholders": {
+        "name": "カテゴリ名を入力",
+        "description": "カテゴリの説明を入力",
+        "displayOrder": "表示順を入力"
+      },
+      "validation": {
+        "nameRequired": "カテゴリ名は必須です",
+        "nameMinLength": "カテゴリ名は1文字以上で入力してください",
+        "displayOrderRequired": "表示順は必須です",
+        "displayOrderMin": "表示順は1以上で入力してください"
+      },
+      "table": {
+        "name": "名前",
+        "description": "説明",
+        "displayOrder": "表示順",
+        "status": "ステータス",
+        "createdAt": "作成日",
+        "actions": "アクション"
+      },
+      "messages": {
+        "created": "作業カテゴリが作成されました",
+        "updated": "作業カテゴリが更新されました",
+        "deleted": "作業カテゴリが削除されました",
+        "createError": "作業カテゴリの作成に失敗しました",
+        "updateError": "作業カテゴリの更新に失敗しました",
+        "deleteError": "作業カテゴリの削除に失敗しました"
+      }
+    }
+  },
+  "errors": {
+    "pageNotFound": "ページが見つかりません",
+    "somethingWentWrong": "問題が発生しました",
+    "tryAgain": "もう一度お試しください",
+    "goHome": "ホームに戻る",
+    "unauthorized": "このページにアクセスする権限がありません",
+    "forbidden": "アクセスが禁止されています",
+    "internalServerError": "サーバー内部エラーが発生しました",
+    "badRequest": "不正なリクエストです",
+    "notFound": "リソースが見つかりません"
+  }
+}

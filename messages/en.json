@@ -1,0 +1,239 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "apply": "Apply",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "page": "Page",
+    "of": "of",
+    "total": "Total",
+    "actions": "Actions",
+    "status": "Status",
+    "name": "Name",
+    "description": "Description",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "workLogs": "Work Logs",
+    "admin": "Admin",
+    "projects": "Projects",
+    "workCategories": "Work Categories",
+    "signOut": "Sign Out",
+    "signIn": "Sign In"
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign In",
+      "email": "Email",
+      "password": "Password",
+      "signInButton": "Sign In",
+      "emailPlaceholder": "your-email@example.com",
+      "passwordPlaceholder": "Enter your password"
+    },
+    "signOut": {
+      "title": "Sign Out",
+      "message": "Are you sure you want to sign out?",
+      "signOutButton": "Sign Out"
+    },
+    "error": {
+      "title": "Authentication Error",
+      "default": "An error occurred during authentication.",
+      "signin": "Unable to sign in.",
+      "oauthsignin": "Failed to sign in with OAuth provider.",
+      "oauthcallback": "Error occurred in OAuth callback.",
+      "oauthcreateaccount": "Failed to create OAuth account.",
+      "emailcreateaccount": "Failed to create email account.",
+      "callback": "Error occurred in callback.",
+      "oauthaccountnotlinked": "This account is already linked with another method.",
+      "emailsignin": "Failed to send email.",
+      "credentialssignin": "Invalid credentials. Please try again.",
+      "sessionrequired": "You need to sign in to access this page."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "workHoursChart": "Work Hours Chart",
+    "userView": "By User",
+    "projectView": "By Project",
+    "filters": {
+      "viewMethod": "View Method",
+      "periodSelection": "Period Selection",
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days",
+      "last90Days": "Last 90 Days",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "reset": "Reset",
+      "apply": "Apply",
+      "loading": "Loading..."
+    },
+    "summary": {
+      "totalHours": "Total: {hours}h",
+      "averagePerDay": "Average: {hours}h/day"
+    },
+    "noData": "No data available",
+    "tooltip": {
+      "total": "Total: {hours} hours"
+    }
+  },
+  "workLogs": {
+    "title": "Work Logs",
+    "addNew": "Add New Work Log",
+    "editTitle": "Edit Work Log",
+    "createTitle": "Create Work Log",
+    "fields": {
+      "date": "Date",
+      "project": "Project",
+      "category": "Category",
+      "hours": "Hours",
+      "description": "Description",
+      "user": "User"
+    },
+    "placeholders": {
+      "selectProject": "Select project",
+      "selectCategory": "Select category",
+      "selectUser": "Select user",
+      "enterHours": "Enter hours",
+      "enterDescription": "Enter description"
+    },
+    "validation": {
+      "dateRequired": "Date is required",
+      "projectRequired": "Project is required",
+      "categoryRequired": "Category is required",
+      "hoursRequired": "Hours is required",
+      "hoursInvalid": "Please enter valid hours",
+      "hoursMin": "Hours must be greater than 0",
+      "hoursMax": "Hours must be 24 or less"
+    },
+    "search": {
+      "placeholder": "Search...",
+      "projects": "Projects",
+      "users": "Users",
+      "dateRange": "Date Range",
+      "from": "From",
+      "to": "To"
+    },
+    "table": {
+      "date": "Date",
+      "project": "Project",
+      "category": "Category",
+      "hours": "Hours",
+      "description": "Description",
+      "user": "User",
+      "actions": "Actions",
+      "noResults": "No results found"
+    },
+    "messages": {
+      "created": "Work log created successfully",
+      "updated": "Work log updated successfully",
+      "deleted": "Work log deleted successfully",
+      "createError": "Failed to create work log",
+      "updateError": "Failed to update work log",
+      "deleteError": "Failed to delete work log"
+    }
+  },
+  "admin": {
+    "title": "Administration",
+    "projects": {
+      "title": "Project Management",
+      "addNew": "New Project",
+      "editTitle": "Edit Project",
+      "createTitle": "Create Project",
+      "fields": {
+        "name": "Project Name",
+        "description": "Description",
+        "isActive": "Active"
+      },
+      "placeholders": {
+        "name": "Enter project name",
+        "description": "Enter project description"
+      },
+      "validation": {
+        "nameRequired": "Project name is required",
+        "nameMinLength": "Project name must be at least 1 character"
+      },
+      "table": {
+        "name": "Name",
+        "description": "Description",
+        "status": "Status",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "messages": {
+        "created": "Project created successfully",
+        "updated": "Project updated successfully",
+        "deleted": "Project deleted successfully",
+        "createError": "Failed to create project",
+        "updateError": "Failed to update project",
+        "deleteError": "Failed to delete project"
+      }
+    },
+    "workCategories": {
+      "title": "Work Category Management",
+      "addNew": "New Work Category",
+      "editTitle": "Edit Work Category",
+      "createTitle": "Create Work Category",
+      "fields": {
+        "name": "Category Name",
+        "description": "Description",
+        "isActive": "Active",
+        "displayOrder": "Display Order"
+      },
+      "placeholders": {
+        "name": "Enter category name",
+        "description": "Enter category description",
+        "displayOrder": "Enter display order"
+      },
+      "validation": {
+        "nameRequired": "Category name is required",
+        "nameMinLength": "Category name must be at least 1 character",
+        "displayOrderRequired": "Display order is required",
+        "displayOrderMin": "Display order must be at least 1"
+      },
+      "table": {
+        "name": "Name",
+        "description": "Description",
+        "displayOrder": "Display Order",
+        "status": "Status",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "messages": {
+        "created": "Work category created successfully",
+        "updated": "Work category updated successfully",
+        "deleted": "Work category deleted successfully",
+        "createError": "Failed to create work category",
+        "updateError": "Failed to update work category",
+        "deleteError": "Failed to delete work category"
+      }
+    }
+  },
+  "errors": {
+    "pageNotFound": "Page not found",
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try again",
+    "goHome": "Go home",
+    "unauthorized": "You don't have permission to access this page",
+    "forbidden": "Access forbidden",
+    "internalServerError": "Internal server error occurred",
+    "badRequest": "Bad request",
+    "notFound": "Resource not found"
+  }
+}

@@ -15,7 +15,7 @@ import { authConfig } from "./auth-config";
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  adapter: DrizzleAdapter(db),
+  adapter: DrizzleAdapter(db) as any,
   providers: [
     Credentials({
       name: "credentials",

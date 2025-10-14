@@ -1046,7 +1046,7 @@ export function EnhancedWorkLogTable({
                 searchFilters.categoryIds.length > 0
                   ? searchFilters.categoryIds.join(",")
                   : undefined,
-              userId: searchFilters.userId,
+              userId: searchFilters.userId ?? undefined,
             };
             onFilterChange(apiFilters);
           }

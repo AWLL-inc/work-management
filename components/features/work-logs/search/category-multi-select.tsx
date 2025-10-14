@@ -1,22 +1,11 @@
 "use client";
 
-import { Check, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { X } from "lucide-react";
+import { useState } from "react";
 import type { WorkCategory } from "@/drizzle/schema";
 import { cn } from "@/lib/utils";
 
@@ -35,19 +24,17 @@ export function CategoryMultiSelect({
   className,
   placeholder = "カテゴリを選択",
 }: CategoryMultiSelectProps) {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const selectedCategories = categories.filter((category) =>
     selectedCategoryIds.includes(category.id),
   );
 
-  const handleSelect = (categoryId: string) => {
-    if (selectedCategoryIds.includes(categoryId)) {
-      // Remove from selection
-      onSelectionChange(selectedCategoryIds.filter((id) => id !== categoryId));
-    } else {
-      // Add to selection
+  const handleSelect = (categoryId: string, checked: boolean) => {
+    if (checked) {
       onSelectionChange([...selectedCategoryIds, categoryId]);
+    } else {
+      onSelectionChange(selectedCategoryIds.filter((id) => id !== categoryId));
     }
   };
 
@@ -55,90 +42,97 @@ export function CategoryMultiSelect({
     onSelectionChange([]);
   };
 
+  const removeCategory = (categoryId: string) => {
+    onSelectionChange(selectedCategoryIds.filter((id) => id !== categoryId));
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("justify-between", className)}
-        >
-          <div className="flex flex-wrap gap-1 flex-1">
-            {selectedCategories.length > 0 ? (
-              selectedCategories.length <= 3 ? (
-                selectedCategories.map((category) => (
-                  <Badge
-                    key={category.id}
-                    variant="secondary"
-                    className="text-xs"
-                  >
-                    {category.name}
-                  </Badge>
-                ))
-              ) : (
-                <>
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedCategories[0]?.name}
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    +{selectedCategories.length - 1}
-                  </Badge>
-                </>
-              )
-            ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+    <div className={cn("space-y-2", className)}>
+      {/* Selected Categories Display */}
+      <div className="min-h-[2.5rem] p-2 border rounded-md bg-background">
+        {selectedCategories.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {selectedCategories.slice(0, 3).map((category) => (
+              <Badge
+                key={category.id}
+                variant="secondary"
+                className="text-xs flex items-center gap-1"
+              >
+                {category.name}
+                <X 
+                  className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                  onClick={() => removeCategory(category.id)}
+                />
+              </Badge>
+            ))}
+            {selectedCategories.length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{selectedCategories.length - 3}
+              </Badge>
             )}
           </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="p-0"
-        style={{ width: "var(--radix-popover-trigger-width)" }}
+        ) : (
+          <span className="text-muted-foreground text-sm">{placeholder}</span>
+        )}
+      </div>
+
+      {/* Toggle Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full"
       >
-        <Command>
-          <CommandInput placeholder="カテゴリを検索..." />
-          <CommandList>
-            <CommandEmpty>カテゴリが見つかりません。</CommandEmpty>
-            <CommandGroup>
-              {selectedCategoryIds.length > 0 && (
-                <CommandItem
-                  onSelect={clearSelection}
-                  className="text-destructive"
-                >
-                  <span>すべての選択を解除</span>
-                </CommandItem>
-              )}
+        {isOpen ? "カテゴリ選択を閉じる" : "カテゴリを選択"}
+      </Button>
+
+      {/* Category List */}
+      {isOpen && (
+        <div className="border rounded-md p-2 bg-background max-h-60">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium">カテゴリ選択</span>
+            {selectedCategoryIds.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSelection}
+                className="text-xs text-destructive"
+              >
+                すべて解除
+              </Button>
+            )}
+          </div>
+          <ScrollArea className="max-h-40">
+            <div className="space-y-2">
               {categories
                 .filter((category) => category.isActive)
-                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
                 .map((category) => (
-                  <CommandItem
-                    key={category.id}
-                    value={category.name}
-                    onSelect={() => handleSelect(category.id)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedCategoryIds.includes(category.id)
-                          ? "opacity-100"
-                          : "opacity-0",
-                      )}
+                  <div key={category.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`category-${category.id}`}
+                      checked={selectedCategoryIds.includes(category.id)}
+                      onCheckedChange={(checked) => 
+                        handleSelect(category.id, checked as boolean)
+                      }
                     />
-                    {category.name}
-                    {category.description && (
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        {category.description}
-                      </span>
-                    )}
-                  </CommandItem>
+                    <label
+                      htmlFor={`category-${category.id}`}
+                      className="text-sm flex-1 cursor-pointer"
+                    >
+                      {category.name}
+                      {category.description && (
+                        <span className="text-xs text-muted-foreground ml-2">
+                          {category.description}
+                        </span>
+                      )}
+                    </label>
+                  </div>
                 ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,22 +1,11 @@
 "use client";
 
-import { Check, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { X } from "lucide-react";
+import { useState } from "react";
 import type { Project } from "@/drizzle/schema";
 import { cn } from "@/lib/utils";
 
@@ -35,19 +24,17 @@ export function ProjectMultiSelect({
   className,
   placeholder = "プロジェクトを選択",
 }: ProjectMultiSelectProps) {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const selectedProjects = projects.filter((project) =>
     selectedProjectIds.includes(project.id),
   );
 
-  const handleSelect = (projectId: string) => {
-    if (selectedProjectIds.includes(projectId)) {
-      // Remove from selection
-      onSelectionChange(selectedProjectIds.filter((id) => id !== projectId));
-    } else {
-      // Add to selection
+  const handleSelect = (projectId: string, checked: boolean) => {
+    if (checked) {
       onSelectionChange([...selectedProjectIds, projectId]);
+    } else {
+      onSelectionChange(selectedProjectIds.filter((id) => id !== projectId));
     }
   };
 
@@ -55,89 +42,96 @@ export function ProjectMultiSelect({
     onSelectionChange([]);
   };
 
+  const removeProject = (projectId: string) => {
+    onSelectionChange(selectedProjectIds.filter((id) => id !== projectId));
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("justify-between", className)}
-        >
-          <div className="flex flex-wrap gap-1 flex-1">
-            {selectedProjects.length > 0 ? (
-              selectedProjects.length <= 3 ? (
-                selectedProjects.map((project) => (
-                  <Badge
-                    key={project.id}
-                    variant="secondary"
-                    className="text-xs"
-                  >
-                    {project.name}
-                  </Badge>
-                ))
-              ) : (
-                <>
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedProjects[0]?.name}
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    +{selectedProjects.length - 1}
-                  </Badge>
-                </>
-              )
-            ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+    <div className={cn("space-y-2", className)}>
+      {/* Selected Projects Display */}
+      <div className="min-h-[2.5rem] p-2 border rounded-md bg-background">
+        {selectedProjects.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {selectedProjects.slice(0, 3).map((project) => (
+              <Badge
+                key={project.id}
+                variant="secondary"
+                className="text-xs flex items-center gap-1"
+              >
+                {project.name}
+                <X 
+                  className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                  onClick={() => removeProject(project.id)}
+                />
+              </Badge>
+            ))}
+            {selectedProjects.length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{selectedProjects.length - 3}
+              </Badge>
             )}
           </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="p-0"
-        style={{ width: "var(--radix-popover-trigger-width)" }}
+        ) : (
+          <span className="text-muted-foreground text-sm">{placeholder}</span>
+        )}
+      </div>
+
+      {/* Toggle Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full"
       >
-        <Command>
-          <CommandInput placeholder="プロジェクトを検索..." />
-          <CommandList>
-            <CommandEmpty>プロジェクトが見つかりません。</CommandEmpty>
-            <CommandGroup>
-              {selectedProjectIds.length > 0 && (
-                <CommandItem
-                  onSelect={clearSelection}
-                  className="text-destructive"
-                >
-                  <span>すべての選択を解除</span>
-                </CommandItem>
-              )}
+        {isOpen ? "プロジェクト選択を閉じる" : "プロジェクトを選択"}
+      </Button>
+
+      {/* Project List */}
+      {isOpen && (
+        <div className="border rounded-md p-2 bg-background max-h-60">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium">プロジェクト選択</span>
+            {selectedProjectIds.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearSelection}
+                className="text-xs text-destructive"
+              >
+                すべて解除
+              </Button>
+            )}
+          </div>
+          <ScrollArea className="max-h-40">
+            <div className="space-y-2">
               {projects
                 .filter((project) => project.isActive)
                 .map((project) => (
-                  <CommandItem
-                    key={project.id}
-                    value={project.name}
-                    onSelect={() => handleSelect(project.id)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedProjectIds.includes(project.id)
-                          ? "opacity-100"
-                          : "opacity-0",
-                      )}
+                  <div key={project.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`project-${project.id}`}
+                      checked={selectedProjectIds.includes(project.id)}
+                      onCheckedChange={(checked) => 
+                        handleSelect(project.id, checked as boolean)
+                      }
                     />
-                    {project.name}
-                    {project.description && (
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        {project.description}
-                      </span>
-                    )}
-                  </CommandItem>
+                    <label
+                      htmlFor={`project-${project.id}`}
+                      className="text-sm flex-1 cursor-pointer"
+                    >
+                      {project.name}
+                      {project.description && (
+                        <span className="text-xs text-muted-foreground ml-2">
+                          {project.description}
+                        </span>
+                      )}
+                    </label>
+                  </div>
                 ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+    </div>
   );
 }

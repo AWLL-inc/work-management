@@ -1,15 +1,8 @@
 "use client";
 
-import { format } from "date-fns";
-import { ja } from "date-fns/locale";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface DateRange {
@@ -30,51 +23,71 @@ export function DateRangePicker({
   placeholder = "日付範囲を選択",
   className,
 }: DateRangePickerProps) {
+  const formatDate = (date: Date | undefined) => {
+    return date ? date.toISOString().split('T')[0] : '';
+  };
+
+  const parseDate = (dateString: string) => {
+    return dateString ? new Date(dateString) : undefined;
+  };
+
+  const handleFromChange = (dateString: string) => {
+    const fromDate = parseDate(dateString);
+    onChange({
+      from: fromDate,
+      to: value.to,
+    });
+  };
+
+  const handleToChange = (dateString: string) => {
+    const toDate = parseDate(dateString);
+    onChange({
+      from: value.from,
+      to: toDate,
+    });
+  };
+
+  const clearDates = () => {
+    onChange({
+      from: undefined,
+      to: undefined,
+    });
+  };
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <div className={cn("space-y-2", className)}>
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">開始日</label>
+          <Input
+            type="date"
+            value={formatDate(value.from)}
+            onChange={(e) => handleFromChange(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">終了日</label>
+          <Input
+            type="date"
+            value={formatDate(value.to)}
+            onChange={(e) => handleToChange(e.target.value)}
+            className="w-full"
+          />
+        </div>
+      </div>
+      
+      {(value.from || value.to) && (
         <Button
-          variant="outline"
-          className={cn(
-            "justify-start text-left font-normal",
-            !value.from && "text-muted-foreground",
-            className,
-          )}
+          variant="ghost"
+          size="sm"
+          onClick={clearDates}
+          className="text-xs text-destructive"
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {value.from ? (
-            value.to ? (
-              <>
-                {format(value.from, "yyyy/MM/dd", { locale: ja })} -{" "}
-                {format(value.to, "yyyy/MM/dd", { locale: ja })}
-              </>
-            ) : (
-              format(value.from, "yyyy/MM/dd", { locale: ja })
-            )
-          ) : (
-            <span>{placeholder}</span>
-          )}
+          <X className="h-3 w-3 mr-1" />
+          日付をクリア
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          initialFocus
-          mode="range"
-          defaultMonth={value.from}
-          selected={{
-            from: value.from,
-            to: value.to,
-          }}
-          onSelect={(range: { from?: Date; to?: Date } | undefined) => {
-            onChange({
-              from: range?.from,
-              to: range?.to,
-            });
-          }}
-          numberOfMonths={2}
-          locale={ja}
-        />
-      </PopoverContent>
-    </Popover>
+      )}
+    </div>
   );
 }

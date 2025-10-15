@@ -41,7 +41,7 @@ const mockUsers: User[] = [
 ];
 
 describe("UserSelect", () => {
-  it("should render select with default none option", () => {
+  it("should render combobox with default none option", () => {
     const onSelectionChange = vi.fn();
     render(
       <UserSelect
@@ -52,21 +52,6 @@ describe("UserSelect", () => {
     );
 
     // When nothing is selected, it shows the "選択なし" option
-    expect(screen.getByText("選択なし")).toBeInTheDocument();
-  });
-
-  it("should render with custom placeholder when no selection", () => {
-    const onSelectionChange = vi.fn();
-    render(
-      <UserSelect
-        users={mockUsers}
-        selectedUserId={null}
-        onSelectionChange={onSelectionChange}
-        placeholder="カスタムプレースホルダー"
-      />,
-    );
-
-    // The component shows "選択なし" by default, not the placeholder
     expect(screen.getByText("選択なし")).toBeInTheDocument();
   });
 
@@ -83,10 +68,10 @@ describe("UserSelect", () => {
     // Click to open dropdown
     fireEvent.click(screen.getByRole("combobox"));
 
-    // Should show all users plus "選択なし"
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.getByText("Jane Manager")).toBeInTheDocument();
-    expect(screen.getByText("Bob Admin")).toBeInTheDocument();
+    // Should show all users in the new format: "Name (email)"
+    expect(screen.getByText("John Doe (john@example.com)")).toBeInTheDocument();
+    expect(screen.getByText("Jane Manager (jane@example.com)")).toBeInTheDocument();
+    expect(screen.getByText("Bob Admin (bob@example.com)")).toBeInTheDocument();
     expect(screen.getAllByText("選択なし")).toHaveLength(2); // One in trigger, one in dropdown
   });
 
@@ -105,9 +90,9 @@ describe("UserSelect", () => {
     fireEvent.click(screen.getByRole("combobox"));
 
     // Should only show admin and manager users
-    expect(screen.queryByText("John Doe")).not.toBeInTheDocument();
-    expect(screen.getByText("Jane Manager")).toBeInTheDocument();
-    expect(screen.getByText("Bob Admin")).toBeInTheDocument();
+    expect(screen.queryByText("John Doe (john@example.com)")).not.toBeInTheDocument();
+    expect(screen.getByText("Jane Manager (jane@example.com)")).toBeInTheDocument();
+    expect(screen.getByText("Bob Admin (bob@example.com)")).toBeInTheDocument();
     expect(screen.getAllByText("選択なし")).toHaveLength(2); // One in trigger, one in dropdown
   });
 
@@ -124,8 +109,8 @@ describe("UserSelect", () => {
     // Click to open dropdown
     fireEvent.click(screen.getByRole("combobox"));
 
-    // Click on a user
-    fireEvent.click(screen.getByText("John Doe"));
+    // Click on a user option
+    fireEvent.click(screen.getByText("John Doe (john@example.com)"));
 
     expect(onSelectionChange).toHaveBeenCalledWith("1");
   });
@@ -144,67 +129,16 @@ describe("UserSelect", () => {
     fireEvent.click(screen.getByRole("combobox"));
 
     // Find the clickable option with role="option" and text "選択なし"
-    const noneOption = screen.getByRole("option", { name: /選択なし/ });
-    fireEvent.click(noneOption);
+    const noneOptions = screen.getAllByText("選択なし");
+    const noneOptionInDropdown = noneOptions.find(option => 
+      option.closest('[role="option"]')
+    );
+    
+    if (noneOptionInDropdown) {
+      fireEvent.click(noneOptionInDropdown);
+    }
 
     expect(onSelectionChange).toHaveBeenCalledWith(null);
-  });
-
-  it("should display user information with email and role", () => {
-    const onSelectionChange = vi.fn();
-    render(
-      <UserSelect
-        users={mockUsers}
-        selectedUserId={null}
-        onSelectionChange={onSelectionChange}
-      />,
-    );
-
-    // Click to open dropdown
-    fireEvent.click(screen.getByRole("combobox"));
-
-    // Check that email and role are displayed
-    expect(screen.getByText("john@example.com")).toBeInTheDocument();
-    expect(screen.getByText("user")).toBeInTheDocument();
-
-    expect(screen.getByText("jane@example.com")).toBeInTheDocument();
-    expect(screen.getByText("manager")).toBeInTheDocument();
-
-    expect(screen.getByText("bob@example.com")).toBeInTheDocument();
-    expect(screen.getByText("admin")).toBeInTheDocument();
-  });
-
-  it("should display user with email properly", () => {
-    const usersWithEmail: User[] = [
-      {
-        id: "1",
-        name: "User With Email",
-        email: "user@example.com",
-        emailVerified: null,
-        image: null,
-        passwordHash: null,
-        role: "user",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-
-    const onSelectionChange = vi.fn();
-    render(
-      <UserSelect
-        users={usersWithEmail}
-        selectedUserId={null}
-        onSelectionChange={onSelectionChange}
-      />,
-    );
-
-    // Click to open dropdown
-    fireEvent.click(screen.getByRole("combobox"));
-
-    // Should show user name and email
-    expect(screen.getByText("User With Email")).toBeInTheDocument();
-    expect(screen.getByText("user@example.com")).toBeInTheDocument();
-    expect(screen.getByText("user")).toBeInTheDocument();
   });
 
   it("should apply custom className", () => {
@@ -231,8 +165,8 @@ describe("UserSelect", () => {
       />,
     );
 
-    // Should show the selected user's name in the trigger
-    expect(screen.getByText("Jane Manager")).toBeInTheDocument();
+    // Should show the selected user in the new format: "Name (email)"
+    expect(screen.getByText("Jane Manager (jane@example.com)")).toBeInTheDocument();
   });
 
   it("should handle empty users array", () => {
@@ -250,5 +184,61 @@ describe("UserSelect", () => {
 
     // Should show "選択なし" options (one in trigger, one in dropdown)
     expect(screen.getAllByText("選択なし")).toHaveLength(2);
+  });
+
+  it("should support search functionality", () => {
+    const onSelectionChange = vi.fn();
+    render(
+      <UserSelect
+        users={mockUsers}
+        selectedUserId={null}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    // Click to open dropdown
+    fireEvent.click(screen.getByRole("combobox"));
+
+    // Should show search input
+    const searchInput = screen.getByPlaceholderText("ユーザー名またはメールアドレスで検索...");
+    expect(searchInput).toBeInTheDocument();
+
+    // Search should work
+    fireEvent.change(searchInput, { target: { value: "John" } });
+    expect(screen.getByText("John Doe (john@example.com)")).toBeInTheDocument();
+  });
+
+  it("should show incremental search behavior with pagination", () => {
+    // Create more than 20 users to test pagination
+    const manyUsers: User[] = Array.from({ length: 25 }, (_, i) => ({
+      id: `${i + 1}`,
+      name: `User ${i + 1}`,
+      email: `user${i + 1}@example.com`,
+      emailVerified: null,
+      image: null,
+      passwordHash: null,
+      role: "user" as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+
+    const onSelectionChange = vi.fn();
+    render(
+      <UserSelect
+        users={manyUsers}
+        selectedUserId={null}
+        onSelectionChange={onSelectionChange}
+      />,
+    );
+
+    // Click to open dropdown
+    fireEvent.click(screen.getByRole("combobox"));
+
+    // Should show first 20 users + "選択なし" option
+    expect(screen.getByText("User 1 (user1@example.com)")).toBeInTheDocument();
+    expect(screen.getByText("User 20 (user20@example.com)")).toBeInTheDocument();
+    
+    // Should not show users beyond page 1 initially
+    expect(screen.queryByText("User 21 (user21@example.com)")).not.toBeInTheDocument();
   });
 });

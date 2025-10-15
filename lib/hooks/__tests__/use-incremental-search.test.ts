@@ -353,8 +353,8 @@ describe("useIncrementalSearch", () => {
 
     it("should handle items without specified search fields", () => {
       const itemsWithMissingFields = [
-        { id: "1", name: "Test" },
-        { id: "2", email: "test@example.com" },
+        { id: "1", name: "Test", email: "", age: 0, category: "" },
+        { id: "2", name: "", email: "test@example.com", age: 0, category: "" },
       ] as TestItem[];
 
       const { result } = renderHook(() =>
@@ -374,9 +374,30 @@ describe("useIncrementalSearch", () => {
 
     it("should handle non-string, non-number field values", () => {
       const itemsWithObjectFields = [
-        { id: "1", name: "Test", data: { nested: "value" } },
-        { id: "2", name: "Another", data: null },
-        { id: "3", name: "Third", data: undefined },
+        {
+          id: "1",
+          name: "Test",
+          email: "",
+          age: 0,
+          category: "",
+          data: { nested: "value" },
+        },
+        {
+          id: "2",
+          name: "Another",
+          email: "",
+          age: 0,
+          category: "",
+          data: null,
+        },
+        {
+          id: "3",
+          name: "Third",
+          email: "",
+          age: 0,
+          category: "",
+          data: undefined,
+        },
       ] as TestItem[];
 
       const { result } = renderHook(() =>

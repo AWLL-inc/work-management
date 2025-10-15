@@ -146,7 +146,9 @@ describe("/api/work-logs/batch", () => {
       const mockWorkLogs = [
         {
           id: "123e4567-e89b-12d3-a456-426614174000",
-          date: "2024-10-01T00:00:00.000Z",
+          date: new Date("2024-10-01"),
+          createdAt: new Date("2024-10-01"),
+          updatedAt: new Date("2024-10-01"),
           hours: "8",
           projectId: "proj-1",
           categoryId: "cat-1",
@@ -188,7 +190,7 @@ describe("/api/work-logs/batch", () => {
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.data).toEqual(mockWorkLogs);
+      expect(data.data).toEqual(JSON.parse(JSON.stringify(mockWorkLogs)));
       expect(isWorkLogOwner).toHaveBeenCalledWith(
         "123e4567-e89b-12d3-a456-426614174000",
         "user-1",
@@ -199,7 +201,9 @@ describe("/api/work-logs/batch", () => {
       const mockWorkLogs = [
         {
           id: "123e4567-e89b-12d3-a456-426614174000",
-          date: "2024-10-01T00:00:00.000Z",
+          date: new Date("2024-10-01"),
+          createdAt: new Date("2024-10-01"),
+          updatedAt: new Date("2024-10-01"),
           hours: "8",
           projectId: "proj-1",
           categoryId: "cat-1",
@@ -240,7 +244,7 @@ describe("/api/work-logs/batch", () => {
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.data).toEqual(mockWorkLogs);
+      expect(data.data).toEqual(JSON.parse(JSON.stringify(mockWorkLogs)));
       expect(isWorkLogOwner).not.toHaveBeenCalled(); // Admin bypasses ownership check
     });
 
@@ -248,7 +252,9 @@ describe("/api/work-logs/batch", () => {
       const mockWorkLogs = [
         {
           id: "123e4567-e89b-12d3-a456-426614174001",
-          date: "2024-10-01T00:00:00.000Z",
+          date: new Date("2024-10-01"),
+          createdAt: new Date("2024-10-01"),
+          updatedAt: new Date("2024-10-01"),
           hours: "8",
           projectId: "proj-1",
           categoryId: "cat-1",
@@ -257,7 +263,9 @@ describe("/api/work-logs/batch", () => {
         },
         {
           id: "123e4567-e89b-12d3-a456-426614174002",
-          date: "2024-10-02T00:00:00.000Z",
+          date: new Date("2024-10-02"),
+          createdAt: new Date("2024-10-02"),
+          updatedAt: new Date("2024-10-02"),
           hours: "6",
           projectId: "proj-2",
           categoryId: "cat-2",
@@ -299,7 +307,7 @@ describe("/api/work-logs/batch", () => {
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.data).toEqual(mockWorkLogs);
+      expect(data.data).toEqual(JSON.parse(JSON.stringify(mockWorkLogs)));
       expect(isWorkLogOwner).toHaveBeenCalledTimes(2);
     });
 
@@ -308,6 +316,8 @@ describe("/api/work-logs/batch", () => {
         {
           id: "123e4567-e89b-12d3-a456-426614174000",
           date: new Date("2024-10-01"),
+          createdAt: new Date("2024-10-01"),
+          updatedAt: new Date("2024-10-01"),
           hours: "10",
           projectId: "proj-1",
           categoryId: "cat-1",
@@ -392,8 +402,7 @@ describe("/api/work-logs/batch", () => {
     });
 
     it("should include error details in development mode", async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
 
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
         user: {
@@ -427,14 +436,16 @@ describe("/api/work-logs/batch", () => {
       expect(response.status).toBe(500);
       expect(data.error.details).toBe("Detailed database error");
 
-      process.env.NODE_ENV = originalEnv;
+      vi.unstubAllEnvs();
     });
 
     it("should transform date strings to Date objects", async () => {
       const mockWorkLogs = [
         {
           id: "123e4567-e89b-12d3-a456-426614174000",
-          date: "2024-10-05T00:00:00.000Z",
+          date: new Date("2024-10-05"),
+          createdAt: new Date("2024-10-05"),
+          updatedAt: new Date("2024-10-05"),
           hours: "8",
           projectId: "123e4567-e89b-12d3-a456-426614174001",
           categoryId: "123e4567-e89b-12d3-a456-426614174002",

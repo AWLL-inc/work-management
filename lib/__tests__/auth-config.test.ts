@@ -144,7 +144,7 @@ describe("auth-config DISABLE_AUTH functionality", () => {
       // Should redirect to signin
       expect(result).toBeInstanceOf(Response);
       if (result instanceof Response) {
-        expect(result.headers.get("location")).toContain("/auth/signin");
+        expect(result.headers.get("location")).toContain("/login");
       }
     });
 

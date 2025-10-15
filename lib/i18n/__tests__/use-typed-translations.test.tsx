@@ -20,7 +20,7 @@ describe("lib/i18n/use-typed-translations", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useTranslations).mockReturnValue(mockTranslationFunction);
+    vi.mocked(useTranslations).mockReturnValue(mockTranslationFunction as any);
   });
 
   describe("useTypedTranslations", () => {
@@ -187,7 +187,7 @@ describe("lib/i18n/use-typed-translations", () => {
       };
 
       mockTranslationFunction.mockImplementation(
-        (key: string) => translations[key],
+        (key: string) => translations[key as keyof typeof translations],
       );
 
       const { result } = renderHook(() => useMultipleTranslations(keys));

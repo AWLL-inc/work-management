@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 // Mock zod
@@ -50,7 +50,7 @@ describe("Environment Variables", () => {
         }),
       };
 
-      vi.mocked(z.object).mockReturnValue(mockSchema);
+      vi.mocked(z.object).mockReturnValue(mockSchema as any);
 
       await import("../env");
 
@@ -80,7 +80,7 @@ describe("Environment Variables", () => {
         parse: vi.fn().mockReturnValue(mockParsedEnv),
       };
 
-      vi.mocked(z.object).mockReturnValue(mockSchema);
+      vi.mocked(z.object).mockReturnValue(mockSchema as any);
 
       process.env = {
         NODE_ENV: "development",
@@ -108,7 +108,7 @@ describe("Environment Variables", () => {
         refine: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.enum).mockReturnValue(mockEnum);
+      vi.mocked(z.enum).mockReturnValue(mockEnum as any);
 
       await import("../env");
 
@@ -130,7 +130,7 @@ describe("Environment Variables", () => {
         default: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.string).mockReturnValue(mockString);
+      vi.mocked(z.string).mockReturnValue(mockString as any);
 
       await import("../env");
 
@@ -149,7 +149,7 @@ describe("Environment Variables", () => {
         default: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.string).mockReturnValue(mockString);
+      vi.mocked(z.string).mockReturnValue(mockString as any);
 
       await import("../env");
 
@@ -166,7 +166,7 @@ describe("Environment Variables", () => {
         default: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.string).mockReturnValue(mockString);
+      vi.mocked(z.string).mockReturnValue(mockString as any);
 
       await import("../env");
 
@@ -182,7 +182,7 @@ describe("Environment Variables", () => {
         default: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.string).mockReturnValue(mockString);
+      vi.mocked(z.string).mockReturnValue(mockString as any);
 
       await import("../env");
 
@@ -199,7 +199,7 @@ describe("Environment Variables", () => {
         refine: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.enum).mockReturnValue(mockEnum);
+      vi.mocked(z.enum).mockReturnValue(mockEnum as any);
 
       await import("../env");
 
@@ -215,7 +215,7 @@ describe("Environment Variables", () => {
         refine: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.enum).mockReturnValue(mockEnum);
+      vi.mocked(z.enum).mockReturnValue(mockEnum as any);
 
       await import("../env");
 
@@ -231,7 +231,7 @@ describe("Environment Variables", () => {
         refine: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.enum).mockReturnValue(mockEnum);
+      vi.mocked(z.enum).mockReturnValue(mockEnum as any);
 
       await import("../env");
 
@@ -253,7 +253,7 @@ describe("Environment Variables", () => {
         refine: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.enum).mockReturnValue(mockEnum);
+      vi.mocked(z.enum).mockReturnValue(mockEnum as any);
 
       await import("../env");
 
@@ -269,17 +269,17 @@ describe("Environment Variables", () => {
       const originalNodeEnv = process.env.NODE_ENV;
 
       // Test refine function with production environment
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
       expect(refineFn(true)).toBe(false); // Should fail validation
       expect(refineFn(false)).toBe(true); // Should pass validation
 
       // Test refine function with development environment
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
       expect(refineFn(true)).toBe(true); // Should pass validation
       expect(refineFn(false)).toBe(true); // Should pass validation
 
       // Restore original NODE_ENV
-      process.env.NODE_ENV = originalNodeEnv;
+      vi.stubEnv("NODE_ENV", originalNodeEnv);
     });
   });
 
@@ -293,7 +293,7 @@ describe("Environment Variables", () => {
         default: vi.fn().mockReturnThis(),
       };
 
-      vi.mocked(z.string).mockReturnValue(mockString);
+      vi.mocked(z.string).mockReturnValue(mockString as any);
 
       await import("../env");
 
@@ -330,9 +330,9 @@ describe("Environment Variables", () => {
         }),
       };
 
-      vi.mocked(z.object).mockReturnValue(mockSchema);
+      vi.mocked(z.object).mockReturnValue(mockSchema as any);
 
-      process.env = validEnv;
+      process.env = validEnv as any;
 
       const { env } = await import("../env");
 
@@ -362,9 +362,9 @@ describe("Environment Variables", () => {
         }),
       };
 
-      vi.mocked(z.object).mockReturnValue(mockSchema);
+      vi.mocked(z.object).mockReturnValue(mockSchema as any);
 
-      process.env = minimalEnv;
+      process.env = minimalEnv as any;
 
       const { env } = await import("../env");
 

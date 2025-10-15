@@ -89,7 +89,8 @@
       "Bash(git restore:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm run test:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(pnpm run format:*)"
     ],
     "deny": [],
     "ask": []

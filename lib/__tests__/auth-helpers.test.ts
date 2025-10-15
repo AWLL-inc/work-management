@@ -73,7 +73,7 @@ describe("Authentication Helpers", () => {
 
   describe("getAuthenticatedSession", () => {
     it("should return null when auth returns null", async () => {
-      vi.mocked(auth).mockResolvedValue(null);
+      vi.mocked(auth).mockResolvedValue(null as any);
 
       const result = await getAuthenticatedSession();
 
@@ -176,7 +176,7 @@ describe("Authentication Helpers", () => {
     it("should hash password with bcrypt", async () => {
       const password = "testpassword";
       const hashedPassword = "hashed-password";
-      vi.mocked(bcrypt.hash).mockResolvedValue(hashedPassword);
+      vi.mocked(bcrypt.hash).mockResolvedValue(hashedPassword as any);
 
       const result = await hashPassword(password);
 
@@ -189,7 +189,7 @@ describe("Authentication Helpers", () => {
     it("should verify password with bcrypt", async () => {
       const password = "testpassword";
       const hash = "hashed-password";
-      vi.mocked(bcrypt.compare).mockResolvedValue(true);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as any);
 
       const result = await verifyPassword(password, hash);
 
@@ -200,7 +200,7 @@ describe("Authentication Helpers", () => {
     it("should return false for invalid password", async () => {
       const password = "wrongpassword";
       const hash = "hashed-password";
-      vi.mocked(bcrypt.compare).mockResolvedValue(false);
+      vi.mocked(bcrypt.compare).mockResolvedValue(false as any);
 
       const result = await verifyPassword(password, hash);
 
@@ -229,20 +229,20 @@ describe("Authentication Helpers", () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(bcrypt.hash).mockResolvedValue(hashedPassword);
-      vi.mocked(db.returning).mockResolvedValue([createdUser]);
+      vi.mocked(bcrypt.hash).mockResolvedValue(hashedPassword as any);
+      ((db as any).returning as any).mockResolvedValue([createdUser]);
 
       const result = await createUser(userData);
 
       expect(bcrypt.hash).toHaveBeenCalledWith("testpassword", 10);
       expect(db.insert).toHaveBeenCalled();
-      expect(db.values).toHaveBeenCalledWith({
+      expect((db as any).values).toHaveBeenCalledWith({
         name: "John Doe",
         email: "john@example.com",
         role: "user",
         passwordHash: hashedPassword,
       });
-      expect(db.returning).toHaveBeenCalled();
+      expect((db as any).returning).toHaveBeenCalled();
 
       // Should return user without password hash
       expect(result).toEqual({
@@ -268,21 +268,21 @@ describe("Authentication Helpers", () => {
         role: "user",
       };
 
-      vi.mocked(db.limit).mockResolvedValue([user]);
+      ((db as any).limit as any).mockResolvedValue([user]);
 
       const result = await getUserByEmail(email);
 
       expect(db.select).toHaveBeenCalled();
-      expect(db.from).toHaveBeenCalled();
-      expect(db.where).toHaveBeenCalled();
-      expect(db.limit).toHaveBeenCalledWith(1);
+      expect((db as any).from).toHaveBeenCalled();
+      expect((db as any).where).toHaveBeenCalled();
+      expect((db as any).limit).toHaveBeenCalledWith(1);
       expect(result).toEqual(user);
     });
 
     it("should return null when user not found", async () => {
       const email = "notfound@example.com";
 
-      vi.mocked(db.limit).mockResolvedValue([]);
+      ((db as any).limit as any).mockResolvedValue([]);
 
       const result = await getUserByEmail(email);
 
@@ -300,21 +300,21 @@ describe("Authentication Helpers", () => {
         role: "user",
       };
 
-      vi.mocked(db.limit).mockResolvedValue([user]);
+      ((db as any).limit as any).mockResolvedValue([user]);
 
       const result = await getUserById(id);
 
       expect(db.select).toHaveBeenCalled();
-      expect(db.from).toHaveBeenCalled();
-      expect(db.where).toHaveBeenCalled();
-      expect(db.limit).toHaveBeenCalledWith(1);
+      expect((db as any).from).toHaveBeenCalled();
+      expect((db as any).where).toHaveBeenCalled();
+      expect((db as any).limit).toHaveBeenCalledWith(1);
       expect(result).toEqual(user);
     });
 
     it("should return null when user not found", async () => {
       const id = "nonexistent";
 
-      vi.mocked(db.limit).mockResolvedValue([]);
+      ((db as any).limit as any).mockResolvedValue([]);
 
       const result = await getUserById(id);
 

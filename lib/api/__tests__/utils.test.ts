@@ -122,7 +122,7 @@ describe("lib/api/utils", () => {
 
       // Mock NODE_ENV to development for console.error coverage
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
 
       await expect(
         handleApiResponse(mockResponse, "Default error"),
@@ -139,7 +139,7 @@ describe("lib/api/utils", () => {
         }
       }
 
-      process.env.NODE_ENV = originalEnv;
+      vi.stubEnv("NODE_ENV", originalEnv);
     });
 
     it("should throw ApiError when response success is false", async () => {
@@ -199,7 +199,7 @@ describe("lib/api/utils", () => {
 
     it("should log error in development mode", async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
 
       const mockResponse = {
         ok: false,
@@ -224,7 +224,7 @@ describe("lib/api/utils", () => {
         message: "Test error message",
       });
 
-      process.env.NODE_ENV = originalEnv;
+      vi.stubEnv("NODE_ENV", originalEnv);
     });
   });
 
@@ -341,7 +341,7 @@ describe("lib/api/utils", () => {
 
     it("should log error in development mode when JSON parse fails", async () => {
       const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
+      vi.stubEnv("NODE_ENV", "development");
 
       const mockResponse = {
         ok: false,
@@ -361,7 +361,7 @@ describe("lib/api/utils", () => {
         expect.any(Error),
       );
 
-      process.env.NODE_ENV = originalEnv;
+      vi.stubEnv("NODE_ENV", originalEnv);
     });
   });
 });

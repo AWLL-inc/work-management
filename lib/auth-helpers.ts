@@ -13,8 +13,12 @@ import { env } from "@/lib/env";
 export interface AuthSession {
   user: {
     id: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
     role: "admin" | "manager" | "user";
   };
+  expires?: string;
 }
 
 /**

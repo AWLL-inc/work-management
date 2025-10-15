@@ -11,7 +11,7 @@ export const authConfig: NextAuthConfig = {
     strategy: "jwt", // JWT strategy for Edge Runtime compatibility
   },
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/login",
     signOut: "/auth/signout",
     error: "/auth/error",
   },
@@ -64,7 +64,7 @@ export const authConfig: NextAuthConfig = {
       // Protect root page - redirect unauthenticated users to signin
       if (nextUrl.pathname === "/") {
         if (!isLoggedIn) {
-          return Response.redirect(new URL("/auth/signin", nextUrl));
+          return Response.redirect(new URL("/login", nextUrl));
         }
         return true;
       }
@@ -81,7 +81,7 @@ export const authConfig: NextAuthConfig = {
         if (isLoggedIn) return true;
         // Redirect to signin with callback URL
         const callbackUrl = nextUrl.pathname + nextUrl.search;
-        const signinUrl = new URL("/auth/signin", nextUrl);
+        const signinUrl = new URL("/login", nextUrl);
         signinUrl.searchParams.set("callbackUrl", callbackUrl);
         return Response.redirect(signinUrl);
       }

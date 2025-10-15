@@ -1,13 +1,9 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import * as React from "react";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import type { User } from "@/drizzle/schema";
+import { useIncrementalSearch } from "@/lib/hooks/use-incremental-search";
 import { cn } from "@/lib/utils";
 
 interface UserSelectProps {
@@ -27,12 +23,32 @@ export function UserSelect({
   placeholder = "ユーザーを選択",
   showAdminOnly = false,
 }: UserSelectProps) {
-  const filteredUsers = showAdminOnly
-    ? users.filter((user) => user.role === "admin" || user.role === "manager")
-    : users;
+  const filteredUsers = React.useMemo(() => {
+    return showAdminOnly
+      ? users.filter((user) => user.role === "admin" || user.role === "manager")
+      : users;
+  }, [users, showAdminOnly]);
+
+  const { paginatedItems, hasMore, handleSearch, loadMore } =
+    useIncrementalSearch({
+      items: filteredUsers,
+      searchFields: ["name", "email"],
+      pageSize: 20,
+    });
+
+  // Convert users to combobox options, including "none" option
+  const options: ComboboxOption[] = React.useMemo(() => {
+    const userOptions = paginatedItems.map((user) => ({
+      value: user.id,
+      label: `${user.name} (${user.email})`,
+    }));
+
+    // Add "none" option at the beginning
+    return [{ value: "none", label: "選択なし" }, ...userOptions];
+  }, [paginatedItems]);
 
   const handleValueChange = (value: string) => {
-    if (value === "none") {
+    if (value === "none" || value === "") {
       onSelectionChange(null);
     } else {
       onSelectionChange(value);
@@ -40,32 +56,17 @@ export function UserSelect({
   };
 
   return (
-    <Select value={selectedUserId || "none"} onValueChange={handleValueChange}>
-      <SelectTrigger className={cn("w-full", className)}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="none">
-          <span className="text-muted-foreground">選択なし</span>
-        </SelectItem>
-        {filteredUsers.map((user) => (
-          <SelectItem key={user.id} value={user.id}>
-            <div className="flex items-center justify-between w-full">
-              <div className="flex flex-col">
-                <span>{user.name}</span>
-                {user.email && (
-                  <span className="text-xs text-muted-foreground">
-                    {user.email}
-                  </span>
-                )}
-              </div>
-              <span className="ml-2 text-xs text-muted-foreground capitalize">
-                {user.role}
-              </span>
-            </div>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <Combobox
+      options={options}
+      value={selectedUserId || "none"}
+      onValueChange={handleValueChange}
+      onSearch={handleSearch}
+      onLoadMore={loadMore}
+      placeholder={placeholder}
+      searchPlaceholder="ユーザー名またはメールアドレスで検索..."
+      emptyText="ユーザーが見つかりませんでした"
+      className={cn("w-full", className)}
+      hasMore={hasMore}
+    />
   );
 }

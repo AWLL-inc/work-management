@@ -1,10 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
-import { SessionProvider } from "@/app/providers/session-provider";
-import { Navigation } from "@/components/layout/navigation";
-import { auth } from "@/lib/auth";
 import "./globals.css";
 import { Toaster } from "sonner";
 
@@ -23,32 +18,18 @@ export const metadata: Metadata = {
   description: "Modern work management application with Next.js",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
-  const messages = await getMessages();
-  const session = await auth();
-
-  // Get user info for navigation
-  const userEmail = session?.user?.email || null;
-  const userRole = session?.user?.role || "user";
-
   return (
-    <html lang={locale}>
+    // biome-ignore lint/a11y/useHtmlLang: Language is set in [locale] layout
+    <html>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          <SessionProvider session={session}>
-            <div className="min-h-screen bg-background">
-              <Navigation userEmail={userEmail} userRole={userRole} />
-              <main className="container mx-auto p-6">{children}</main>
-            </div>
-          </SessionProvider>
-        </NextIntlClientProvider>
+        {children}
         <Toaster />
       </body>
     </html>

@@ -19,6 +19,7 @@ const intlMiddleware = createMiddleware(routing);
 // Define public paths that don't require authentication
 const PUBLIC_PATHS = [
   "/api/health",
+  "/login",
   "/auth/signin",
   "/auth/signup",
   "/auth/error",
@@ -71,6 +72,17 @@ function mergeResponses(
   return mergedResponse;
 }
 
+/**
+ * Add pathname to request headers for server components
+ */
+function addPathnameHeader(
+  request: NextRequest,
+  response: NextResponse,
+): NextResponse {
+  response.headers.set("x-pathname", request.nextUrl.pathname);
+  return response;
+}
+
 // Combined middleware function
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -79,11 +91,16 @@ export default async function middleware(request: NextRequest) {
   if (isApiPath(pathname)) {
     // Skip auth for public API endpoints
     if (isPublicPath(pathname)) {
-      return NextResponse.next();
+      const response = NextResponse.next();
+      return addPathnameHeader(request, response);
     }
     // Apply auth for protected API routes
     // biome-ignore lint/suspicious/noExplicitAny: NextAuth requires any type for middleware
-    return auth(request as any);
+    const authResponse = await auth(request as any);
+    return addPathnameHeader(
+      request,
+      authResponse instanceof NextResponse ? authResponse : NextResponse.next(),
+    );
   }
 
   // Apply i18n middleware first (for all non-API routes)
@@ -91,7 +108,8 @@ export default async function middleware(request: NextRequest) {
 
   // Public paths: only apply i18n
   if (isPublicPath(pathname)) {
-    return intlResponse || NextResponse.next();
+    const response = intlResponse || NextResponse.next();
+    return addPathnameHeader(request, response);
   }
 
   // Protected paths: apply both i18n and auth
@@ -99,10 +117,12 @@ export default async function middleware(request: NextRequest) {
   const authResponse = await auth(request as any);
 
   // Merge responses to preserve both locale and auth headers
-  return mergeResponses(
+  const mergedResponse = mergeResponses(
     intlResponse,
     authResponse instanceof NextResponse ? authResponse : null,
   );
+
+  return addPathnameHeader(request, mergedResponse);
 }
 
 /**

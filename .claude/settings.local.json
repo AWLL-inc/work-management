@@ -90,7 +90,8 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm run test:*)",
       "Bash(xargs kill:*)",
-      "Bash(pnpm run format:*)"
+      "Bash(pnpm run format:*)",
+      "Bash(gh issue comment:*)"
     ],
     "deny": [],
     "ask": []

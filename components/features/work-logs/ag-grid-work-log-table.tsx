@@ -29,6 +29,10 @@ import {
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { formatDateForDisplay, parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
+import {
+  validateDate,
+  validateHours,
+} from "@/lib/validations/work-log-validations";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
 
 // Column width constants
@@ -39,46 +43,6 @@ const COLUMN_WIDTHS = {
   CATEGORY: 180,
   ACTIONS: 150,
 } as const;
-
-// Validation helper functions
-interface CellValidationResult {
-  valid: boolean;
-  message?: string;
-}
-
-const validateHours = (value: string): CellValidationResult => {
-  if (!value) {
-    return { valid: false, message: "時間を入力してください" };
-  }
-  if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
-    return {
-      valid: false,
-      message: "数値で入力してください（例: 8 または 8.5）",
-    };
-  }
-  const hours = parseFloat(value);
-  if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
-    return { valid: false, message: "0より大きい値を入力してください" };
-  }
-  if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
-    return { valid: false, message: "168以下で入力してください" };
-  }
-  return { valid: true };
-};
-
-const validateDate = (value: string): CellValidationResult => {
-  if (!value) {
-    return { valid: false, message: "日付を入力してください" };
-  }
-  const date = parseDate(value);
-  if (!date) {
-    return {
-      valid: false,
-      message: "有効な日付をYYYY-MM-DD形式で入力してください",
-    };
-  }
-  return { valid: true };
-};
 
 interface AGGridWorkLogTableProps {
   workLogs: WorkLog[];

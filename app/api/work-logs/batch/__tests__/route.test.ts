@@ -116,7 +116,7 @@ describe("/api/work-logs/batch", () => {
       const mockWorkLogs = [
         {
           id: "123e4567-e89b-12d3-a456-426614174000",
-          date: new Date("2024-10-01"),
+          date: "2024-10-01T00:00:00.000Z",
           hours: "8",
           projectId: "proj-1",
           categoryId: "cat-1",
@@ -161,7 +161,7 @@ describe("/api/work-logs/batch", () => {
       const mockWorkLogs = [
         {
           id: "123e4567-e89b-12d3-a456-426614174000",
-          date: new Date("2024-10-01"),
+          date: "2024-10-01T00:00:00.000Z",
           hours: "8",
           projectId: "proj-1",
           categoryId: "cat-1",
@@ -202,18 +202,20 @@ describe("/api/work-logs/batch", () => {
       const mockWorkLogs = [
         {
           id: "123e4567-e89b-12d3-a456-426614174001",
-          date: new Date("2024-10-01"),
+          date: "2024-10-01T00:00:00.000Z",
           hours: "8",
           projectId: "proj-1",
           categoryId: "cat-1",
+          details: null,
           userId: "user-1",
         },
         {
           id: "123e4567-e89b-12d3-a456-426614174002",
-          date: new Date("2024-10-02"),
+          date: "2024-10-02T00:00:00.000Z",
           hours: "6",
           projectId: "proj-2",
           categoryId: "cat-2",
+          details: null,
           userId: "user-1",
         },
       ];
@@ -352,10 +354,11 @@ describe("/api/work-logs/batch", () => {
       const mockWorkLogs = [
         {
           id: "123e4567-e89b-12d3-a456-426614174000",
-          date: new Date("2024-10-05"),
+          date: "2024-10-05T00:00:00.000Z",
           hours: "8",
-          projectId: "proj-1",
-          categoryId: "cat-1",
+          projectId: "123e4567-e89b-12d3-a456-426614174001",
+          categoryId: "123e4567-e89b-12d3-a456-426614174002",
+          details: null,
           userId: "user-1",
         },
       ];
@@ -374,8 +377,9 @@ describe("/api/work-logs/batch", () => {
             id: "123e4567-e89b-12d3-a456-426614174000",
             data: {
               date: "2024-10-05",
-              projectId: "proj-1",
-              categoryId: "cat-1",
+              projectId: "123e4567-e89b-12d3-a456-426614174001",
+              categoryId: "123e4567-e89b-12d3-a456-426614174002",
+              hours: "8",
             },
           },
         ]),
@@ -389,8 +393,9 @@ describe("/api/work-logs/batch", () => {
           id: "123e4567-e89b-12d3-a456-426614174000",
           data: {
             date: new Date("2024-10-05"),
-            projectId: "proj-1",
-            categoryId: "cat-1",
+            projectId: "123e4567-e89b-12d3-a456-426614174001",
+            categoryId: "123e4567-e89b-12d3-a456-426614174002",
+            hours: "8",
           },
         },
       ]);

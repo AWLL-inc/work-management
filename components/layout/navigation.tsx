@@ -2,6 +2,8 @@
 
 import { ClipboardList, FolderKanban, LogOut, Tags } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { logoutAction } from "@/app/logout/actions";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
@@ -43,6 +45,27 @@ const adminItems = [
 export function Navigation({ userEmail, userRole }: NavigationProps) {
   const pathname = usePathname();
   const isAdmin = userRole === "admin";
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    try {
+      setIsLoggingOut(true);
+
+      // Call server action to destroy session
+      const result = await logoutAction();
+
+      if (result.success) {
+        // Clear client-side cache with full page reload
+        window.location.href = "/login?logout=success";
+      } else {
+        console.error("Logout failed:", result.error);
+        setIsLoggingOut(false);
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      setIsLoggingOut(false);
+    }
+  }
 
   return (
     <nav
@@ -126,11 +149,15 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
             {userEmail && (
               <span className="text-sm text-muted-foreground">{userEmail}</span>
             )}
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/api/auth/signout">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              aria-label="Logout"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              {isLoggingOut ? "Logging out..." : "Logout"}
             </Button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { loginAction } from "./actions";
 
@@ -27,9 +28,22 @@ function SubmitButton() {
  */
 export default function LoginPage() {
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const searchParams = useSearchParams();
+
+  // Check for logout success message
+  useEffect(() => {
+    if (searchParams.get("logout") === "success") {
+      setSuccessMessage("You have been successfully logged out.");
+      // Clear the message after 5 seconds
+      const timer = setTimeout(() => setSuccessMessage(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(formData: FormData) {
     setError("");
+    setSuccessMessage("");
     const result = await loginAction(formData);
 
     if (result?.error) {
@@ -50,6 +64,12 @@ export default function LoginPage() {
         </div>
 
         <form className="mt-8 space-y-6" action={handleSubmit}>
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded">
+              {successMessage}
+            </div>
+          )}
+
           {error && (
             <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded">
               {error}

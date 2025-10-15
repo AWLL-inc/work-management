@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  getProjects,
-  createProject,
-  updateProject,
-  deleteProject,
   type CreateProjectData,
+  createProject,
+  deleteProject,
+  getProjects,
   type UpdateProjectData,
+  updateProject,
 } from "../projects";
 
 // Mock fetch globally
@@ -162,7 +162,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(createProject(createData)).rejects.toThrow("Validation error");
+      await expect(createProject(createData)).rejects.toThrow(
+        "Validation error",
+      );
     });
 
     it("should throw error when response is not ok without error message", async () => {
@@ -173,7 +175,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(createProject(createData)).rejects.toThrow("Failed to create project");
+      await expect(createProject(createData)).rejects.toThrow(
+        "Failed to create project",
+      );
     });
 
     it("should throw error when response success is false", async () => {
@@ -197,7 +201,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(createProject(createData)).rejects.toThrow("Failed to create project");
+      await expect(createProject(createData)).rejects.toThrow(
+        "Failed to create project",
+      );
     });
   });
 
@@ -248,7 +254,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(updateProject(projectId, updateData)).rejects.toThrow("Not found");
+      await expect(updateProject(projectId, updateData)).rejects.toThrow(
+        "Not found",
+      );
     });
 
     it("should throw error when response is not ok without error message", async () => {
@@ -259,7 +267,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(updateProject(projectId, updateData)).rejects.toThrow("Failed to update project");
+      await expect(updateProject(projectId, updateData)).rejects.toThrow(
+        "Failed to update project",
+      );
     });
 
     it("should throw error when response success is false", async () => {
@@ -271,7 +281,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(updateProject(projectId, updateData)).rejects.toThrow("Update failed");
+      await expect(updateProject(projectId, updateData)).rejects.toThrow(
+        "Update failed",
+      );
     });
 
     it("should throw error when data is missing", async () => {
@@ -283,7 +295,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(updateProject(projectId, updateData)).rejects.toThrow("Failed to update project");
+      await expect(updateProject(projectId, updateData)).rejects.toThrow(
+        "Failed to update project",
+      );
     });
   });
 
@@ -325,7 +339,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(deleteProject(projectId)).rejects.toThrow("Failed to delete project");
+      await expect(deleteProject(projectId)).rejects.toThrow(
+        "Failed to delete project",
+      );
     });
 
     it("should throw error when response success is false", async () => {
@@ -348,7 +364,9 @@ describe("lib/api/projects", () => {
         }),
       });
 
-      await expect(deleteProject(projectId)).rejects.toThrow("Failed to delete project");
+      await expect(deleteProject(projectId)).rejects.toThrow(
+        "Failed to delete project",
+      );
     });
   });
 });

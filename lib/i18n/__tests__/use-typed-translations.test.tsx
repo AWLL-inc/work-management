@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  useTypedTranslations,
-  useNamespacedTranslations,
-  useTranslation,
   useHasTranslation,
   useMultipleTranslations,
+  useNamespacedTranslations,
+  useTranslation,
+  useTypedTranslations,
 } from "../use-typed-translations";
 
 // Mock next-intl
@@ -51,7 +51,7 @@ describe("lib/i18n/use-typed-translations", () => {
     it("should work with different namespaces", () => {
       const namespaces = ["dashboard", "common", "auth"];
 
-      namespaces.forEach(namespace => {
+      namespaces.forEach((namespace) => {
         vi.clearAllMocks();
         renderHook(() => useNamespacedTranslations(namespace));
         expect(useTranslations).toHaveBeenCalledWith(namespace);
@@ -70,7 +70,7 @@ describe("lib/i18n/use-typed-translations", () => {
     it("should return translated string for a key", () => {
       const key = "dashboard.title";
       const translatedValue = "ダッシュボード";
-      
+
       mockTranslationFunction.mockReturnValue(translatedValue);
 
       const { result } = renderHook(() => useTranslation(key));
@@ -83,7 +83,7 @@ describe("lib/i18n/use-typed-translations", () => {
     it("should work with nested keys", () => {
       const key = "dashboard.chart.title";
       const translatedValue = "チャートタイトル";
-      
+
       mockTranslationFunction.mockReturnValue(translatedValue);
 
       const { result } = renderHook(() => useTranslation(key));
@@ -113,7 +113,7 @@ describe("lib/i18n/use-typed-translations", () => {
     it("should return true when translation exists", () => {
       const key = "dashboard.title";
       const translatedValue = "ダッシュボード";
-      
+
       mockTranslationFunction.mockReturnValue(translatedValue);
 
       const { result } = renderHook(() => useHasTranslation(key));
@@ -124,7 +124,7 @@ describe("lib/i18n/use-typed-translations", () => {
 
     it("should return false when translation returns the key itself", () => {
       const key = "nonexistent.key";
-      
+
       mockTranslationFunction.mockReturnValue(key);
 
       const { result } = renderHook(() => useHasTranslation(key));
@@ -134,7 +134,7 @@ describe("lib/i18n/use-typed-translations", () => {
 
     it("should return false when translation returns bracketed key", () => {
       const key = "another.nonexistent.key";
-      
+
       mockTranslationFunction.mockReturnValue(`[${key}]`);
 
       const { result } = renderHook(() => useHasTranslation(key));
@@ -144,7 +144,7 @@ describe("lib/i18n/use-typed-translations", () => {
 
     it("should return false when translation function throws", () => {
       const key = "error.key";
-      
+
       mockTranslationFunction.mockImplementation(() => {
         throw new Error("Translation error");
       });
@@ -165,7 +165,7 @@ describe("lib/i18n/use-typed-translations", () => {
 
       testCases.forEach(({ key, translation, expected }) => {
         mockTranslationFunction.mockReturnValue(translation);
-        
+
         const { result } = renderHook(() => useHasTranslation(key));
         expect(result.current).toBe(expected);
       });
@@ -186,7 +186,9 @@ describe("lib/i18n/use-typed-translations", () => {
         "common.loading": "読み込み中",
       };
 
-      mockTranslationFunction.mockImplementation((key: string) => translations[key]);
+      mockTranslationFunction.mockImplementation(
+        (key: string) => translations[key],
+      );
 
       const { result } = renderHook(() => useMultipleTranslations(keys));
 
@@ -199,7 +201,9 @@ describe("lib/i18n/use-typed-translations", () => {
       // Verify all keys were called
       expect(mockTranslationFunction).toHaveBeenCalledTimes(3);
       expect(mockTranslationFunction).toHaveBeenCalledWith("dashboard.title");
-      expect(mockTranslationFunction).toHaveBeenCalledWith("dashboard.subtitle");
+      expect(mockTranslationFunction).toHaveBeenCalledWith(
+        "dashboard.subtitle",
+      );
       expect(mockTranslationFunction).toHaveBeenCalledWith("common.loading");
     });
 
@@ -234,7 +238,9 @@ describe("lib/i18n/use-typed-translations", () => {
         customLoading: "common.loading",
       };
 
-      mockTranslationFunction.mockImplementation((key: string) => `Translation for ${key}`);
+      mockTranslationFunction.mockImplementation(
+        (key: string) => `Translation for ${key}`,
+      );
 
       const { result } = renderHook(() => useMultipleTranslations(keys));
 
@@ -248,18 +254,20 @@ describe("lib/i18n/use-typed-translations", () => {
     it("should handle complex key structures", () => {
       const keys = {
         "nested-key": "dashboard.chart.title",
-        "another_key": "common.error.message",
-        "key123": "auth.login.submit",
+        another_key: "common.error.message",
+        key123: "auth.login.submit",
       };
 
-      mockTranslationFunction.mockImplementation((key: string) => `Translated: ${key}`);
+      mockTranslationFunction.mockImplementation(
+        (key: string) => `Translated: ${key}`,
+      );
 
       const { result } = renderHook(() => useMultipleTranslations(keys));
 
       expect(result.current).toEqual({
         "nested-key": "Translated: dashboard.chart.title",
-        "another_key": "Translated: common.error.message",
-        "key123": "Translated: auth.login.submit",
+        another_key: "Translated: common.error.message",
+        key123: "Translated: auth.login.submit",
       });
     });
 

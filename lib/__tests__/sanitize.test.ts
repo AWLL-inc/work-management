@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { extractPlainText, sanitizeHtml, validateHtmlLength } from "../sanitize";
+import {
+  extractPlainText,
+  sanitizeHtml,
+  validateHtmlLength,
+} from "../sanitize";
 
 describe("Sanitize HTML", () => {
   describe("sanitizeHtml", () => {
@@ -18,19 +22,22 @@ describe("Sanitize HTML", () => {
     });
 
     it("should remove script tags and their content", () => {
-      const maliciousHtml = "<p>Hello</p><script>alert('XSS')</script><p>World</p>";
+      const maliciousHtml =
+        "<p>Hello</p><script>alert('XSS')</script><p>World</p>";
       const expected = "<p>Hello</p><p>World</p>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should remove script tags with attributes", () => {
-      const maliciousHtml = '<p>Hello</p><script type="text/javascript">alert("XSS")</script><p>World</p>';
+      const maliciousHtml =
+        '<p>Hello</p><script type="text/javascript">alert("XSS")</script><p>World</p>';
       const expected = "<p>Hello</p><p>World</p>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should remove script tags case-insensitively", () => {
-      const maliciousHtml = "<p>Hello</p><SCRIPT>alert('XSS')</SCRIPT><p>World</p>";
+      const maliciousHtml =
+        "<p>Hello</p><SCRIPT>alert('XSS')</SCRIPT><p>World</p>";
       const expected = "<p>Hello</p><p>World</p>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
@@ -43,9 +50,10 @@ describe("Sanitize HTML", () => {
     });
 
     it("should remove onclick event handlers", () => {
-      const maliciousHtml = '<button onclick="alert(\'XSS\')">Click me</button>';
+      const maliciousHtml =
+        "<button onclick=\"alert('XSS')\">Click me</button>";
       // Current implementation has partial removal
-      const expected = '<buttonXSS\')">Click me</button>';
+      const expected = "<buttonXSS')\">Click me</button>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
@@ -59,12 +67,12 @@ describe("Sanitize HTML", () => {
     it("should remove various event handlers", () => {
       const testCases = [
         {
-          input: '<div onmouseover="alert(\'XSS\')">Hover me</div>',
-          expected: '<divXSS\')">Hover me</div>',
+          input: "<div onmouseover=\"alert('XSS')\">Hover me</div>",
+          expected: "<divXSS')\">Hover me</div>",
         },
         {
-          input: '<form onsubmit="alert(\'XSS\')">Submit</form>',
-          expected: '<formXSS\')">Submit</form>',
+          input: "<form onsubmit=\"alert('XSS')\">Submit</form>",
+          expected: "<formXSS')\">Submit</form>",
         },
         {
           input: '<input onfocus="alert(\'XSS\')" type="text">',
@@ -78,38 +86,42 @@ describe("Sanitize HTML", () => {
     });
 
     it("should remove event handlers with double quotes", () => {
-      const maliciousHtml = '<button onclick="maliciousFunction()">Click</button>';
-      const expected = '<button>Click</button>';
+      const maliciousHtml =
+        '<button onclick="maliciousFunction()">Click</button>';
+      const expected = "<button>Click</button>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should remove event handlers with single quotes", () => {
-      const maliciousHtml = "<button onclick='maliciousFunction()'>Click</button>";
-      const expected = '<button>Click</button>';
+      const maliciousHtml =
+        "<button onclick='maliciousFunction()'>Click</button>";
+      const expected = "<button>Click</button>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should remove event handlers without quotes", () => {
-      const maliciousHtml = '<button onclick=maliciousFunction()>Click</button>';
-      const expected = '<button>Click</button>';
+      const maliciousHtml =
+        "<button onclick=maliciousFunction()>Click</button>";
+      const expected = "<button>Click</button>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should remove javascript: protocol from href", () => {
-      const maliciousHtml = '<a href="javascript:alert(\'XSS\')">Click me</a>';
-      const expected = '<a XSS\')">Click me</a>';
+      const maliciousHtml = "<a href=\"javascript:alert('XSS')\">Click me</a>";
+      const expected = "<a XSS')\">Click me</a>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should remove javascript: protocol case-insensitively", () => {
-      const maliciousHtml = '<a href="JAVASCRIPT:alert(\'XSS\')">Click me</a>';
-      const expected = '<a XSS\')">Click me</a>';
+      const maliciousHtml = "<a href=\"JAVASCRIPT:alert('XSS')\">Click me</a>";
+      const expected = "<a XSS')\">Click me</a>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should remove data: protocol from href", () => {
-      const maliciousHtml = '<a href="data:text/html,<script>alert(\'XSS\')</script>">Click me</a>';
-      const expected = '<a >Click me</a>';
+      const maliciousHtml =
+        "<a href=\"data:text/html,<script>alert('XSS')</script>\">Click me</a>";
+      const expected = "<a >Click me</a>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
@@ -136,39 +148,40 @@ describe("Sanitize HTML", () => {
 
       const result = sanitizeHtml(maliciousHtml);
 
-      expect(result).not.toContain('onclick');
-      expect(result).not.toContain('script');
-      expect(result).not.toContain('javascript:');
-      expect(result).not.toContain('data:');
-      expect(result).not.toContain('onload');
-      expect(result).toContain('<p>Safe content</p>');
+      expect(result).not.toContain("onclick");
+      expect(result).not.toContain("script");
+      expect(result).not.toContain("javascript:");
+      expect(result).not.toContain("data:");
+      expect(result).not.toContain("onload");
+      expect(result).toContain("<p>Safe content</p>");
       expect(result).toContain('src="safe.jpg"');
     });
 
     it("should handle empty script tags", () => {
-      const maliciousHtml = '<p>Hello</p><script></script><p>World</p>';
-      const expected = '<p>Hello</p><p>World</p>';
+      const maliciousHtml = "<p>Hello</p><script></script><p>World</p>";
+      const expected = "<p>Hello</p><p>World</p>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should handle self-closing script tags", () => {
-      const maliciousHtml = '<p>Hello</p><script/><p>World</p>';
+      const maliciousHtml = "<p>Hello</p><script/><p>World</p>";
       // Current implementation doesn't remove self-closing script tags
       // This test documents the current behavior
-      const expected = '<p>Hello</p><script/><p>World</p>';
+      const expected = "<p>Hello</p><script/><p>World</p>";
       expect(sanitizeHtml(maliciousHtml)).toBe(expected);
     });
 
     it("should preserve whitespace in content", () => {
-      const html = '<p>  Hello   World  </p>';
+      const html = "<p>  Hello   World  </p>";
       expect(sanitizeHtml(html)).toBe(html);
     });
 
     it("should handle malformed HTML gracefully", () => {
-      const malformedHtml = '<div><p>Unclosed paragraph<div onclick="alert()">nested</div>';
+      const malformedHtml =
+        '<div><p>Unclosed paragraph<div onclick="alert()">nested</div>';
       const result = sanitizeHtml(malformedHtml);
-      expect(result).not.toContain('onclick');
-      expect(result).toContain('<p>Unclosed paragraph');
+      expect(result).not.toContain("onclick");
+      expect(result).toContain("<p>Unclosed paragraph");
     });
   });
 
@@ -204,7 +217,8 @@ describe("Sanitize HTML", () => {
     });
 
     it("should count text content only, excluding HTML tags", () => {
-      const htmlWithTags = "<div><p><strong>Hello</strong> <em>World</em></p></div>";
+      const htmlWithTags =
+        "<div><p><strong>Hello</strong> <em>World</em></p></div>";
       // Text content is "Hello World" (11 characters)
       expect(validateHtmlLength(htmlWithTags, 15)).toBe(true);
       expect(validateHtmlLength(htmlWithTags, 10)).toBe(false);
@@ -227,7 +241,8 @@ describe("Sanitize HTML", () => {
     });
 
     it("should handle nested tags correctly", () => {
-      const nestedHtml = "<div><span><strong><em>Text</em></strong></span></div>";
+      const nestedHtml =
+        "<div><span><strong><em>Text</em></strong></span></div>";
       // Text content is just "Text" (4 characters)
       expect(validateHtmlLength(nestedHtml, 5)).toBe(true);
       expect(validateHtmlLength(nestedHtml, 3)).toBe(false);
@@ -257,12 +272,14 @@ describe("Sanitize HTML", () => {
     });
 
     it("should remove all HTML tags", () => {
-      const html = "<div><span><strong>Bold</strong> and <em>italic</em></span></div>";
+      const html =
+        "<div><span><strong>Bold</strong> and <em>italic</em></span></div>";
       expect(extractPlainText(html)).toBe("Bold and italic");
     });
 
     it("should handle nested tags", () => {
-      const html = "<div><p>Paragraph with <a href='#'>link</a> inside</p></div>";
+      const html =
+        "<div><p>Paragraph with <a href='#'>link</a> inside</p></div>";
       expect(extractPlainText(html)).toBe("Paragraph with link inside");
     });
 
@@ -272,7 +289,8 @@ describe("Sanitize HTML", () => {
     });
 
     it("should handle tags with attributes", () => {
-      const html = '<div class="container" id="main"><p style="color: red;">Styled text</p></div>';
+      const html =
+        '<div class="container" id="main"><p style="color: red;">Styled text</p></div>';
       expect(extractPlainText(html)).toBe("Styled text");
     });
 
@@ -308,7 +326,7 @@ describe("Sanitize HTML", () => {
           </section>
         </article>
       `;
-      
+
       const result = extractPlainText(html);
       expect(result).toContain("Article Title");
       expect(result).toContain("By Author");
@@ -334,7 +352,7 @@ describe("Sanitize HTML", () => {
           <p>Visible text</p>
         </div>
       `;
-      
+
       const result = extractPlainText(html);
       expect(result).toContain("var x = 1;");
       expect(result).toContain("body { color: red; }");
@@ -379,7 +397,7 @@ describe("Sanitize HTML", () => {
           const sanitized = sanitizeHtml(testCase as any);
           const isValid = validateHtmlLength(sanitized);
           const plainText = extractPlainText(sanitized);
-          
+
           // Should not throw and should return consistent types
           expect(typeof sanitized).toBe("string");
           expect(typeof isValid).toBe("boolean");

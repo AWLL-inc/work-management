@@ -70,7 +70,9 @@ describe("UserSelect", () => {
 
     // Should show all users in the new format: "Name (email)"
     expect(screen.getByText("John Doe (john@example.com)")).toBeInTheDocument();
-    expect(screen.getByText("Jane Manager (jane@example.com)")).toBeInTheDocument();
+    expect(
+      screen.getByText("Jane Manager (jane@example.com)"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Bob Admin (bob@example.com)")).toBeInTheDocument();
     expect(screen.getAllByText("選択なし")).toHaveLength(2); // One in trigger, one in dropdown
   });
@@ -90,8 +92,12 @@ describe("UserSelect", () => {
     fireEvent.click(screen.getByRole("combobox"));
 
     // Should only show admin and manager users
-    expect(screen.queryByText("John Doe (john@example.com)")).not.toBeInTheDocument();
-    expect(screen.getByText("Jane Manager (jane@example.com)")).toBeInTheDocument();
+    expect(
+      screen.queryByText("John Doe (john@example.com)"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Jane Manager (jane@example.com)"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Bob Admin (bob@example.com)")).toBeInTheDocument();
     expect(screen.getAllByText("選択なし")).toHaveLength(2); // One in trigger, one in dropdown
   });
@@ -130,10 +136,10 @@ describe("UserSelect", () => {
 
     // Find the clickable option with role="option" and text "選択なし"
     const noneOptions = screen.getAllByText("選択なし");
-    const noneOptionInDropdown = noneOptions.find(option => 
-      option.closest('[role="option"]')
+    const noneOptionInDropdown = noneOptions.find((option) =>
+      option.closest('[role="option"]'),
     );
-    
+
     if (noneOptionInDropdown) {
       fireEvent.click(noneOptionInDropdown);
     }
@@ -166,7 +172,9 @@ describe("UserSelect", () => {
     );
 
     // Should show the selected user in the new format: "Name (email)"
-    expect(screen.getByText("Jane Manager (jane@example.com)")).toBeInTheDocument();
+    expect(
+      screen.getByText("Jane Manager (jane@example.com)"),
+    ).toBeInTheDocument();
   });
 
   it("should handle empty users array", () => {
@@ -200,7 +208,9 @@ describe("UserSelect", () => {
     fireEvent.click(screen.getByRole("combobox"));
 
     // Should show search input
-    const searchInput = screen.getByPlaceholderText("ユーザー名またはメールアドレスで検索...");
+    const searchInput = screen.getByPlaceholderText(
+      "ユーザー名またはメールアドレスで検索...",
+    );
     expect(searchInput).toBeInTheDocument();
 
     // Search should work
@@ -236,9 +246,13 @@ describe("UserSelect", () => {
 
     // Should show first 20 users + "選択なし" option
     expect(screen.getByText("User 1 (user1@example.com)")).toBeInTheDocument();
-    expect(screen.getByText("User 20 (user20@example.com)")).toBeInTheDocument();
-    
+    expect(
+      screen.getByText("User 20 (user20@example.com)"),
+    ).toBeInTheDocument();
+
     // Should not show users beyond page 1 initially
-    expect(screen.queryByText("User 21 (user21@example.com)")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("User 21 (user21@example.com)"),
+    ).not.toBeInTheDocument();
   });
 });

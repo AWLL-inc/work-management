@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useIncrementalSearch } from "@/lib/hooks/use-incremental-search";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import type { User } from "@/drizzle/schema";
+import { useIncrementalSearch } from "@/lib/hooks/use-incremental-search";
 import { cn } from "@/lib/utils";
 
 interface UserSelectProps {
@@ -44,10 +44,7 @@ export function UserSelect({
     }));
 
     // Add "none" option at the beginning
-    return [
-      { value: "none", label: "選択なし" },
-      ...userOptions,
-    ];
+    return [{ value: "none", label: "選択なし" }, ...userOptions];
   }, [paginatedItems]);
 
   const handleValueChange = (value: string) => {

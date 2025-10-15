@@ -54,7 +54,8 @@ describe("Database Connection", () => {
     });
 
     it("should use Vercel Postgres when POSTGRES_URL contains vercel-storage", async () => {
-      process.env.POSTGRES_URL = "postgres://user:pass@host.vercel-storage.com/db";
+      process.env.POSTGRES_URL =
+        "postgres://user:pass@host.vercel-storage.com/db";
       mockDrizzleVercel.mockReturnValue("vercel-db-instance");
 
       // Import after setting env vars
@@ -117,7 +118,9 @@ describe("Database Connection", () => {
       // No POSTGRES_URL or DATABASE_URL set
       await expect(async () => {
         await import("../connection");
-      }).rejects.toThrow("Database connection string not found. Please set POSTGRES_URL or DATABASE_URL environment variable.");
+      }).rejects.toThrow(
+        "Database connection string not found. Please set POSTGRES_URL or DATABASE_URL environment variable.",
+      );
     });
   });
 
@@ -154,7 +157,8 @@ describe("Database Connection", () => {
   describe("Environment Detection", () => {
     it("should detect Vercel environment when both VERCEL and vercel-storage URL are present", async () => {
       process.env.VERCEL = "1";
-      process.env.POSTGRES_URL = "postgres://user:pass@host.vercel-storage.com/db";
+      process.env.POSTGRES_URL =
+        "postgres://user:pass@host.vercel-storage.com/db";
       mockDrizzleVercel.mockReturnValue("vercel-db-instance");
 
       await import("../connection");

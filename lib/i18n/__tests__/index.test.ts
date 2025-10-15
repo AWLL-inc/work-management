@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import * as i18nExports from "../index";
 
 describe("lib/i18n/index", () => {
@@ -47,12 +47,12 @@ describe("lib/i18n/index", () => {
 
     it("should have expected translation keys", () => {
       const keys = i18nExports.TRANSLATION_KEYS;
-      
+
       // Check some dashboard keys
       expect(keys.DASHBOARD_TITLE).toBe("dashboard.title");
       expect(keys.DASHBOARD_SUBTITLE).toBe("dashboard.subtitle");
       expect(keys.DASHBOARD_CHART_TITLE).toBe("dashboard.chart.title");
-      
+
       // Check some common keys
       expect(keys.COMMON_LOADING).toBe("common.loading");
       expect(keys.COMMON_SAVE).toBe("common.save");
@@ -64,7 +64,7 @@ describe("lib/i18n/index", () => {
     it("should have all expected exports", () => {
       const expectedExports = [
         "isTranslationKey",
-        "TRANSLATION_KEYS", 
+        "TRANSLATION_KEYS",
         "translationKey",
         "useHasTranslation",
         "useMultipleTranslations",
@@ -83,7 +83,7 @@ describe("lib/i18n/index", () => {
       const expectedExports = [
         "isTranslationKey",
         "TRANSLATION_KEYS",
-        "translationKey", 
+        "translationKey",
         "useHasTranslation",
         "useMultipleTranslations",
         "useNamespacedTranslations",

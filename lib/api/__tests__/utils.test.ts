@@ -1,10 +1,5 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import {
-  ApiError,
-  handleApiResponse,
-  handleApiResponseNoData,
-  type ApiResponse,
-} from "../utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError, handleApiResponse, handleApiResponseNoData } from "../utils";
 
 describe("lib/api/utils", () => {
   beforeEach(() => {
@@ -19,7 +14,9 @@ describe("lib/api/utils", () => {
 
   describe("ApiError", () => {
     it("should create ApiError with all properties", () => {
-      const error = new ApiError("Test message", "TEST_CODE", 400, { field: "value" });
+      const error = new ApiError("Test message", "TEST_CODE", 400, {
+        field: "value",
+      });
 
       expect(error.message).toBe("Test message");
       expect(error.code).toBe("TEST_CODE");
@@ -72,9 +69,9 @@ describe("lib/api/utils", () => {
         }),
       } as unknown as Response;
 
-      await expect(handleApiResponse(mockResponse, "Default error")).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        handleApiResponse(mockResponse, "Default error"),
+      ).rejects.toThrow(ApiError);
 
       try {
         await handleApiResponse(mockResponse, "Default error");
@@ -99,9 +96,9 @@ describe("lib/api/utils", () => {
         }),
       } as unknown as Response;
 
-      await expect(handleApiResponse(mockResponse, "Default error")).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        handleApiResponse(mockResponse, "Default error"),
+      ).rejects.toThrow(ApiError);
 
       try {
         await handleApiResponse(mockResponse, "Default error");
@@ -127,9 +124,9 @@ describe("lib/api/utils", () => {
       const originalEnv = process.env.NODE_ENV;
       process.env.NODE_ENV = "development";
 
-      await expect(handleApiResponse(mockResponse, "Default error")).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        handleApiResponse(mockResponse, "Default error"),
+      ).rejects.toThrow(ApiError);
 
       try {
         await handleApiResponse(mockResponse, "Default error");
@@ -158,9 +155,9 @@ describe("lib/api/utils", () => {
         }),
       } as unknown as Response;
 
-      await expect(handleApiResponse(mockResponse, "Default error")).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        handleApiResponse(mockResponse, "Default error"),
+      ).rejects.toThrow(ApiError);
 
       try {
         await handleApiResponse(mockResponse, "Default error");
@@ -184,9 +181,9 @@ describe("lib/api/utils", () => {
         }),
       } as unknown as Response;
 
-      await expect(handleApiResponse(mockResponse, "Default error")).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        handleApiResponse(mockResponse, "Default error"),
+      ).rejects.toThrow(ApiError);
 
       try {
         await handleApiResponse(mockResponse, "Default error");
@@ -218,7 +215,7 @@ describe("lib/api/utils", () => {
 
       try {
         await handleApiResponse(mockResponse, "Default error");
-      } catch (error) {
+      } catch (_error) {
         // Error should be logged
       }
 
@@ -238,7 +235,9 @@ describe("lib/api/utils", () => {
         status: 204,
       } as unknown as Response;
 
-      await expect(handleApiResponseNoData(mockResponse, "Error message")).resolves.toBeUndefined();
+      await expect(
+        handleApiResponseNoData(mockResponse, "Error message"),
+      ).resolves.toBeUndefined();
     });
 
     it("should complete successfully for successful response with success true", async () => {
@@ -250,7 +249,9 @@ describe("lib/api/utils", () => {
         }),
       } as unknown as Response;
 
-      await expect(handleApiResponseNoData(mockResponse, "Error message")).resolves.toBeUndefined();
+      await expect(
+        handleApiResponseNoData(mockResponse, "Error message"),
+      ).resolves.toBeUndefined();
       expect(mockResponse.json).toHaveBeenCalledOnce();
     });
 
@@ -268,9 +269,9 @@ describe("lib/api/utils", () => {
         }),
       } as unknown as Response;
 
-      await expect(handleApiResponseNoData(mockResponse, "Default error")).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        handleApiResponseNoData(mockResponse, "Default error"),
+      ).rejects.toThrow(ApiError);
 
       try {
         await handleApiResponseNoData(mockResponse, "Default error");
@@ -297,9 +298,9 @@ describe("lib/api/utils", () => {
         }),
       } as unknown as Response;
 
-      await expect(handleApiResponseNoData(mockResponse, "Default error")).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        handleApiResponseNoData(mockResponse, "Default error"),
+      ).rejects.toThrow(ApiError);
 
       try {
         await handleApiResponseNoData(mockResponse, "Default error");
@@ -322,9 +323,9 @@ describe("lib/api/utils", () => {
         }),
       } as unknown as Response;
 
-      await expect(handleApiResponseNoData(mockResponse, "Default error")).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        handleApiResponseNoData(mockResponse, "Default error"),
+      ).rejects.toThrow(ApiError);
 
       try {
         await handleApiResponseNoData(mockResponse, "Default error");
@@ -351,11 +352,14 @@ describe("lib/api/utils", () => {
 
       try {
         await handleApiResponseNoData(mockResponse, "Default error");
-      } catch (error) {
+      } catch (_error) {
         // Error should be logged
       }
 
-      expect(console.error).toHaveBeenCalledWith("Failed to parse error response:", expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith(
+        "Failed to parse error response:",
+        expect.any(Error),
+      );
 
       process.env.NODE_ENV = originalEnv;
     });

@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import {
-  getWorkLogs,
-  createWorkLog,
-  updateWorkLog,
-  deleteWorkLog,
-  type CreateWorkLogData,
-  type UpdateWorkLogData,
-  type GetWorkLogsOptions,
-} from "../work-logs";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as utils from "../utils";
+import {
+  type CreateWorkLogData,
+  createWorkLog,
+  deleteWorkLog,
+  type GetWorkLogsOptions,
+  getWorkLogs,
+  type UpdateWorkLogData,
+  updateWorkLog,
+} from "../work-logs";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -66,7 +66,7 @@ describe("lib/api/work-logs", () => {
       expect(mockFetch).toHaveBeenCalledWith("/api/work-logs");
       expect(utils.handleApiResponse).toHaveBeenCalledWith(
         mockResponse,
-        "Failed to fetch work logs"
+        "Failed to fetch work logs",
       );
       expect(result).toEqual(mockWorkLogs);
     });
@@ -82,10 +82,12 @@ describe("lib/api/work-logs", () => {
 
       const result = await getWorkLogs(options);
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/work-logs?startDate=2024-10-01");
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/work-logs?startDate=2024-10-01",
+      );
       expect(utils.handleApiResponse).toHaveBeenCalledWith(
         mockResponse,
-        "Failed to fetch work logs"
+        "Failed to fetch work logs",
       );
       expect(result).toEqual(mockWorkLogs);
     });
@@ -108,11 +110,12 @@ describe("lib/api/work-logs", () => {
 
       const result = await getWorkLogs(options);
 
-      const expectedUrl = "/api/work-logs?startDate=2024-10-01&endDate=2024-10-31&projectIds=proj-1%2Cproj-2&categoryIds=cat-1%2Ccat-2&userId=user-1&page=1&limit=20&searchText=development";
+      const expectedUrl =
+        "/api/work-logs?startDate=2024-10-01&endDate=2024-10-31&projectIds=proj-1%2Cproj-2&categoryIds=cat-1%2Ccat-2&userId=user-1&page=1&limit=20&searchText=development";
       expect(mockFetch).toHaveBeenCalledWith(expectedUrl);
       expect(utils.handleApiResponse).toHaveBeenCalledWith(
         mockResponse,
-        "Failed to fetch work logs"
+        "Failed to fetch work logs",
       );
       expect(result).toEqual(mockWorkLogs);
     });
@@ -130,10 +133,12 @@ describe("lib/api/work-logs", () => {
 
       const result = await getWorkLogs(options);
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/work-logs?projectIds=proj-1&page=2&limit=10");
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/work-logs?projectIds=proj-1&page=2&limit=10",
+      );
       expect(utils.handleApiResponse).toHaveBeenCalledWith(
         mockResponse,
-        "Failed to fetch work logs"
+        "Failed to fetch work logs",
       );
       expect(result).toEqual(mockWorkLogs);
     });
@@ -148,7 +153,7 @@ describe("lib/api/work-logs", () => {
       expect(mockFetch).toHaveBeenCalledWith("/api/work-logs");
       expect(utils.handleApiResponse).toHaveBeenCalledWith(
         mockResponse,
-        "Failed to fetch work logs"
+        "Failed to fetch work logs",
       );
       expect(result).toEqual(mockWorkLogs);
     });
@@ -168,7 +173,9 @@ describe("lib/api/work-logs", () => {
 
       const result = await getWorkLogs(options);
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/work-logs?startDate=2024-10-01&limit=10");
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/work-logs?startDate=2024-10-01&limit=10",
+      );
       expect(result).toEqual(mockWorkLogs);
     });
   });
@@ -210,7 +217,7 @@ describe("lib/api/work-logs", () => {
       });
       expect(utils.handleApiResponse).toHaveBeenCalledWith(
         mockResponse,
-        "Failed to create work log"
+        "Failed to create work log",
       );
       expect(result).toEqual(mockWorkLog);
     });
@@ -300,7 +307,7 @@ describe("lib/api/work-logs", () => {
       });
       expect(utils.handleApiResponse).toHaveBeenCalledWith(
         mockResponse,
-        "Failed to update work log"
+        "Failed to update work log",
       );
       expect(result).toEqual(mockWorkLog);
     });
@@ -386,7 +393,7 @@ describe("lib/api/work-logs", () => {
       });
       expect(utils.handleApiResponseNoData).toHaveBeenCalledWith(
         mockResponse,
-        "Failed to delete work log"
+        "Failed to delete work log",
       );
     });
   });

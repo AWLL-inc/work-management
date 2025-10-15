@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { NewUser } from "@/drizzle/schema";
 
 // Mock bcryptjs
 vi.mock("bcryptjs", () => ({
@@ -52,6 +51,7 @@ vi.mock("@/lib/env", () => ({
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/connection";
+import { env } from "@/lib/env";
 import {
   createUser,
   getAuthenticatedSession,
@@ -61,7 +61,6 @@ import {
   hasRole,
   verifyPassword,
 } from "../auth-helpers";
-import { env } from "@/lib/env";
 
 describe("Authentication Helpers", () => {
   beforeEach(() => {
@@ -126,10 +125,10 @@ describe("Authentication Helpers", () => {
         });
         expect(console.warn).toHaveBeenCalledWith(
           "⚠️  Authentication is disabled for development. User ID:",
-          "00000000-0000-0000-0000-000000000000"
+          "00000000-0000-0000-0000-000000000000",
         );
         expect(console.warn).toHaveBeenCalledWith(
-          "⚠️  This should NEVER happen in production!"
+          "⚠️  This should NEVER happen in production!",
         );
       });
 
@@ -138,7 +137,7 @@ describe("Authentication Helpers", () => {
         vi.mocked(env).DISABLE_AUTH = true;
 
         await expect(getAuthenticatedSession()).rejects.toThrow(
-          "DISABLE_AUTH cannot be enabled in production environment"
+          "DISABLE_AUTH cannot be enabled in production environment",
         );
       });
 
@@ -148,7 +147,7 @@ describe("Authentication Helpers", () => {
         process.env.CI = "true";
 
         await expect(getAuthenticatedSession()).rejects.toThrow(
-          "DISABLE_AUTH cannot be enabled in CI environment"
+          "DISABLE_AUTH cannot be enabled in CI environment",
         );
 
         // Clean up

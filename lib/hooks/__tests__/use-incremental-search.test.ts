@@ -1,6 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useIncrementalSearch, type SearchableItem } from "../use-incremental-search";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import {
+  type SearchableItem,
+  useIncrementalSearch,
+} from "../use-incremental-search";
 
 interface TestItem extends SearchableItem {
   id: string;
@@ -12,14 +15,62 @@ interface TestItem extends SearchableItem {
 
 describe("useIncrementalSearch", () => {
   const mockItems: TestItem[] = [
-    { id: "1", name: "John Doe", email: "john@example.com", age: 30, category: "admin" },
-    { id: "2", name: "Jane Smith", email: "jane@example.com", age: 25, category: "user" },
-    { id: "3", name: "Bob Johnson", email: "bob@example.com", age: 35, category: "admin" },
-    { id: "4", name: "Alice Brown", email: "alice@example.com", age: 28, category: "user" },
-    { id: "5", name: "Charlie Wilson", email: "charlie@example.com", age: 32, category: "admin" },
-    { id: "6", name: "Diana Davis", email: "diana@example.com", age: 27, category: "user" },
-    { id: "7", name: "Eve Miller", email: "eve@example.com", age: 31, category: "admin" },
-    { id: "8", name: "Frank Taylor", email: "frank@example.com", age: 29, category: "user" },
+    {
+      id: "1",
+      name: "John Doe",
+      email: "john@example.com",
+      age: 30,
+      category: "admin",
+    },
+    {
+      id: "2",
+      name: "Jane Smith",
+      email: "jane@example.com",
+      age: 25,
+      category: "user",
+    },
+    {
+      id: "3",
+      name: "Bob Johnson",
+      email: "bob@example.com",
+      age: 35,
+      category: "admin",
+    },
+    {
+      id: "4",
+      name: "Alice Brown",
+      email: "alice@example.com",
+      age: 28,
+      category: "user",
+    },
+    {
+      id: "5",
+      name: "Charlie Wilson",
+      email: "charlie@example.com",
+      age: 32,
+      category: "admin",
+    },
+    {
+      id: "6",
+      name: "Diana Davis",
+      email: "diana@example.com",
+      age: 27,
+      category: "user",
+    },
+    {
+      id: "7",
+      name: "Eve Miller",
+      email: "eve@example.com",
+      age: 31,
+      category: "admin",
+    },
+    {
+      id: "8",
+      name: "Frank Taylor",
+      email: "frank@example.com",
+      age: 29,
+      category: "user",
+    },
   ];
 
   const defaultOptions = {
@@ -46,7 +97,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           ...defaultOptions,
           pageSize: 5,
-        })
+        }),
       );
 
       expect(result.current.paginatedItems).toHaveLength(5);
@@ -58,7 +109,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           ...defaultOptions,
           pageSize: 20,
-        })
+        }),
       );
 
       expect(result.current.paginatedItems).toHaveLength(8);
@@ -131,7 +182,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           ...defaultOptions,
           searchFields: ["age"],
-        })
+        }),
       );
 
       act(() => {
@@ -147,7 +198,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           ...defaultOptions,
           searchFields: ["name", "email", "category"],
-        })
+        }),
       );
 
       act(() => {
@@ -168,7 +219,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           ...defaultOptions,
           filterFn: customFilterFn,
-        })
+        }),
       );
 
       act(() => {
@@ -176,7 +227,9 @@ describe("useIncrementalSearch", () => {
       });
 
       expect(result.current.filteredItems).toHaveLength(3); // age > 30
-      expect(result.current.filteredItems.every((item) => item.age > 30)).toBe(true);
+      expect(result.current.filteredItems.every((item) => item.age > 30)).toBe(
+        true,
+      );
     });
 
     it("should handle custom filter returning no results", () => {
@@ -186,7 +239,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           ...defaultOptions,
           filterFn: customFilterFn,
-        })
+        }),
       );
 
       act(() => {
@@ -224,7 +277,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           ...defaultOptions,
           pageSize: 10, // Larger than items count
-        })
+        }),
       );
 
       expect(result.current.hasMore).toBe(false);
@@ -288,7 +341,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           ...defaultOptions,
           items: [],
-        })
+        }),
       );
 
       expect(result.current.paginatedItems).toHaveLength(0);
@@ -309,7 +362,7 @@ describe("useIncrementalSearch", () => {
           items: itemsWithMissingFields,
           searchFields: ["name", "email"],
           pageSize: 5,
-        })
+        }),
       );
 
       act(() => {
@@ -331,7 +384,7 @@ describe("useIncrementalSearch", () => {
           items: itemsWithObjectFields,
           searchFields: ["name", "data"],
           pageSize: 5,
-        })
+        }),
       );
 
       act(() => {
@@ -357,7 +410,7 @@ describe("useIncrementalSearch", () => {
         useIncrementalSearch({
           items: largeItems,
           searchFields: ["name"],
-        })
+        }),
       );
 
       expect(result.current.paginatedItems).toHaveLength(20);

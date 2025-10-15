@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  getWorkCategories,
-  createWorkCategory,
-  updateWorkCategory,
-  deleteWorkCategory,
   type CreateWorkCategoryData,
+  createWorkCategory,
+  deleteWorkCategory,
+  getWorkCategories,
   type UpdateWorkCategoryData,
+  updateWorkCategory,
 } from "../work-categories";
 
 // Mock fetch globally
@@ -70,7 +70,9 @@ describe("lib/api/work-categories", () => {
 
       const result = await getWorkCategories(true);
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/work-categories?active=true");
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/work-categories?active=true",
+      );
       expect(result).toEqual(activeCategories);
     });
 
@@ -79,7 +81,9 @@ describe("lib/api/work-categories", () => {
         ok: false,
       });
 
-      await expect(getWorkCategories()).rejects.toThrow("Failed to fetch work categories");
+      await expect(getWorkCategories()).rejects.toThrow(
+        "Failed to fetch work categories",
+      );
     });
 
     it("should throw error when response success is false", async () => {
@@ -102,7 +106,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(getWorkCategories()).rejects.toThrow("Failed to fetch work categories");
+      await expect(getWorkCategories()).rejects.toThrow(
+        "Failed to fetch work categories",
+      );
     });
 
     it("should throw error when data is missing", async () => {
@@ -114,7 +120,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(getWorkCategories()).rejects.toThrow("Failed to fetch work categories");
+      await expect(getWorkCategories()).rejects.toThrow(
+        "Failed to fetch work categories",
+      );
     });
   });
 
@@ -166,7 +174,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(createWorkCategory(createData)).rejects.toThrow("Validation error");
+      await expect(createWorkCategory(createData)).rejects.toThrow(
+        "Validation error",
+      );
     });
 
     it("should throw error when response is not ok without error message", async () => {
@@ -177,7 +187,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(createWorkCategory(createData)).rejects.toThrow("Failed to create work category");
+      await expect(createWorkCategory(createData)).rejects.toThrow(
+        "Failed to create work category",
+      );
     });
 
     it("should throw error when response success is false", async () => {
@@ -189,7 +201,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(createWorkCategory(createData)).rejects.toThrow("Server error");
+      await expect(createWorkCategory(createData)).rejects.toThrow(
+        "Server error",
+      );
     });
 
     it("should throw error when data is missing", async () => {
@@ -201,7 +215,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(createWorkCategory(createData)).rejects.toThrow("Failed to create work category");
+      await expect(createWorkCategory(createData)).rejects.toThrow(
+        "Failed to create work category",
+      );
     });
   });
 
@@ -235,13 +251,16 @@ describe("lib/api/work-categories", () => {
 
       const result = await updateWorkCategory(categoryId, updateData);
 
-      expect(mockFetch).toHaveBeenCalledWith(`/api/work-categories/${categoryId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      expect(mockFetch).toHaveBeenCalledWith(
+        `/api/work-categories/${categoryId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updateData),
         },
-        body: JSON.stringify(updateData),
-      });
+      );
       expect(result).toEqual(mockWorkCategory);
     });
 
@@ -254,7 +273,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(updateWorkCategory(categoryId, updateData)).rejects.toThrow("Not found");
+      await expect(updateWorkCategory(categoryId, updateData)).rejects.toThrow(
+        "Not found",
+      );
     });
 
     it("should throw error when response is not ok without error message", async () => {
@@ -265,7 +286,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(updateWorkCategory(categoryId, updateData)).rejects.toThrow("Failed to update work category");
+      await expect(updateWorkCategory(categoryId, updateData)).rejects.toThrow(
+        "Failed to update work category",
+      );
     });
 
     it("should throw error when response success is false", async () => {
@@ -277,7 +300,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(updateWorkCategory(categoryId, updateData)).rejects.toThrow("Update failed");
+      await expect(updateWorkCategory(categoryId, updateData)).rejects.toThrow(
+        "Update failed",
+      );
     });
 
     it("should throw error when data is missing", async () => {
@@ -289,7 +314,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(updateWorkCategory(categoryId, updateData)).rejects.toThrow("Failed to update work category");
+      await expect(updateWorkCategory(categoryId, updateData)).rejects.toThrow(
+        "Failed to update work category",
+      );
     });
   });
 
@@ -306,9 +333,12 @@ describe("lib/api/work-categories", () => {
 
       await deleteWorkCategory(categoryId);
 
-      expect(mockFetch).toHaveBeenCalledWith(`/api/work-categories/${categoryId}`, {
-        method: "DELETE",
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        `/api/work-categories/${categoryId}`,
+        {
+          method: "DELETE",
+        },
+      );
     });
 
     it("should throw error when response is not ok", async () => {
@@ -331,7 +361,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(deleteWorkCategory(categoryId)).rejects.toThrow("Failed to delete work category");
+      await expect(deleteWorkCategory(categoryId)).rejects.toThrow(
+        "Failed to delete work category",
+      );
     });
 
     it("should throw error when response success is false", async () => {
@@ -343,7 +375,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(deleteWorkCategory(categoryId)).rejects.toThrow("Delete failed");
+      await expect(deleteWorkCategory(categoryId)).rejects.toThrow(
+        "Delete failed",
+      );
     });
 
     it("should throw error when response success is false without error message", async () => {
@@ -354,7 +388,9 @@ describe("lib/api/work-categories", () => {
         }),
       });
 
-      await expect(deleteWorkCategory(categoryId)).rejects.toThrow("Failed to delete work category");
+      await expect(deleteWorkCategory(categoryId)).rejects.toThrow(
+        "Failed to delete work category",
+      );
     });
   });
 });

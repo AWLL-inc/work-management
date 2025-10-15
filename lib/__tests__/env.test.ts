@@ -112,7 +112,11 @@ describe("Environment Variables", () => {
 
       await import("../env");
 
-      expect(z.enum).toHaveBeenCalledWith(["development", "test", "production"]);
+      expect(z.enum).toHaveBeenCalledWith([
+        "development",
+        "test",
+        "production",
+      ]);
     });
   });
 
@@ -253,12 +257,9 @@ describe("Environment Variables", () => {
 
       await import("../env");
 
-      expect(mockEnum.refine).toHaveBeenCalledWith(
-        expect.any(Function),
-        {
-          message: "DISABLE_AUTH cannot be enabled in production environment",
-        }
-      );
+      expect(mockEnum.refine).toHaveBeenCalledWith(expect.any(Function), {
+        message: "DISABLE_AUTH cannot be enabled in production environment",
+      });
 
       // Test refine function
       const refineCall = vi.mocked(mockEnum.refine).mock.calls[0];
@@ -299,7 +300,9 @@ describe("Environment Variables", () => {
       expect(z.string).toHaveBeenCalled();
       expect(mockString.uuid).toHaveBeenCalled();
       expect(mockString.optional).toHaveBeenCalled();
-      expect(mockString.default).toHaveBeenCalledWith("00000000-0000-0000-0000-000000000000");
+      expect(mockString.default).toHaveBeenCalledWith(
+        "00000000-0000-0000-0000-000000000000",
+      );
     });
   });
 

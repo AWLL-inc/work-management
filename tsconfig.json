@@ -13,6 +13,16 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    // Additional strict type-checking options (TypeScript 5.9+)
+    // TODO: Re-enable after cleaning up remaining unused variables in enhanced-work-log-table.tsx
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    // TODO: Enable these gradually after fixing existing code
+    // "noUncheckedIndexedAccess": true,
+    // "exactOptionalPropertyTypes": true,
+    // "noPropertyAccessFromIndexSignature": true,
     "plugins": [
       {
         "name": "next"

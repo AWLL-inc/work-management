@@ -24,10 +24,6 @@ export function CategoryIncrementalSearch({
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const _selectedCategories = categories.filter((category) =>
-    selectedCategoryIds.includes(category.id),
-  );
-
   // Filter categories based on search query
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -53,14 +49,6 @@ export function CategoryIncrementalSearch({
     } else {
       onSelectionChange([...selectedCategoryIds, categoryId]);
     }
-  };
-
-  const _handleRemoveCategory = (categoryId: string) => {
-    onSelectionChange(selectedCategoryIds.filter((id) => id !== categoryId));
-  };
-
-  const _clearAll = () => {
-    onSelectionChange([]);
   };
 
   const handleInputFocus = () => {

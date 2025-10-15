@@ -24,10 +24,6 @@ export function ProjectIncrementalSearch({
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const _selectedProjects = projects.filter((project) =>
-    selectedProjectIds.includes(project.id),
-  );
-
   // Filter projects based on search query
   const filteredProjects = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -49,14 +45,6 @@ export function ProjectIncrementalSearch({
     } else {
       onSelectionChange([...selectedProjectIds, projectId]);
     }
-  };
-
-  const _handleRemoveProject = (projectId: string) => {
-    onSelectionChange(selectedProjectIds.filter((id) => id !== projectId));
-  };
-
-  const _clearAll = () => {
-    onSelectionChange([]);
   };
 
   const handleInputFocus = () => {

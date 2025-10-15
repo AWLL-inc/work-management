@@ -9,12 +9,10 @@ import type {
   CellEditingStoppedEvent,
   CellKeyDownEvent,
   ColDef,
-  GetContextMenuItemsParams,
   GridApi,
   GridOptions,
   GridReadyEvent,
   IRowNode,
-  MenuItemDef,
   RowClassParams,
   RowHeightParams,
   SelectionChangedEvent,
@@ -296,34 +294,6 @@ export function EnhancedAGGrid<T extends { id: string }>({
     setRowsToDelete(idsToDelete);
     setDeleteDialogOpen(true);
   }, [selectedNodes]);
-
-  // Context menu configuration (simplified for Community edition)
-  const _getContextMenuItems = useCallback(
-    (_params: GetContextMenuItemsParams) => {
-      const result: MenuItemDef[] = [
-        {
-          name: "行を追加",
-          action: () => handleAddRow(),
-        },
-      ];
-
-      if (selectedNodes.length > 0) {
-        result.push(
-          {
-            name: "行を複製",
-            action: () => handleDuplicateRows(),
-          },
-          {
-            name: "行を削除",
-            action: () => handleDeleteRows(),
-          },
-        );
-      }
-
-      return result;
-    },
-    [selectedNodes.length, handleAddRow, handleDuplicateRows, handleDeleteRows],
-  );
 
   // Confirm deletion
   const confirmDelete = useCallback(async () => {

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { GET, POST } from "../route";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GET, POST } from "../route";
 
 // Mock the auth handlers
 vi.mock("@/lib/auth", () => ({
@@ -41,25 +41,27 @@ describe("/api/auth/[...nextauth]", () => {
 
     it("should pass through NextAuth GET response headers", async () => {
       const mockResponse = new Response("GET response", { status: 200 });
-      
+
       // Mock the headers.get method to return expected values
-      vi.spyOn(mockResponse.headers, 'get').mockImplementation((name: string) => {
-        if (name.toLowerCase() === 'set-cookie') {
-          return "next-auth.session=abc123; Path=/; HttpOnly";
-        }
-        if (name.toLowerCase() === 'content-type') {
-          return "application/json";
-        }
-        return null;
-      });
-      
+      vi.spyOn(mockResponse.headers, "get").mockImplementation(
+        (name: string) => {
+          if (name.toLowerCase() === "set-cookie") {
+            return "next-auth.session=abc123; Path=/; HttpOnly";
+          }
+          if (name.toLowerCase() === "content-type") {
+            return "application/json";
+          }
+          return null;
+        },
+      );
+
       vi.mocked(handlers.GET).mockResolvedValueOnce(mockResponse);
 
       const request = new NextRequest("http://localhost:3000/api/auth/session");
       const response = await GET(request);
 
       expect(response.headers.get("Set-Cookie")).toBe(
-        "next-auth.session=abc123; Path=/; HttpOnly"
+        "next-auth.session=abc123; Path=/; HttpOnly",
       );
       expect(response.headers.get("Content-Type")).toBe("application/json");
     });
@@ -74,7 +76,9 @@ describe("/api/auth/[...nextauth]", () => {
       ];
 
       for (const endpoint of endpoints) {
-        const mockResponse = new Response(`Response for ${endpoint}`, { status: 200 });
+        const mockResponse = new Response(`Response for ${endpoint}`, {
+          status: 200,
+        });
         vi.mocked(handlers.GET).mockResolvedValueOnce(mockResponse);
 
         const request = new NextRequest(endpoint);
@@ -95,7 +99,10 @@ describe("/api/auth/[...nextauth]", () => {
 
       const request = new NextRequest("http://localhost:3000/api/auth/signin", {
         method: "POST",
-        body: JSON.stringify({ email: "test@example.com", password: "password" }),
+        body: JSON.stringify({
+          email: "test@example.com",
+          password: "password",
+        }),
       });
       const response = await POST(request);
 
@@ -109,7 +116,10 @@ describe("/api/auth/[...nextauth]", () => {
 
       const request = new NextRequest("http://localhost:3000/api/auth/signin", {
         method: "POST",
-        body: JSON.stringify({ email: "test@example.com", password: "password" }),
+        body: JSON.stringify({
+          email: "test@example.com",
+          password: "password",
+        }),
       });
 
       await expect(POST(request)).rejects.toThrow("Auth POST error");
@@ -119,30 +129,35 @@ describe("/api/auth/[...nextauth]", () => {
     it("should pass through NextAuth POST response with authentication cookies", async () => {
       const mockResponse = new Response(
         JSON.stringify({ url: "http://localhost:3000/dashboard" }),
-        { status: 200 }
+        { status: 200 },
       );
-      
+
       // Mock the headers.get method to return expected values
-      vi.spyOn(mockResponse.headers, 'get').mockImplementation((name: string) => {
-        if (name.toLowerCase() === 'set-cookie') {
-          return "next-auth.session-token=xyz789; Path=/; HttpOnly; Secure";
-        }
-        if (name.toLowerCase() === 'content-type') {
-          return "application/json";
-        }
-        return null;
-      });
-      
+      vi.spyOn(mockResponse.headers, "get").mockImplementation(
+        (name: string) => {
+          if (name.toLowerCase() === "set-cookie") {
+            return "next-auth.session-token=xyz789; Path=/; HttpOnly; Secure";
+          }
+          if (name.toLowerCase() === "content-type") {
+            return "application/json";
+          }
+          return null;
+        },
+      );
+
       vi.mocked(handlers.POST).mockResolvedValueOnce(mockResponse);
 
       const request = new NextRequest("http://localhost:3000/api/auth/signin", {
         method: "POST",
-        body: JSON.stringify({ email: "test@example.com", password: "password" }),
+        body: JSON.stringify({
+          email: "test@example.com",
+          password: "password",
+        }),
       });
       const response = await POST(request);
 
       expect(response.headers.get("Set-Cookie")).toBe(
-        "next-auth.session-token=xyz789; Path=/; HttpOnly; Secure"
+        "next-auth.session-token=xyz789; Path=/; HttpOnly; Secure",
       );
       expect(response.headers.get("Content-Type")).toBe("application/json");
     });
@@ -150,15 +165,18 @@ describe("/api/auth/[...nextauth]", () => {
     it("should handle authentication POST requests with credentials", async () => {
       const mockResponse = new Response(
         JSON.stringify({ user: { id: "1", email: "test@example.com" } }),
-        { status: 200 }
+        { status: 200 },
       );
       vi.mocked(handlers.POST).mockResolvedValueOnce(mockResponse);
 
-      const request = new NextRequest("http://localhost:3000/api/auth/callback/credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "email=test@example.com&password=password123",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/auth/callback/credentials",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "email=test@example.com&password=password123",
+        },
+      );
       const response = await POST(request);
 
       expect(handlers.POST).toHaveBeenCalledWith(request);
@@ -168,35 +186,42 @@ describe("/api/auth/[...nextauth]", () => {
     it("should handle signout POST requests", async () => {
       const mockResponse = new Response(
         JSON.stringify({ url: "http://localhost:3000/" }),
-        { status: 200 }
+        { status: 200 },
       );
-      
+
       // Mock the headers.get method to return expected values
-      vi.spyOn(mockResponse.headers, 'get').mockImplementation((name: string) => {
-        if (name.toLowerCase() === 'set-cookie') {
-          return "next-auth.session-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        }
-        return null;
-      });
-      
+      vi.spyOn(mockResponse.headers, "get").mockImplementation(
+        (name: string) => {
+          if (name.toLowerCase() === "set-cookie") {
+            return "next-auth.session-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          }
+          return null;
+        },
+      );
+
       vi.mocked(handlers.POST).mockResolvedValueOnce(mockResponse);
 
-      const request = new NextRequest("http://localhost:3000/api/auth/signout", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "csrfToken=abc123",
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/auth/signout",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "csrfToken=abc123",
+        },
+      );
       const response = await POST(request);
 
       expect(handlers.POST).toHaveBeenCalledWith(request);
       expect(response).toBe(mockResponse);
-      expect(response.headers.get("Set-Cookie")).toContain("Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+      expect(response.headers.get("Set-Cookie")).toContain(
+        "Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+      );
     });
 
     it("should handle CSRF token validation", async () => {
       const mockResponse = new Response(
         JSON.stringify({ error: "CSRF token mismatch" }),
-        { status: 400 }
+        { status: 400 },
       );
       vi.mocked(handlers.POST).mockResolvedValueOnce(mockResponse);
 

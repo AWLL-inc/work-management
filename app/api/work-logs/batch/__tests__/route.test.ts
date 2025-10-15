@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { PUT } from "../route";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   batchUpdateWorkLogs,
   isWorkLogOwner,
 } from "@/lib/db/repositories/work-log-repository";
+import { PUT } from "../route";
 
 // Mock dependencies
 vi.mock("@/lib/auth-helpers", () => ({
@@ -26,10 +26,13 @@ describe("/api/work-logs/batch", () => {
     it("should return 401 when user is not authenticated", async () => {
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce(null);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([]),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
@@ -42,14 +45,22 @@ describe("/api/work-logs/batch", () => {
 
     it("should return 400 for invalid request body", async () => {
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify({ invalid: "data" }),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify({ invalid: "data" }),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
@@ -61,19 +72,27 @@ describe("/api/work-logs/batch", () => {
 
     it("should return 400 for invalid work log data", async () => {
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "not-a-uuid",
-            data: { hours: "invalid" },
-          },
-        ]),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "not-a-uuid",
+              data: { hours: "invalid" },
+            },
+          ]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
@@ -84,31 +103,42 @@ describe("/api/work-logs/batch", () => {
 
     it("should return 403 when non-admin user tries to update others' work logs", async () => {
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
       vi.mocked(isWorkLogOwner).mockResolvedValueOnce(false);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "123e4567-e89b-12d3-a456-426614174000",
-            data: { hours: "8" },
-          },
-        ]),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "123e4567-e89b-12d3-a456-426614174000",
+              data: { hours: "8" },
+            },
+          ]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
       expect(response.status).toBe(403);
       expect(data).toEqual({
         success: false,
-        error: { code: "FORBIDDEN", message: "You can only update your own work logs" },
+        error: {
+          code: "FORBIDDEN",
+          message: "You can only update your own work logs",
+        },
       });
       expect(isWorkLogOwner).toHaveBeenCalledWith(
         "123e4567-e89b-12d3-a456-426614174000",
-        "user-1"
+        "user-1",
       );
     });
 
@@ -126,25 +156,33 @@ describe("/api/work-logs/batch", () => {
       ];
 
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
       vi.mocked(isWorkLogOwner).mockResolvedValueOnce(true);
       vi.mocked(batchUpdateWorkLogs).mockResolvedValueOnce(mockWorkLogs);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "123e4567-e89b-12d3-a456-426614174000",
-            data: {
-              date: "2024-10-01",
-              hours: "8",
-              details: "Updated work",
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "123e4567-e89b-12d3-a456-426614174000",
+              data: {
+                date: "2024-10-01",
+                hours: "8",
+                details: "Updated work",
+              },
             },
-          },
-        ]),
-      });
+          ]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
@@ -153,7 +191,7 @@ describe("/api/work-logs/batch", () => {
       expect(data.data).toEqual(mockWorkLogs);
       expect(isWorkLogOwner).toHaveBeenCalledWith(
         "123e4567-e89b-12d3-a456-426614174000",
-        "user-1"
+        "user-1",
       );
     });
 
@@ -171,24 +209,32 @@ describe("/api/work-logs/batch", () => {
       ];
 
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "admin-1", role: "admin", name: "Admin User", email: "admin@example.com" },
+        user: {
+          id: "admin-1",
+          role: "admin",
+          name: "Admin User",
+          email: "admin@example.com",
+        },
         expires: "2024-12-31",
       });
       vi.mocked(batchUpdateWorkLogs).mockResolvedValueOnce(mockWorkLogs);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "123e4567-e89b-12d3-a456-426614174000",
-            data: {
-              date: "2024-10-01",
-              hours: "8",
-              details: "Admin updated",
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "123e4567-e89b-12d3-a456-426614174000",
+              data: {
+                date: "2024-10-01",
+                hours: "8",
+                details: "Admin updated",
+              },
             },
-          },
-        ]),
-      });
+          ]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
@@ -221,25 +267,33 @@ describe("/api/work-logs/batch", () => {
       ];
 
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
       vi.mocked(isWorkLogOwner).mockResolvedValue(true);
       vi.mocked(batchUpdateWorkLogs).mockResolvedValueOnce(mockWorkLogs);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "123e4567-e89b-12d3-a456-426614174001",
-            data: { hours: "8" },
-          },
-          {
-            id: "123e4567-e89b-12d3-a456-426614174002",
-            data: { hours: "6" },
-          },
-        ]),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "123e4567-e89b-12d3-a456-426614174001",
+              data: { hours: "8" },
+            },
+            {
+              id: "123e4567-e89b-12d3-a456-426614174002",
+              data: { hours: "6" },
+            },
+          ]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
@@ -263,21 +317,29 @@ describe("/api/work-logs/batch", () => {
       ];
 
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
       vi.mocked(isWorkLogOwner).mockResolvedValueOnce(true);
       vi.mocked(batchUpdateWorkLogs).mockResolvedValueOnce(mockWorkLogs);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "123e4567-e89b-12d3-a456-426614174000",
-            data: { hours: "10" }, // Only updating hours
-          },
-        ]),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "123e4567-e89b-12d3-a456-426614174000",
+              data: { hours: "10" }, // Only updating hours
+            },
+          ]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
@@ -293,30 +355,40 @@ describe("/api/work-logs/batch", () => {
 
     it("should handle database errors gracefully", async () => {
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
       vi.mocked(isWorkLogOwner).mockResolvedValueOnce(true);
       vi.mocked(batchUpdateWorkLogs).mockRejectedValueOnce(
-        new Error("Database connection failed")
+        new Error("Database connection failed"),
       );
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "123e4567-e89b-12d3-a456-426614174000",
-            data: { hours: "8" },
-          },
-        ]),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "123e4567-e89b-12d3-a456-426614174000",
+              data: { hours: "8" },
+            },
+          ]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
       expect(response.status).toBe(500);
       expect(data.success).toBe(false);
       expect(data.error.code).toBe("INTERNAL_ERROR");
-      expect(data.error.message).toBe("An error occurred while updating work logs");
+      expect(data.error.message).toBe(
+        "An error occurred while updating work logs",
+      );
     });
 
     it("should include error details in development mode", async () => {
@@ -324,23 +396,31 @@ describe("/api/work-logs/batch", () => {
       process.env.NODE_ENV = "development";
 
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
       vi.mocked(isWorkLogOwner).mockResolvedValueOnce(true);
       vi.mocked(batchUpdateWorkLogs).mockRejectedValueOnce(
-        new Error("Detailed database error")
+        new Error("Detailed database error"),
       );
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "123e4567-e89b-12d3-a456-426614174000",
-            data: { hours: "8" },
-          },
-        ]),
-      });
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "123e4567-e89b-12d3-a456-426614174000",
+              data: { hours: "8" },
+            },
+          ]),
+        },
+      );
       const response = await PUT(request);
       const data = await response.json();
 
@@ -364,28 +444,36 @@ describe("/api/work-logs/batch", () => {
       ];
 
       vi.mocked(getAuthenticatedSession).mockResolvedValueOnce({
-        user: { id: "user-1", role: "user", name: "Test User", email: "test@example.com" },
+        user: {
+          id: "user-1",
+          role: "user",
+          name: "Test User",
+          email: "test@example.com",
+        },
         expires: "2024-12-31",
       });
       vi.mocked(isWorkLogOwner).mockResolvedValueOnce(true);
       vi.mocked(batchUpdateWorkLogs).mockResolvedValueOnce(mockWorkLogs);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs/batch", {
-        method: "PUT",
-        body: JSON.stringify([
-          {
-            id: "123e4567-e89b-12d3-a456-426614174000",
-            data: {
-              date: "2024-10-05",
-              projectId: "123e4567-e89b-12d3-a456-426614174001",
-              categoryId: "123e4567-e89b-12d3-a456-426614174002",
-              hours: "8",
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs/batch",
+        {
+          method: "PUT",
+          body: JSON.stringify([
+            {
+              id: "123e4567-e89b-12d3-a456-426614174000",
+              data: {
+                date: "2024-10-05",
+                projectId: "123e4567-e89b-12d3-a456-426614174001",
+                categoryId: "123e4567-e89b-12d3-a456-426614174002",
+                hours: "8",
+              },
             },
-          },
-        ]),
-      });
+          ]),
+        },
+      );
       const response = await PUT(request);
-      const data = await response.json();
+      const _data = await response.json();
 
       expect(response.status).toBe(200);
       expect(batchUpdateWorkLogs).toHaveBeenCalledWith([

@@ -1,43 +1,29 @@
-"use client";
-
-import { toast } from "sonner";
-import useSWR from "swr";
-import { ProjectTable } from "@/components/features/admin/projects/project-table";
+import { revalidatePath } from "next/cache";
 import {
   createProject,
   deleteProject,
   getProjects,
   updateProject,
 } from "@/lib/api/projects";
+import { ProjectsClient } from "./projects-client";
 
-export default function ProjectsPage() {
-  const {
-    data: projects,
-    isLoading,
-    mutate,
-  } = useSWR("/api/projects", () => getProjects(false), {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+export default async function ProjectsPage() {
+  // Server-side data fetching
+  const projects = await getProjects(false);
 
+  // Server Actions wrapped in async functions
   const handleCreateProject = async (data: {
     name: string;
     description?: string;
     isActive: boolean;
   }) => {
-    try {
-      await createProject({
-        name: data.name,
-        description: data.description || null,
-        isActive: data.isActive,
-      });
-      mutate();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create project",
-      );
-      throw error;
-    }
+    "use server";
+    await createProject({
+      name: data.name,
+      description: data.description || null,
+      isActive: data.isActive,
+    });
+    revalidatePath("/[locale]/admin/projects");
   };
 
   const handleUpdateProject = async (
@@ -48,38 +34,23 @@ export default function ProjectsPage() {
       isActive?: boolean;
     },
   ) => {
-    try {
-      await updateProject(id, data);
-      mutate();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update project",
-      );
-      throw error;
-    }
+    "use server";
+    await updateProject(id, data);
+    revalidatePath("/[locale]/admin/projects");
   };
 
   const handleDeleteProject = async (id: string) => {
-    try {
-      await deleteProject(id);
-      mutate();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete project",
-      );
-      throw error;
-    }
+    "use server";
+    await deleteProject(id);
+    revalidatePath("/[locale]/admin/projects");
   };
 
   return (
-    <div className="px-4 sm:px-0">
-      <ProjectTable
-        projects={projects || []}
-        onCreateProject={handleCreateProject}
-        onUpdateProject={handleUpdateProject}
-        onDeleteProject={handleDeleteProject}
-        isLoading={isLoading}
-      />
-    </div>
+    <ProjectsClient
+      initialProjects={projects}
+      onCreateProject={handleCreateProject}
+      onUpdateProject={handleUpdateProject}
+      onDeleteProject={handleDeleteProject}
+    />
   );
 }

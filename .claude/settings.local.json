@@ -93,7 +93,8 @@
       "Bash(pnpm run format:*)",
       "Bash(gh issue comment:*)",
       "Bash(gh run list:*)",
-      "Bash(pnpm install)"
+      "Bash(pnpm install)",
+      "Bash(gh pr merge:*)"
     ],
     "deny": [],
     "ask": []

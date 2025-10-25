@@ -105,13 +105,24 @@ describe("Authentication Helpers", () => {
     });
 
     describe("Development Auth Bypass", () => {
+      let originalCI: string | undefined;
+
       beforeEach(() => {
         // Mock console.warn to avoid output during tests
         vi.spyOn(console, "warn").mockImplementation(() => {});
+        // Save and clear CI environment variable to allow testing in CI environments
+        originalCI = process.env.CI;
+        delete process.env.CI;
       });
 
       afterEach(() => {
         vi.mocked(console.warn).mockRestore();
+        // Restore original CI value
+        if (originalCI === undefined) {
+          delete process.env.CI;
+        } else {
+          process.env.CI = originalCI;
+        }
       });
 
       it("should return mock admin session when DISABLE_AUTH is true in development", async () => {
@@ -142,10 +153,6 @@ describe("Authentication Helpers", () => {
       });
 
       it("should throw error when DISABLE_AUTH is true in CI environment", async () => {
-        // Save original CI value and clear it first
-        const originalCI = process.env.CI;
-        delete process.env.CI;
-
         vi.mocked(env).NODE_ENV = "development";
         vi.mocked(env).DISABLE_AUTH = true;
         process.env.CI = "true";
@@ -153,13 +160,6 @@ describe("Authentication Helpers", () => {
         await expect(getAuthenticatedSession()).rejects.toThrow(
           "DISABLE_AUTH cannot be enabled in CI environment",
         );
-
-        // Restore original CI value
-        if (originalCI === undefined) {
-          delete process.env.CI;
-        } else {
-          process.env.CI = originalCI;
-        }
       });
 
       it("should use normal auth when DISABLE_AUTH is false in development", async () => {

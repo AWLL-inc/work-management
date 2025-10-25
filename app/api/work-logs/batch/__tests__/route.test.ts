@@ -1,5 +1,19 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock environment variables - must be first
+vi.mock("@/lib/env", () => ({
+  env: {
+    NODE_ENV: "test" as const,
+    NEXTAUTH_SECRET: "test-secret-with-minimum-32-chars",
+    NEXTAUTH_URL: "http://localhost:3000",
+    POSTGRES_URL: "postgresql://test:test@localhost:5432/test",
+    POSTGRES_URL_NON_POOLING: "postgresql://test:test@localhost:5432/test",
+    DISABLE_AUTH: false,
+    DEV_USER_ID: "00000000-0000-0000-0000-000000000000",
+  },
+}));
+
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   batchUpdateWorkLogs,

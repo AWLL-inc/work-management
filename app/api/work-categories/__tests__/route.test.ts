@@ -6,6 +6,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  * Tests GET and POST endpoints with authentication, authorization, and validation
  */
 
+// Mock environment variables - must be first
+vi.mock("@/lib/env", () => ({
+  env: {
+    NODE_ENV: "test" as const,
+    NEXTAUTH_SECRET: "test-secret-with-minimum-32-chars",
+    NEXTAUTH_URL: "http://localhost:3000",
+    POSTGRES_URL: "postgresql://test:test@localhost:5432/test",
+    POSTGRES_URL_NON_POOLING: "postgresql://test:test@localhost:5432/test",
+    DISABLE_AUTH: false,
+    DEV_USER_ID: "00000000-0000-0000-0000-000000000000",
+  },
+}));
+
 // Mock dependencies - must be before imports
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),

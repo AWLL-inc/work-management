@@ -484,7 +484,6 @@ describe("/api/work-logs/batch", () => {
         },
       );
       const response = await PUT(request);
-      const _data = await response.json();
 
       expect(response.status).toBe(200);
       expect(batchUpdateWorkLogs).toHaveBeenCalledWith([

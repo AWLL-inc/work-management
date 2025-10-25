@@ -14,7 +14,6 @@ vi.mock("@/lib/env", () => ({
     DEV_USER_ID: "00000000-0000-0000-0000-000000000000",
   },
 }));
-
 // Mock the auth module
 vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),

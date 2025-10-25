@@ -1,33 +1,15 @@
 /**
  * Sanitize HTML content to prevent XSS attacks
  *
- * This is a basic implementation. For production use, consider using
- * a library like DOMPurify for more comprehensive sanitization.
+ * This is a basic implementation that removes dangerous content.
+ * For production use, consider using a library like DOMPurify for more comprehensive sanitization.
+ *
+ * @example
+ * Allowed tags for future comprehensive implementation:
+ * p, br, strong, em, u, s, a, ul, ol, li, h1-h6, blockquote, code, pre
+ *
+ * Allowed attributes: href, class
  */
-
-const _ALLOWED_TAGS = [
-  "p",
-  "br",
-  "strong",
-  "em",
-  "u",
-  "s",
-  "a",
-  "ul",
-  "ol",
-  "li",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "blockquote",
-  "code",
-  "pre",
-];
-
-const _ALLOWED_ATTRIBUTES = ["href", "class"];
 
 /**
  * Basic HTML sanitization

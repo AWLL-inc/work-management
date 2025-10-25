@@ -39,6 +39,7 @@ export default function LoginPage() {
       const timer = setTimeout(() => setSuccessMessage(""), 5000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [searchParams]);
 
   async function handleSubmit(formData: FormData) {

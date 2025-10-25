@@ -142,6 +142,10 @@ describe("Authentication Helpers", () => {
       });
 
       it("should throw error when DISABLE_AUTH is true in CI environment", async () => {
+        // Save original CI value and clear it first
+        const originalCI = process.env.CI;
+        delete process.env.CI;
+
         vi.mocked(env).NODE_ENV = "development";
         vi.mocked(env).DISABLE_AUTH = true;
         process.env.CI = "true";
@@ -150,8 +154,12 @@ describe("Authentication Helpers", () => {
           "DISABLE_AUTH cannot be enabled in CI environment",
         );
 
-        // Clean up
-        delete process.env.CI;
+        // Restore original CI value
+        if (originalCI === undefined) {
+          delete process.env.CI;
+        } else {
+          process.env.CI = originalCI;
+        }
       });
 
       it("should use normal auth when DISABLE_AUTH is false in development", async () => {

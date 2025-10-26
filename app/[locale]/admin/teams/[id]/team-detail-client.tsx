@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Plus, Trash2, Users } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Select,
   SelectContent,
@@ -180,8 +181,12 @@ export function TeamDetailClient({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemoveMemberClick(member.userId)}
+                        aria-label={`Remove ${member.userName || member.userEmail}`}
                       >
                         <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">
+                          Remove {member.userName || member.userEmail}
+                        </span>
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -189,9 +194,11 @@ export function TeamDetailClient({
               </TableBody>
             </Table>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              No members in this team yet. Add your first member!
-            </div>
+            <EmptyState
+              icon={UserPlus}
+              title="No team members"
+              description="This team doesn't have any members yet. Click the button above to add your first member."
+            />
           )}
         </CardContent>
       </Card>

@@ -39,10 +39,9 @@ export function createTeamColumns({
       accessorKey: "description",
       header: "Description",
       cell: ({ row }) => {
-        const description = row.getValue("description") as string | null;
         return (
-          <div className="text-sm text-gray-600 max-w-md truncate">
-            {description || "-"}
+          <div className="text-sm text-muted-foreground max-w-md truncate">
+            {row.original.description || "-"}
           </div>
         );
       },
@@ -62,18 +61,16 @@ export function createTeamColumns({
         );
       },
       cell: ({ row }) => {
-        const memberCount = row.getValue("memberCount") as number | undefined;
-        return <div className="text-sm">{memberCount || 0}</div>;
+        return <div className="text-sm">{row.original.memberCount || 0}</div>;
       },
     },
     {
       accessorKey: "isActive",
       header: "Status",
       cell: ({ row }) => {
-        const isActive = row.getValue("isActive") as boolean;
         return (
-          <Badge variant={isActive ? "success" : "secondary"}>
-            {isActive ? "Active" : "Inactive"}
+          <Badge variant={row.original.isActive ? "success" : "secondary"}>
+            {row.original.isActive ? "Active" : "Inactive"}
           </Badge>
         );
       },
@@ -93,9 +90,10 @@ export function createTeamColumns({
         );
       },
       cell: ({ row }) => {
-        const date = row.getValue("createdAt") as Date;
         return (
-          <div className="text-sm">{new Date(date).toLocaleDateString()}</div>
+          <div className="text-sm">
+            {new Date(row.original.createdAt).toLocaleDateString()}
+          </div>
         );
       },
     },
@@ -107,9 +105,13 @@ export function createTeamColumns({
 
         return (
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={`/admin/teams/${team.id}`}>
+            <Button variant="ghost" size="sm" asChild aria-label="View">
+              <Link
+                href={`/admin/teams/${team.id}`}
+                aria-label={`View ${team.name}`}
+              >
                 <Eye className="h-4 w-4" />
+                <span className="sr-only">View {team.name}</span>
               </Link>
             </Button>
             <Button
@@ -119,8 +121,10 @@ export function createTeamColumns({
                 e.stopPropagation();
                 onEdit(team);
               }}
+              aria-label={`Edit ${team.name}`}
             >
               <Pencil className="h-4 w-4" />
+              <span className="sr-only">Edit {team.name}</span>
             </Button>
             <Button
               variant="ghost"
@@ -129,8 +133,10 @@ export function createTeamColumns({
                 e.stopPropagation();
                 onDelete(team);
               }}
+              aria-label={`Delete ${team.name}`}
             >
               <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Delete {team.name}</span>
             </Button>
           </div>
         );

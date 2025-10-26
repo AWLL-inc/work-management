@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { TeamTable } from "@/components/features/admin/teams/team-table";
 import type { TeamWithMembers } from "@/lib/api/teams";
+import { TeamTable } from "./_components/team-table";
 
 interface TeamsClientProps {
   initialTeams: TeamWithMembers[];

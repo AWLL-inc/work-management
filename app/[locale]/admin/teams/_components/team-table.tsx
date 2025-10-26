@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { LoadingState } from "@/components/ui/spinner";
 import type { TeamWithMembers } from "@/lib/api/teams";
 import { createTeamColumns } from "./team-columns";
 import { TeamFormDialog } from "./team-form-dialog";
@@ -119,7 +120,7 @@ export function TeamTable({
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8">Loading...</div>
+        <LoadingState message="Loading teams..." />
       ) : (
         <DataTable columns={columns} data={teams} searchKey="name" />
       )}

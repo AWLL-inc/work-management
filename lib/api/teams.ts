@@ -10,6 +10,58 @@ export interface ApiResponse<T> {
   };
 }
 
+/**
+ * Custom API error with HTTP status code
+ */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public code?: string,
+    public details?: unknown,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+/**
+ * Handle API response and extract error information
+ */
+async function handleApiResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    let errorMessage = `Request failed with status ${response.status}`;
+    let errorCode = `HTTP_${response.status}`;
+    let errorDetails: unknown;
+
+    try {
+      const result: ApiResponse<never> = await response.json();
+      if (result.error) {
+        errorMessage = result.error.message;
+        errorCode = result.error.code;
+        errorDetails = result.error.details;
+      }
+    } catch {
+      // If JSON parsing fails, use default error message
+    }
+
+    throw new ApiError(errorMessage, response.status, errorCode, errorDetails);
+  }
+
+  const result: ApiResponse<T> = await response.json();
+
+  if (!result.success || !result.data) {
+    throw new ApiError(
+      result.error?.message || "Request succeeded but returned no data",
+      response.status,
+      result.error?.code,
+      result.error?.details,
+    );
+  }
+
+  return result.data;
+}
+
 export interface TeamWithMembers extends Team {
   memberCount?: number;
   members?: TeamMemberWithUser[];
@@ -43,18 +95,7 @@ export interface AddMemberData {
 export async function getTeams(activeOnly = false): Promise<TeamWithMembers[]> {
   const url = `/api/teams${activeOnly ? "?active=true" : ""}`;
   const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch teams");
-  }
-
-  const result: ApiResponse<TeamWithMembers[]> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to fetch teams");
-  }
-
-  return result.data;
+  return handleApiResponse<TeamWithMembers[]>(response);
 }
 
 /**
@@ -62,18 +103,7 @@ export async function getTeams(activeOnly = false): Promise<TeamWithMembers[]> {
  */
 export async function getTeam(id: string): Promise<TeamWithMembers> {
   const response = await fetch(`/api/teams/${id}`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch team");
-  }
-
-  const result: ApiResponse<TeamWithMembers> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to fetch team");
-  }
-
-  return result.data;
+  return handleApiResponse<TeamWithMembers>(response);
 }
 
 /**
@@ -87,19 +117,7 @@ export async function createTeam(data: CreateTeamData): Promise<Team> {
     },
     body: JSON.stringify(data),
   });
-
-  if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to create team");
-  }
-
-  const result: ApiResponse<Team> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to create team");
-  }
-
-  return result.data;
+  return handleApiResponse<Team>(response);
 }
 
 /**
@@ -116,19 +134,7 @@ export async function updateTeam(
     },
     body: JSON.stringify(data),
   });
-
-  if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to update team");
-  }
-
-  const result: ApiResponse<Team> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to update team");
-  }
-
-  return result.data;
+  return handleApiResponse<Team>(response);
 }
 
 /**
@@ -140,14 +146,30 @@ export async function deleteTeam(id: string): Promise<void> {
   });
 
   if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to delete team");
+    let errorMessage = `Failed to delete team (status ${response.status})`;
+    let errorCode = `HTTP_${response.status}`;
+
+    try {
+      const result: ApiResponse<never> = await response.json();
+      if (result.error) {
+        errorMessage = result.error.message;
+        errorCode = result.error.code;
+      }
+    } catch {
+      // If JSON parsing fails, use default error message
+    }
+
+    throw new ApiError(errorMessage, response.status, errorCode);
   }
 
   const result: ApiResponse<never> = await response.json();
 
   if (!result.success) {
-    throw new Error(result.error?.message || "Failed to delete team");
+    throw new ApiError(
+      result.error?.message || "Failed to delete team",
+      response.status,
+      result.error?.code,
+    );
   }
 }
 
@@ -165,19 +187,7 @@ export async function addTeamMember(
     },
     body: JSON.stringify(data),
   });
-
-  if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to add team member");
-  }
-
-  const result: ApiResponse<TeamMember> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to add team member");
-  }
-
-  return result.data;
+  return handleApiResponse<TeamMember>(response);
 }
 
 /**
@@ -192,14 +202,30 @@ export async function removeTeamMember(
   });
 
   if (!response.ok) {
-    const result: ApiResponse<never> = await response.json();
-    throw new Error(result.error?.message || "Failed to remove team member");
+    let errorMessage = `Failed to remove team member (status ${response.status})`;
+    let errorCode = `HTTP_${response.status}`;
+
+    try {
+      const result: ApiResponse<never> = await response.json();
+      if (result.error) {
+        errorMessage = result.error.message;
+        errorCode = result.error.code;
+      }
+    } catch {
+      // If JSON parsing fails, use default error message
+    }
+
+    throw new ApiError(errorMessage, response.status, errorCode);
   }
 
   const result: ApiResponse<never> = await response.json();
 
   if (!result.success) {
-    throw new Error(result.error?.message || "Failed to remove team member");
+    throw new ApiError(
+      result.error?.message || "Failed to remove team member",
+      response.status,
+      result.error?.code,
+    );
   }
 }
 
@@ -208,16 +234,5 @@ export async function removeTeamMember(
  */
 export async function getUsers(): Promise<User[]> {
   const response = await fetch("/api/users");
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch users");
-  }
-
-  const result: ApiResponse<User[]> = await response.json();
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to fetch users");
-  }
-
-  return result.data;
+  return handleApiResponse<User[]>(response);
 }

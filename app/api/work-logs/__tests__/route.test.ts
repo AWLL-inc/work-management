@@ -155,7 +155,9 @@ describe("Work Logs API - Collection Routes", () => {
 
       vi.mocked(getWorkLogs).mockResolvedValue(mockResponse);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs?scope=all");
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs?scope=all",
+      );
       const response = await GET(request);
       const data = await response.json();
 

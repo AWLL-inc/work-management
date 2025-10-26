@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { teamMembers, teams, users } from "@/drizzle/schema";
@@ -173,12 +173,14 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateTeamSchema.parse(body);
 
-    // If name is being updated, check for duplicates
+    // If name is being updated, check for duplicates among active teams
     if (validatedData.name && validatedData.name !== existingTeam.name) {
       const [duplicateTeam] = await db
         .select()
         .from(teams)
-        .where(eq(teams.name, validatedData.name))
+        .where(
+          and(eq(teams.name, validatedData.name), eq(teams.isActive, true)),
+        )
         .limit(1);
 
       if (duplicateTeam) {

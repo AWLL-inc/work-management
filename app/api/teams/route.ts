@@ -1,4 +1,4 @@
-import { count, eq, sql } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { teamMembers, teams } from "@/drizzle/schema";
@@ -147,11 +147,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = createTeamSchema.parse(body);
 
-    // Check if team with same name already exists
+    // Check if active team with same name already exists
     const existingTeam = await db
       .select()
       .from(teams)
-      .where(eq(teams.name, validatedData.name))
+      .where(and(eq(teams.name, validatedData.name), eq(teams.isActive, true)))
       .limit(1);
 
     if (existingTeam.length > 0) {

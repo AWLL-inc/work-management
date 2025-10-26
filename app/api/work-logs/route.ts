@@ -110,6 +110,8 @@ export async function GET(request: NextRequest) {
         const teamIds = userTeams.map((tm) => tm.teamId);
 
         // Get all users in those teams with a single query
+        // N+1 optimization: Use inArray() to fetch all members at once instead of
+        // looping through teamIds with separate queries (O(1) instead of O(n))
         const allMembers = await db
           .select({ userId: teamMembers.userId })
           .from(teamMembers)

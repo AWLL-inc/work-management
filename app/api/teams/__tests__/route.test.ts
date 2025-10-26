@@ -230,14 +230,14 @@ describe("Teams API - Collection Routes", () => {
             limit: vi.fn().mockResolvedValue([]), // No duplicates
           }),
         }),
-      });
+      } as any);
 
       // Mock insert
       vi.mocked(db.insert).mockReturnValue({
         values: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([newTeam]),
         }),
-      });
+      } as any);
 
       const request = new NextRequest("http://localhost:3000/api/teams", {
         method: "POST",
@@ -279,13 +279,13 @@ describe("Teams API - Collection Routes", () => {
             limit: vi.fn().mockResolvedValue([]),
           }),
         }),
-      });
+      } as any);
 
       vi.mocked(db.insert).mockReturnValue({
         values: vi.fn().mockReturnValue({
           returning: vi.fn().mockResolvedValue([newTeam]),
         }),
-      });
+      } as any);
 
       const request = new NextRequest("http://localhost:3000/api/teams", {
         method: "POST",
@@ -320,7 +320,7 @@ describe("Teams API - Collection Routes", () => {
             ]),
           }),
         }),
-      });
+      } as any);
 
       const request = new NextRequest("http://localhost:3000/api/teams", {
         method: "POST",

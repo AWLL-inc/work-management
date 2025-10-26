@@ -137,7 +137,7 @@ describe("Work Logs API - Collection Routes", () => {
       );
     });
 
-    it("should allow admin to see all work logs", async () => {
+    it("should allow admin to see all work logs with scope=all", async () => {
       vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "admin-id", email: "admin@example.com", role: "admin" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -155,13 +155,13 @@ describe("Work Logs API - Collection Routes", () => {
 
       vi.mocked(getWorkLogs).mockResolvedValue(mockResponse);
 
-      const request = new NextRequest("http://localhost:3000/api/work-logs");
+      const request = new NextRequest("http://localhost:3000/api/work-logs?scope=all");
       const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      // Admin should not have userId filter
+      // Admin with scope=all should not have userId filter
       expect(getWorkLogs).toHaveBeenCalledWith(
         expect.not.objectContaining({
           userId: expect.anything(),
@@ -355,7 +355,7 @@ describe("Work Logs API - Collection Routes", () => {
         );
       });
 
-      it("should allow admin to filter by specific user", async () => {
+      it("should allow admin to filter by specific user with scope=all", async () => {
         vi.mocked(getAuthenticatedSession).mockResolvedValue({
           user: { id: "admin-id", email: "admin@example.com", role: "admin" },
           expires: new Date(
@@ -365,7 +365,7 @@ describe("Work Logs API - Collection Routes", () => {
 
         const userId = "550e8400-e29b-41d4-a716-446655440000";
         const request = new NextRequest(
-          `http://localhost:3000/api/work-logs?userId=${userId}`,
+          `http://localhost:3000/api/work-logs?scope=all&userId=${userId}`,
         );
         const response = await GET(request);
 

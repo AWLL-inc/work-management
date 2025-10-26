@@ -61,7 +61,7 @@ export function TeamDetailClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter out users who are already members
-  const memberUserIds = new Set(team.members?.map((m) => m.userId) || []);
+  const memberUserIds = new Set(team.members?.map((m) => m.userId) ?? []);
   const availableUsers = users.filter((u) => !memberUserIds.has(u.id));
 
   const handleAddMemberSubmit = async () => {

@@ -1,6 +1,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createTeam, deleteTeam, getTeams, updateTeam } from "@/lib/api/teams";
+import {
+  type CreateTeamData,
+  createTeam,
+  deleteTeam,
+  getTeams,
+  type UpdateTeamData,
+  updateTeam,
+} from "@/lib/api/teams";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { TeamsClient } from "./teams-client";
 
@@ -16,28 +23,13 @@ export default async function TeamsPage() {
   const teams = await getTeams(false);
 
   // Server Actions wrapped in async functions
-  const handleCreateTeam = async (data: {
-    name: string;
-    description?: string;
-    isActive: boolean;
-  }) => {
+  const handleCreateTeam = async (data: CreateTeamData) => {
     "use server";
-    await createTeam({
-      name: data.name,
-      description: data.description || null,
-      isActive: data.isActive,
-    });
+    await createTeam(data);
     revalidatePath("/[locale]/admin/teams");
   };
 
-  const handleUpdateTeam = async (
-    id: string,
-    data: {
-      name?: string;
-      description?: string | null;
-      isActive?: boolean;
-    },
-  ) => {
+  const handleUpdateTeam = async (id: string, data: UpdateTeamData) => {
     "use server";
     await updateTeam(id, data);
     revalidatePath("/[locale]/admin/teams");

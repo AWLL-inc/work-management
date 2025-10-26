@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { TeamTable } from "@/components/features/admin/teams/team-table";
 import type { TeamWithMembers } from "@/lib/api/teams";
-import { TeamTable } from "./_components/team-table";
 
 interface TeamsClientProps {
   initialTeams: TeamWithMembers[];
@@ -44,7 +44,7 @@ export function TeamsClient({
       toast.error(
         error instanceof Error ? error.message : "Failed to create team",
       );
-      throw error;
+      console.error("Failed to create team:", error);
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +66,7 @@ export function TeamsClient({
       toast.error(
         error instanceof Error ? error.message : "Failed to update team",
       );
-      throw error;
+      console.error("Failed to update team:", error);
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +81,7 @@ export function TeamsClient({
       toast.error(
         error instanceof Error ? error.message : "Failed to delete team",
       );
-      throw error;
+      console.error("Failed to delete team:", error);
     } finally {
       setIsLoading(false);
     }

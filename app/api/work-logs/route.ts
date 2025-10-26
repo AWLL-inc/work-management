@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { teamMembers } from "@/drizzle/schema";
@@ -109,20 +109,15 @@ export async function GET(request: NextRequest) {
         // Get all team IDs the user belongs to
         const teamIds = userTeams.map((tm) => tm.teamId);
 
-        // Get all users in those teams
-        const teammateUserIds: string[] = [];
-        for (const teamId of teamIds) {
-          const members = await db
-            .select({ userId: teamMembers.userId })
-            .from(teamMembers)
-            .where(eq(teamMembers.teamId, teamId));
-
-          teammateUserIds.push(...members.map((m) => m.userId));
-        }
+        // Get all users in those teams with a single query
+        const allMembers = await db
+          .select({ userId: teamMembers.userId })
+          .from(teamMembers)
+          .where(inArray(teamMembers.teamId, teamIds));
 
         // Include current user and deduplicate
         const uniqueTeammateIds = Array.from(
-          new Set([session.user.id, ...teammateUserIds]),
+          new Set([session.user.id, ...allMembers.map((m) => m.userId)]),
         );
 
         options.userIds = uniqueTeammateIds;

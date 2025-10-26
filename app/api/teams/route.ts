@@ -1,5 +1,6 @@
 import { count, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { teamMembers, teams } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
@@ -69,14 +70,14 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("GET /api/teams error:", error);
 
-    if (error instanceof Error && error.name === "ZodError") {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
             message: "Invalid query parameters",
-            details: error,
+            details: error.issues,
           },
         },
         { status: 400 },
@@ -186,14 +187,14 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("POST /api/teams error:", error);
 
-    if (error instanceof Error && error.name === "ZodError") {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
             message: "Invalid request data",
-            details: error,
+            details: error.issues,
           },
         },
         { status: 400 },

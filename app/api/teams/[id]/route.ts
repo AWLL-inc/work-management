@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { teamMembers, teams, users } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
@@ -211,14 +212,14 @@ export async function PUT(
   } catch (error) {
     console.error(`PUT /api/teams/[id] error:`, error);
 
-    if (error instanceof Error && error.name === "ZodError") {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
             message: "Invalid request data",
-            details: error,
+            details: error.issues,
           },
         },
         { status: 400 },

@@ -279,3 +279,60 @@ export type WorkLogSearchQuery = z.infer<typeof workLogSearchSchema>;
 // Enhanced type exports for better type safety
 export type WorkLogSearchParams = z.input<typeof workLogSearchSchema>;
 export type WorkLogSearchValidated = z.output<typeof workLogSearchSchema>;
+
+/**
+ * Team Validation Schemas
+ */
+
+// Create team schema
+export const createTeamSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Team name is required")
+    .max(255, "Team name must be 255 characters or less")
+    .trim(),
+  description: z.string().optional().nullable(),
+});
+
+// Update team schema
+export const updateTeamSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Team name is required")
+    .max(255, "Team name must be 255 characters or less")
+    .trim()
+    .optional(),
+  description: z.string().optional().nullable(),
+  isActive: z.boolean().optional(),
+});
+
+// Query parameters for listing teams
+export const listTeamsQuerySchema = z.object({
+  active: z
+    .string()
+    .optional()
+    .transform((val) => val === "true")
+    .pipe(z.boolean()),
+});
+
+/**
+ * Team Member Validation Schemas
+ */
+
+// Add team member schema
+export const addTeamMemberSchema = z.object({
+  userId: z.string().uuid("Invalid user ID"),
+  role: z
+    .enum(["member", "leader", "viewer"], {
+      message: "Role must be 'member', 'leader', or 'viewer'",
+    })
+    .default("member"),
+});
+
+/**
+ * Type exports for Teams
+ */
+export type CreateTeamInput = z.infer<typeof createTeamSchema>;
+export type UpdateTeamInput = z.infer<typeof updateTeamSchema>;
+export type ListTeamsQuery = z.infer<typeof listTeamsQuerySchema>;
+export type AddTeamMemberInput = z.infer<typeof addTeamMemberSchema>;

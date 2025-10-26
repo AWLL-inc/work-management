@@ -157,8 +157,95 @@ npm install
 - **Password Hashing**: bcryptjs (10 salt rounds)
 - **Session Strategy**: JWT (for edge compatibility)
 
+### Authentication Flow (Simplified Architecture)
+
+```
+1. User accesses protected route
+   ↓
+2. Middleware (middleware.ts) checks authentication
+   ↓
+3. If not authenticated → redirect to /login
+   ↓
+4. User logs in via /login page
+   ↓
+5. Server Action (loginAction) validates credentials
+   ↓
+6. NextAuth.js creates JWT session
+   ↓
+7. User redirected to original page or /work-logs
+```
+
+### Key Components
+
+1. **`lib/auth-config.ts`**
+   - Edge-compatible NextAuth.js configuration
+   - Simple `authorized` callback (authentication check only)
+   - JWT and session callbacks for user data
+
+2. **`lib/auth.ts`**
+   - Full NextAuth.js instance with database adapter
+   - Credentials provider configuration
+   - Used in API routes (Node.js runtime)
+
+3. **`lib/auth-helpers.ts`**
+   - `getAuthenticatedSession()` - Unified session getter
+   - Development auth bypass support (`DISABLE_AUTH`)
+   - Used everywhere for consistent session access
+
+4. **`middleware.ts`**
+   - Auth-wrapped middleware following Next.js 15 best practices
+   - Route protection logic (redirects)
+   - i18n integration
+
+5. **`components/auth/auth-guard.tsx`** (Optional)
+   - Client-side authentication guard component
+   - Use when you need client-side protection
+   - Customizable loading fallback
+
+### Session Access Patterns
+
+```typescript
+// ✅ Recommended: Use everywhere
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
+
+// In Server Components
+const session = await getAuthenticatedSession();
+
+// In Server Actions
+const session = await getAuthenticatedSession();
+if (!session) {
+  return { error: "Unauthorized" };
+}
+
+// In API Routes
+const session = await getAuthenticatedSession();
+if (!session) {
+  return Response.json({ error: "Unauthorized" }, { status: 401 });
+}
+```
+
+### Development Auth Bypass
+
+For development convenience, you can bypass authentication:
+
+```bash
+# .env.local
+DISABLE_AUTH=true
+DEV_USER_ID=00000000-0000-0000-0000-000000000000
+```
+
+**Features:**
+- Automatically disabled in production (safe)
+- Works consistently across all auth checks
+- Uses `getAuthenticatedSession()` internally
+- Returns mock admin session
+
+**Warning:** Never enable in production. The system will throw an error if you try.
+
 ## References
 
 - [NextAuth.js v5 Documentation](https://authjs.dev/)
+- [Next.js 15 Authentication Guide](https://nextjs.org/docs/app/building-your-application/authentication)
 - [Drizzle ORM Documentation](https://orm.drizzle.team/)
 - [Issue #8: Authentication Infrastructure](https://github.com/AWLL-inc/work-management/issues/8)
+- [Issue #70: Simplify Authentication Architecture](https://github.com/AWLL-inc/work-management/issues/70)

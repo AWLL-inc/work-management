@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import type { Session } from "next-auth";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { SessionProvider } from "@/app/providers/session-provider";
 import { Navigation } from "@/components/layout/navigation";
 import { routing } from "@/i18n/routing";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 
 type Props = {
   children: React.ReactNode;
@@ -32,7 +33,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   // Providing all messages to the client
   const messages = await getMessages();
-  const session = await auth();
+  const session = await getAuthenticatedSession();
 
   // Get user info for navigation
   const userEmail = session?.user?.email || null;
@@ -45,7 +46,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      <SessionProvider session={session}>
+      <SessionProvider session={session as Session | null}>
         <div className="min-h-screen bg-background">
           {!isLoginPage && (
             <Navigation userEmail={userEmail} userRole={userRole} />

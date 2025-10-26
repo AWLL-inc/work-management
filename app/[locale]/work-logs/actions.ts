@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   createWorkLog as dbCreateWorkLog,
   deleteWorkLog as dbDeleteWorkLog,
   getWorkLogs as dbGetWorkLogs,
   updateWorkLog as dbUpdateWorkLog,
-} from "@/lib/api/work-logs";
-import { getAuthenticatedSession } from "@/lib/auth-helpers";
+} from "@/lib/db/repositories/work-log-repository";
 
 // Validation schemas
 const createWorkLogSchema = z.object({
@@ -45,7 +45,14 @@ export async function createWorkLogAction(formData: FormData) {
     });
 
     // Database operation
-    const result = await dbCreateWorkLog(validated);
+    const result = await dbCreateWorkLog({
+      userId: session.user.id,
+      date: new Date(validated.date),
+      hours: validated.hours,
+      projectId: validated.projectId,
+      categoryId: validated.categoryId,
+      details: validated.details || null,
+    });
 
     // Cache revalidation
     revalidatePath("/[locale]/work-logs");
@@ -85,7 +92,10 @@ export async function updateWorkLogAction(id: string, formData: FormData) {
     });
 
     // Database operation
-    const result = await dbUpdateWorkLog(id, validated);
+    const result = await dbUpdateWorkLog(id, {
+      ...validated,
+      date: validated.date ? new Date(validated.date) : undefined,
+    });
 
     // Cache revalidation
     revalidatePath("/[locale]/work-logs");
@@ -146,9 +156,15 @@ export async function getWorkLogsAction(options?: {
     }
 
     // Database operation
-    const workLogs = await dbGetWorkLogs(options);
+    const result = await dbGetWorkLogs({
+      startDate: options?.startDate ? new Date(options.startDate) : undefined,
+      endDate: options?.endDate ? new Date(options.endDate) : undefined,
+      projectIds: options?.projectIds?.split(","),
+      categoryIds: options?.categoryIds?.split(","),
+      userId: session.user.role === "admin" ? options?.userId : session.user.id,
+    });
 
-    return { success: true, data: workLogs };
+    return { success: true, data: result.data };
   } catch (error) {
     console.error("Get work logs failed:", error);
     return {

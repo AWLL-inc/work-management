@@ -72,8 +72,8 @@ export async function DELETE(
       );
     }
 
-    // Check if member exists in the team
-    const [member] = await db
+    // Check if member exists in this team
+    const [existingMember] = await db
       .select()
       .from(teamMembers)
       .where(
@@ -81,7 +81,7 @@ export async function DELETE(
       )
       .limit(1);
 
-    if (!member) {
+    if (!existingMember) {
       return NextResponse.json(
         {
           success: false,

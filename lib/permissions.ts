@@ -1,4 +1,5 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { teamMembers } from "@/drizzle/schema";
 import { db } from "@/lib/db/connection";
 
@@ -15,23 +16,16 @@ export async function checkIfTeammates(
 ): Promise<boolean> {
   if (userId1 === userId2) return true;
 
-  // Get all team IDs for user1
-  const user1Teams = await db
-    .select({ teamId: teamMembers.teamId })
-    .from(teamMembers)
-    .where(eq(teamMembers.userId, userId1));
+  // Find common teams with a single query using self-join
+  const tm1 = teamMembers;
+  const tm2 = alias(teamMembers, "tm2");
 
-  if (user1Teams.length === 0) return false;
-
-  const teamIds = user1Teams.map((t) => t.teamId);
-
-  // Check if user2 belongs to any of those teams
-  const user2Teams = await db
-    .select({ teamId: teamMembers.teamId })
-    .from(teamMembers)
-    .where(eq(teamMembers.userId, userId2));
-
-  const commonTeams = user2Teams.filter((t) => teamIds.includes(t.teamId));
+  const commonTeams = await db
+    .select({ teamId: tm1.teamId })
+    .from(tm1)
+    .innerJoin(tm2, eq(tm1.teamId, tm2.teamId))
+    .where(and(eq(tm1.userId, userId1), eq(tm2.userId, userId2)))
+    .limit(1);
 
   return commonTeams.length > 0;
 }

@@ -1,5 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { teamMembers, teams, users } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
@@ -172,12 +173,24 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateTeamSchema.parse(body);
 
-    // If name is being updated, check for duplicates
+    /**
+     * Business Rule: Team Name Uniqueness (Active Teams Only)
+     *
+     * When updating team name, check for duplicates only among ACTIVE teams.
+     * See POST /api/teams for detailed business rule documentation.
+     *
+     * Additional Update-Specific Rules:
+     * - Only check if name is actually being changed
+     * - Skip duplicate check if name remains the same
+     * - Allows updating other fields without name conflict check
+     */
     if (validatedData.name && validatedData.name !== existingTeam.name) {
       const [duplicateTeam] = await db
         .select()
         .from(teams)
-        .where(eq(teams.name, validatedData.name))
+        .where(
+          and(eq(teams.name, validatedData.name), eq(teams.isActive, true)),
+        )
         .limit(1);
 
       if (duplicateTeam) {
@@ -211,14 +224,14 @@ export async function PUT(
   } catch (error) {
     console.error(`PUT /api/teams/[id] error:`, error);
 
-    if (error instanceof Error && error.name === "ZodError") {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
             message: "Invalid request data",
-            details: error,
+            details: error.issues,
           },
         },
         { status: 400 },

@@ -1036,13 +1036,20 @@ export function EnhancedWorkLogTable({
     }
   }, [gridApi, workLogs]);
 
-  // AG Grid standard: Reset to original data
+  // AG Grid standard: Reset to original data and clear all state
   const handleConfirmCancel = () => {
     if (gridApi) {
+      // Stop any editing in progress
+      gridApi.stopEditing(true);
+
+      // Clear all selections
+      gridApi.deselectAll();
+
       // Reset AG Grid data to original workLogs data
       gridApi.setGridOption("rowData", rowData);
     }
 
+    // Clear all state
     setFailedWorkLogIds(new Set());
     setBatchEditingEnabled(false);
     setCancelDialogOpen(false);
@@ -1061,17 +1068,6 @@ export function EnhancedWorkLogTable({
 
   return (
     <div className="space-y-6">
-      <div className="bg-card rounded-lg border-2 border-primary/20 p-6 shadow-sm">
-        <div>
-          <h2 className="text-2xl font-bold text-primary mb-2">
-            Enhanced Work Logs Management
-          </h2>
-          <p className="text-muted-foreground">
-            Advanced spreadsheet-like interface with Excel-compatible features
-          </p>
-        </div>
-      </div>
-
       {/* Search Controls */}
       <SearchControls
         filters={searchFilters}

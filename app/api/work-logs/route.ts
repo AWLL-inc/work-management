@@ -1,6 +1,9 @@
+import { eq, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { teamMembers } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
+import { db } from "@/lib/db/connection";
 import {
   createWorkLog,
   type GetWorkLogsOptions,
@@ -48,6 +51,7 @@ export async function GET(request: NextRequest) {
       categoryIds: searchParams.get("categoryIds") || undefined,
       userId: searchParams.get("userId") || undefined,
       searchText: searchParams.get("searchText") || undefined,
+      scope: searchParams.get("scope") || undefined,
     });
 
     if (!validationResult.success) {
@@ -72,12 +76,61 @@ export async function GET(request: NextRequest) {
       limit: validatedParams.limit,
     };
 
-    // Non-admin users can only see their own work logs
-    if (session.user.role !== "admin") {
+    // Handle scope parameter for team-based filtering
+    const scope = validatedParams.scope || "own";
+
+    if (scope === "all") {
+      // Only admin can view all work logs
+      if (session.user.role !== "admin") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: "FORBIDDEN",
+              message: "Only admins can view all work logs",
+            },
+          },
+          { status: 403 },
+        );
+      }
+      // Admin viewing all - no user filter
+      if (validatedParams.userId) {
+        // Admin can filter by specific user
+        options.userId = validatedParams.userId;
+      }
+    } else if (scope === "team") {
+      // Get all teams the user belongs to
+      const userTeams = await db
+        .select({ teamId: teamMembers.teamId })
+        .from(teamMembers)
+        .where(eq(teamMembers.userId, session.user.id));
+
+      if (userTeams.length > 0) {
+        // Get all team IDs the user belongs to
+        const teamIds = userTeams.map((tm) => tm.teamId);
+
+        // Get all users in those teams with a single query
+        // N+1 optimization: Use inArray() to fetch all members at once instead of
+        // looping through teamIds with separate queries (O(1) instead of O(n))
+        const allMembers = await db
+          .select({ userId: teamMembers.userId })
+          .from(teamMembers)
+          .where(inArray(teamMembers.teamId, teamIds));
+
+        // Include current user and deduplicate
+        const uniqueTeammateIds = Array.from(
+          new Set([session.user.id, ...allMembers.map((m) => m.userId)]),
+        );
+
+        options.userIds = uniqueTeammateIds;
+      } else {
+        // User is not in any team, show only their own work logs
+        options.userId = session.user.id;
+      }
+    } else {
+      // scope === "own" (default)
+      // User can only see their own work logs
       options.userId = session.user.id;
-    } else if (validatedParams.userId) {
-      // Admin can filter by specific user
-      options.userId = validatedParams.userId;
     }
 
     // Date filtering - dates are already validated and transformed by Zod

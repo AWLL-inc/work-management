@@ -259,6 +259,12 @@ export const workLogSearchSchema = z
     categoryIds: z.string().optional(), // New multiple categories filter (comma-separated)
     userId: z.string().uuid().optional(), // Admin only
     searchText: z.string().max(500).optional(),
+    scope: z
+      .enum(["own", "team", "all"], {
+        message: "Scope must be 'own', 'team', or 'all'",
+      })
+      .optional()
+      .default("own"), // Scope for team-based filtering
   })
   .refine(
     (data) => {

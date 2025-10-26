@@ -1,5 +1,6 @@
-import { count, eq, sql } from "drizzle-orm";
+import { and, count, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { teamMembers, teams } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
@@ -69,14 +70,14 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("GET /api/teams error:", error);
 
-    if (error instanceof Error && error.name === "ZodError") {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
             message: "Invalid query parameters",
-            details: error,
+            details: error.issues,
           },
         },
         { status: 400 },
@@ -146,11 +147,27 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = createTeamSchema.parse(body);
 
-    // Check if team with same name already exists
+    /**
+     * Business Rule: Team Name Uniqueness (Active Teams Only)
+     *
+     * - Only ACTIVE teams (isActive: true) must have unique names
+     * - Multiple INACTIVE teams can share the same name
+     *
+     * Rationale:
+     * - Inactive teams are archived and no longer in active use
+     * - Allows team name reuse when old teams are deactivated
+     * - Prevents naming conflicts only among currently active teams
+     * - Supports historical record keeping without naming constraints
+     *
+     * Implementation:
+     * - Duplicate check filters by isActive: true
+     * - Soft delete (DELETE endpoint) sets isActive: false
+     * - Name becomes available for reuse after deactivation
+     */
     const existingTeam = await db
       .select()
       .from(teams)
-      .where(eq(teams.name, validatedData.name))
+      .where(and(eq(teams.name, validatedData.name), eq(teams.isActive, true)))
       .limit(1);
 
     if (existingTeam.length > 0) {
@@ -186,14 +203,14 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("POST /api/teams error:", error);
 
-    if (error instanceof Error && error.name === "ZodError") {
+    if (error instanceof ZodError) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "VALIDATION_ERROR",
             message: "Invalid request data",
-            details: error,
+            details: error.issues,
           },
         },
         { status: 400 },

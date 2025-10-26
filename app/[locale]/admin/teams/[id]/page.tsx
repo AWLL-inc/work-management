@@ -1,10 +1,12 @@
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import {
   addTeamMember,
   getTeam,
   getUsers,
   removeTeamMember,
 } from "@/lib/api/teams";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { TeamDetailClient } from "./team-detail-client";
 
 interface TeamDetailPageProps {
@@ -12,6 +14,13 @@ interface TeamDetailPageProps {
 }
 
 export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
+  // Permission check: Only admins can access team management
+  const session = await getAuthenticatedSession();
+
+  if (!session || session.user.role !== "admin") {
+    redirect("/work-logs");
+  }
+
   const { id } = await params;
 
   // Server-side data fetching

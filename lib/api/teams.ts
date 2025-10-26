@@ -162,14 +162,25 @@ export async function deleteTeam(id: string): Promise<void> {
     throw new ApiError(errorMessage, response.status, errorCode);
   }
 
-  const result: ApiResponse<never> = await response.json();
+  // 204 No Content - success without body
+  if (response.status === 204) {
+    return;
+  }
 
-  if (!result.success) {
-    throw new ApiError(
-      result.error?.message || "Failed to delete team",
-      response.status,
-      result.error?.code,
-    );
+  // Other success status codes with body
+  try {
+    const result: ApiResponse<never> = await response.json();
+
+    if (!result.success) {
+      throw new ApiError(
+        result.error?.message || "Failed to delete team",
+        response.status,
+        result.error?.code,
+      );
+    }
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    // Body parsing failed but response was ok - treat as success
   }
 }
 
@@ -218,14 +229,25 @@ export async function removeTeamMember(
     throw new ApiError(errorMessage, response.status, errorCode);
   }
 
-  const result: ApiResponse<never> = await response.json();
+  // 204 No Content - success without body
+  if (response.status === 204) {
+    return;
+  }
 
-  if (!result.success) {
-    throw new ApiError(
-      result.error?.message || "Failed to remove team member",
-      response.status,
-      result.error?.code,
-    );
+  // Other success status codes with body
+  try {
+    const result: ApiResponse<never> = await response.json();
+
+    if (!result.success) {
+      throw new ApiError(
+        result.error?.message || "Failed to remove team member",
+        response.status,
+        result.error?.code,
+      );
+    }
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    // Body parsing failed but response was ok - treat as success
   }
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { Users } from "lucide-react";
 import { useState } from "react";
 import { DataTable } from "@/components/data-table/data-table";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/spinner";
 import type { TeamWithMembers } from "@/lib/api/teams";
 import { createTeamColumns } from "./team-columns";
@@ -47,7 +49,6 @@ export function TeamTable({
   const [selectedTeam, setSelectedTeam] = useState<TeamWithMembers | null>(
     null,
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleEdit = (team: TeamWithMembers) => {
     setSelectedTeam(team);
@@ -64,31 +65,21 @@ export function TeamTable({
     description?: string;
     isActive: boolean;
   }) => {
-    setIsSubmitting(true);
-    try {
-      if (selectedTeam) {
-        await onUpdateTeam(selectedTeam.id, data);
-      } else {
-        await onCreateTeam(data);
-      }
-      setFormOpen(false);
-      setSelectedTeam(null);
-    } finally {
-      setIsSubmitting(false);
+    if (selectedTeam) {
+      await onUpdateTeam(selectedTeam.id, data);
+    } else {
+      await onCreateTeam(data);
     }
+    setFormOpen(false);
+    setSelectedTeam(null);
   };
 
   const handleConfirmDelete = async () => {
     if (!selectedTeam) return;
 
-    setIsSubmitting(true);
-    try {
-      await onDeleteTeam(selectedTeam.id);
-      setDeleteDialogOpen(false);
-      setSelectedTeam(null);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onDeleteTeam(selectedTeam.id);
+    setDeleteDialogOpen(false);
+    setSelectedTeam(null);
   };
 
   const columns = createTeamColumns({
@@ -121,6 +112,19 @@ export function TeamTable({
 
       {isLoading ? (
         <LoadingState message="Loading teams..." />
+      ) : teams.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No teams yet"
+          description="Create your first team to organize members and manage work logs."
+          action={{
+            label: "Create Team",
+            onClick: () => {
+              setSelectedTeam(null);
+              setFormOpen(true);
+            },
+          }}
+        />
       ) : (
         <DataTable columns={columns} data={teams} searchKey="name" />
       )}
@@ -130,7 +134,7 @@ export function TeamTable({
         onOpenChange={setFormOpen}
         team={selectedTeam}
         onSubmit={handleFormSubmit}
-        isSubmitting={isSubmitting}
+        isSubmitting={isLoading}
       />
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -146,16 +150,16 @@ export function TeamTable({
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
-              disabled={isSubmitting}
+              disabled={isLoading}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleConfirmDelete}
-              disabled={isSubmitting}
+              disabled={isLoading}
             >
-              {isSubmitting ? "Deleting..." : "Delete"}
+              {isLoading ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

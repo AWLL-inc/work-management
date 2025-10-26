@@ -1,8 +1,17 @@
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createTeam, deleteTeam, getTeams, updateTeam } from "@/lib/api/teams";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { TeamsClient } from "./teams-client";
 
 export default async function TeamsPage() {
+  // Permission check: Only admins can access team management
+  const session = await getAuthenticatedSession();
+
+  if (!session || session.user.role !== "admin") {
+    redirect("/work-logs");
+  }
+
   // Server-side data fetching
   const teams = await getTeams(false);
 

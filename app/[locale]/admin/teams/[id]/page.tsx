@@ -7,6 +7,10 @@ import {
   removeTeamMember,
 } from "@/lib/api/teams";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
+import {
+  type ServerActionResult,
+  wrapServerAction,
+} from "@/lib/server-actions";
 import { TeamDetailClient } from "./team-detail-client";
 
 interface TeamDetailPageProps {
@@ -26,17 +30,26 @@ export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
   // Server-side data fetching
   const [team, users] = await Promise.all([getTeam(id), getUsers()]);
 
-  // Server Actions
-  const handleAddMember = async (data: { userId: string; role?: string }) => {
+  // Server Actions with type-safe error handling
+  const handleAddMember = async (data: {
+    userId: string;
+    role?: string;
+  }): Promise<ServerActionResult> => {
     "use server";
-    await addTeamMember(id, data);
-    revalidatePath(`/[locale]/admin/teams/${id}`);
+    return wrapServerAction(async () => {
+      await addTeamMember(id, data);
+      revalidatePath(`/[locale]/admin/teams/${id}`);
+    });
   };
 
-  const handleRemoveMember = async (userId: string) => {
+  const handleRemoveMember = async (
+    userId: string,
+  ): Promise<ServerActionResult> => {
     "use server";
-    await removeTeamMember(id, userId);
-    revalidatePath(`/[locale]/admin/teams/${id}`);
+    return wrapServerAction(async () => {
+      await removeTeamMember(id, userId);
+      revalidatePath(`/[locale]/admin/teams/${id}`);
+    });
   };
 
   return (

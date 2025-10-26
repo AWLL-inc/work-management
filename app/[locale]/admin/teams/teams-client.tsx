@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { TeamTable } from "@/components/features/admin/teams/team-table";
 import type { TeamWithMembers } from "@/lib/api/teams";
+import type { ServerActionResult } from "@/lib/server-actions";
+import { TeamTable } from "./_components/team-table";
 
 interface TeamsClientProps {
   initialTeams: TeamWithMembers[];
@@ -11,7 +12,7 @@ interface TeamsClientProps {
     name: string;
     description?: string;
     isActive: boolean;
-  }) => Promise<void>;
+  }) => Promise<ServerActionResult>;
   onUpdateTeam: (
     id: string,
     data: {
@@ -19,8 +20,8 @@ interface TeamsClientProps {
       description?: string | null;
       isActive?: boolean;
     },
-  ) => Promise<void>;
-  onDeleteTeam: (id: string) => Promise<void>;
+  ) => Promise<ServerActionResult>;
+  onDeleteTeam: (id: string) => Promise<ServerActionResult>;
 }
 
 export function TeamsClient({
@@ -36,14 +37,16 @@ export function TeamsClient({
     description?: string;
     isActive: boolean;
   }) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      await onCreateTeam(data);
-      toast.success("Team created successfully");
+      const result = await onCreateTeam(data);
+      if (result.success) {
+        toast.success("Team created successfully");
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create team",
-      );
+      toast.error("Failed to create team");
       console.error("Failed to create team:", error);
     } finally {
       setIsLoading(false);
@@ -58,14 +61,16 @@ export function TeamsClient({
       isActive?: boolean;
     },
   ) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      await onUpdateTeam(id, data);
-      toast.success("Team updated successfully");
+      const result = await onUpdateTeam(id, data);
+      if (result.success) {
+        toast.success("Team updated successfully");
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update team",
-      );
+      toast.error("Failed to update team");
       console.error("Failed to update team:", error);
     } finally {
       setIsLoading(false);
@@ -73,14 +78,16 @@ export function TeamsClient({
   };
 
   const handleDeleteTeam = async (id: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      await onDeleteTeam(id);
-      toast.success("Team deleted successfully");
+      const result = await onDeleteTeam(id);
+      if (result.success) {
+        toast.success("Team deleted successfully");
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete team",
-      );
+      toast.error("Failed to delete team");
       console.error("Failed to delete team:", error);
     } finally {
       setIsLoading(false);

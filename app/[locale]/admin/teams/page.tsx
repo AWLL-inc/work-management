@@ -9,6 +9,10 @@ import {
   updateTeam,
 } from "@/lib/api/teams";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
+import {
+  type ServerActionResult,
+  wrapServerAction,
+} from "@/lib/server-actions";
 import { TeamsClient } from "./teams-client";
 
 export default async function TeamsPage() {
@@ -22,23 +26,34 @@ export default async function TeamsPage() {
   // Server-side data fetching
   const teams = await getTeams(false);
 
-  // Server Actions wrapped in async functions
-  const handleCreateTeam = async (data: CreateTeamData) => {
+  // Server Actions with type-safe error handling
+  const handleCreateTeam = async (
+    data: CreateTeamData,
+  ): Promise<ServerActionResult> => {
     "use server";
-    await createTeam(data);
-    revalidatePath("/[locale]/admin/teams");
+    return wrapServerAction(async () => {
+      await createTeam(data);
+      revalidatePath("/[locale]/admin/teams");
+    });
   };
 
-  const handleUpdateTeam = async (id: string, data: UpdateTeamData) => {
+  const handleUpdateTeam = async (
+    id: string,
+    data: UpdateTeamData,
+  ): Promise<ServerActionResult> => {
     "use server";
-    await updateTeam(id, data);
-    revalidatePath("/[locale]/admin/teams");
+    return wrapServerAction(async () => {
+      await updateTeam(id, data);
+      revalidatePath("/[locale]/admin/teams");
+    });
   };
 
-  const handleDeleteTeam = async (id: string) => {
+  const handleDeleteTeam = async (id: string): Promise<ServerActionResult> => {
     "use server";
-    await deleteTeam(id);
-    revalidatePath("/[locale]/admin/teams");
+    return wrapServerAction(async () => {
+      await deleteTeam(id);
+      revalidatePath("/[locale]/admin/teams");
+    });
   };
 
   return (

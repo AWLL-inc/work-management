@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeft, Plus, Trash2, UserPlus, Users } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -38,13 +37,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { User } from "@/drizzle/schema";
+import { Link } from "@/i18n/routing";
 import type { TeamWithMembers } from "@/lib/api/teams";
+import type { ServerActionResult } from "@/lib/server-actions";
 
 interface TeamDetailClientProps {
   team: TeamWithMembers;
   users: User[];
-  onAddMember: (data: { userId: string; role?: string }) => Promise<void>;
-  onRemoveMember: (userId: string) => Promise<void>;
+  onAddMember: (data: {
+    userId: string;
+    role?: string;
+  }) => Promise<ServerActionResult>;
+  onRemoveMember: (userId: string) => Promise<ServerActionResult>;
 }
 
 export function TeamDetailClient({
@@ -72,15 +76,21 @@ export function TeamDetailClient({
 
     setIsSubmitting(true);
     try {
-      await onAddMember({ userId: selectedUserId, role: selectedRole });
-      toast.success("Member added successfully");
-      setAddMemberOpen(false);
-      setSelectedUserId("");
-      setSelectedRole("member");
+      const result = await onAddMember({
+        userId: selectedUserId,
+        role: selectedRole,
+      });
+      if (result.success) {
+        toast.success("Member added successfully");
+        setAddMemberOpen(false);
+        setSelectedUserId("");
+        setSelectedRole("member");
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to add member",
-      );
+      toast.error("Failed to add member");
+      console.error("Failed to add member:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -96,14 +106,17 @@ export function TeamDetailClient({
 
     setIsSubmitting(true);
     try {
-      await onRemoveMember(memberToRemove);
-      toast.success("Member removed successfully");
-      setDeleteDialogOpen(false);
-      setMemberToRemove(null);
+      const result = await onRemoveMember(memberToRemove);
+      if (result.success) {
+        toast.success("Member removed successfully");
+        setDeleteDialogOpen(false);
+        setMemberToRemove(null);
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to remove member",
-      );
+      toast.error("Failed to remove member");
+      console.error("Failed to remove member:", error);
     } finally {
       setIsSubmitting(false);
     }

@@ -101,7 +101,9 @@
       "Bash(do)",
       "Bash(done)",
       "mcp__serena__think_about_collected_information",
-      "Bash(gh pr checks:*)"
+      "Bash(gh pr checks:*)",
+      "Bash(git rm:*)",
+      "Bash(gh api:*)"
     ],
     "deny": [],
     "ask": []

@@ -2,10 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { AGGridWorkLogTable } from "@/components/features/work-logs/ag-grid-work-log-table";
 import { EnhancedWorkLogTable } from "@/components/features/work-logs/enhanced-work-log-table";
-import { WorkLogTable } from "@/components/features/work-logs/work-log-table";
-import { Button } from "@/components/ui/button";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 
 interface WorkLogsClientProps {
@@ -42,9 +39,6 @@ export function WorkLogsClient({
   onDeleteWorkLog,
   onRefresh,
 }: WorkLogsClientProps) {
-  const [tableType, setTableType] = useState<
-    "enhanced" | "ag-grid" | "standard"
-  >("enhanced");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateWorkLog = async (data: {
@@ -118,64 +112,17 @@ export function WorkLogsClient({
 
   return (
     <div className="px-4 sm:px-0">
-      <div className="mb-4 flex justify-end gap-2">
-        <Button
-          variant={tableType === "enhanced" ? "default" : "outline"}
-          onClick={() => setTableType("enhanced")}
-          className="mb-4"
-        >
-          Enhanced AG Grid
-        </Button>
-        <Button
-          variant={tableType === "ag-grid" ? "default" : "outline"}
-          onClick={() => setTableType("ag-grid")}
-          className="mb-4"
-        >
-          Original AG Grid
-        </Button>
-        <Button
-          variant={tableType === "standard" ? "default" : "outline"}
-          onClick={() => setTableType("standard")}
-          className="mb-4"
-        >
-          Standard Table
-        </Button>
-      </div>
-
-      {tableType === "enhanced" ? (
-        <EnhancedWorkLogTable
-          workLogs={initialWorkLogs}
-          projects={projects}
-          categories={categories}
-          onCreateWorkLog={handleCreateWorkLog}
-          onUpdateWorkLog={handleUpdateWorkLog}
-          onDeleteWorkLog={handleDeleteWorkLog}
-          onRefresh={handleRefresh}
-          onFilterChange={() => {}}
-          isLoading={isLoading}
-        />
-      ) : tableType === "ag-grid" ? (
-        <AGGridWorkLogTable
-          workLogs={initialWorkLogs}
-          projects={projects}
-          categories={categories}
-          onCreateWorkLog={handleCreateWorkLog}
-          onUpdateWorkLog={handleUpdateWorkLog}
-          onDeleteWorkLog={handleDeleteWorkLog}
-          onRefresh={handleRefresh}
-          isLoading={isLoading}
-        />
-      ) : (
-        <WorkLogTable
-          workLogs={initialWorkLogs}
-          projects={projects}
-          categories={categories}
-          onCreateWorkLog={handleCreateWorkLog}
-          onUpdateWorkLog={handleUpdateWorkLog}
-          onDeleteWorkLog={handleDeleteWorkLog}
-          isLoading={isLoading}
-        />
-      )}
+      <EnhancedWorkLogTable
+        workLogs={initialWorkLogs}
+        projects={projects}
+        categories={categories}
+        onCreateWorkLog={handleCreateWorkLog}
+        onUpdateWorkLog={handleUpdateWorkLog}
+        onDeleteWorkLog={handleDeleteWorkLog}
+        onRefresh={handleRefresh}
+        onFilterChange={() => {}}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

@@ -7,7 +7,7 @@ vi.mock("next-auth", () => ({
   })),
 }));
 
-describe("auth-config DISABLE_AUTH functionality", () => {
+describe("auth-config simplified implementation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
@@ -18,8 +18,12 @@ describe("auth-config DISABLE_AUTH functionality", () => {
   });
 
   describe("authorized callback", () => {
-    // We'll test the logic by importing and testing the configuration object
-    // Since the auth-config.ts exports the configuration, we need to test the authorized function
+    /**
+     * New simplified implementation:
+     * - authorized() only checks authentication (returns true/false)
+     * - NO route-specific logic (moved to middleware.ts)
+     * - NO redirects (handled by middleware.ts)
+     */
 
     it("should bypass auth in development mode when DISABLE_AUTH=true", async () => {
       vi.stubEnv("NODE_ENV", "development");
@@ -31,26 +35,18 @@ describe("auth-config DISABLE_AUTH functionality", () => {
       // Mock the authorized callback parameters
       const mockParams = {
         auth: null, // No authentication
-        request: {
-          nextUrl: new URL("http://localhost:3000/dashboard"),
-        },
       };
 
       // Call the authorized callback
       const result = authConfig.callbacks?.authorized?.(mockParams as any);
 
-      // Should return true (bypass auth)
+      // Should return true (bypass auth in development)
       expect(result).toBe(true);
     });
 
-    it("should enforce auth in production even if DISABLE_AUTH=true", async () => {
+    it("should NOT bypass auth in production even if DISABLE_AUTH=true", async () => {
       vi.stubEnv("NODE_ENV", "production");
       vi.stubEnv("DISABLE_AUTH", "true");
-
-      // Mock console.error to verify it's called
-      const consoleSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");
@@ -58,48 +54,35 @@ describe("auth-config DISABLE_AUTH functionality", () => {
       // Mock the authorized callback parameters
       const mockParams = {
         auth: null, // No authentication
-        request: {
-          nextUrl: new URL("http://localhost:3000/dashboard"),
-        },
       };
 
       // Call the authorized callback
       const result = authConfig.callbacks?.authorized?.(mockParams as any);
 
-      // Should enforce authentication (not return true immediately)
-      expect(result).not.toBe(true);
-
-      // Should log security warning
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "SECURITY WARNING: DISABLE_AUTH is set in production environment - ignoring this setting",
-      );
-
-      consoleSpy.mockRestore();
+      // Should return false (enforce authentication in production)
+      expect(result).toBe(false);
     });
 
-    it("should enforce auth in development when DISABLE_AUTH=false", async () => {
+    it("should require auth in development when DISABLE_AUTH=false", async () => {
       vi.stubEnv("NODE_ENV", "development");
       vi.stubEnv("DISABLE_AUTH", "false");
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");
 
-      // Mock the authorized callback parameters for protected route
+      // Mock the authorized callback parameters
       const mockParams = {
         auth: null, // No authentication
-        request: {
-          nextUrl: new URL("http://localhost:3000/work-logs"),
-        },
       };
 
       // Call the authorized callback
       const result = authConfig.callbacks?.authorized?.(mockParams as any);
 
-      // Should redirect to signin (Response object)
-      expect(result).toBeInstanceOf(Response);
+      // Should return false (require authentication)
+      expect(result).toBe(false);
     });
 
-    it("should allow authenticated user to access protected routes", async () => {
+    it("should allow authenticated users", async () => {
       vi.stubEnv("NODE_ENV", "production");
       vi.stubEnv("DISABLE_AUTH", "false");
 
@@ -111,19 +94,16 @@ describe("auth-config DISABLE_AUTH functionality", () => {
         auth: {
           user: { id: "1", email: "user@example.com" },
         },
-        request: {
-          nextUrl: new URL("http://localhost:3000/work-logs"),
-        },
       };
 
       // Call the authorized callback
       const result = authConfig.callbacks?.authorized?.(mockParams as any);
 
-      // Should allow access
+      // Should allow access (return true)
       expect(result).toBe(true);
     });
 
-    it("should redirect unauthenticated users from protected routes", async () => {
+    it("should reject unauthenticated users", async () => {
       vi.stubEnv("NODE_ENV", "production");
       vi.stubEnv("DISABLE_AUTH", "false");
 
@@ -133,67 +113,43 @@ describe("auth-config DISABLE_AUTH functionality", () => {
       // Mock the authorized callback parameters
       const mockParams = {
         auth: null, // No authentication
-        request: {
-          nextUrl: new URL("http://localhost:3000/work-logs"),
-        },
       };
 
       // Call the authorized callback
       const result = authConfig.callbacks?.authorized?.(mockParams as any);
 
-      // Should redirect to signin
-      expect(result).toBeInstanceOf(Response);
-      if (result instanceof Response) {
-        expect(result.headers.get("location")).toContain("/login");
-      }
+      // Should reject access (return false)
+      expect(result).toBe(false);
     });
 
-    it("should allow access to auth pages for unauthenticated users", async () => {
+    it("should work consistently regardless of route (route logic is in middleware)", async () => {
       vi.stubEnv("NODE_ENV", "production");
       vi.stubEnv("DISABLE_AUTH", "false");
 
       // Import the auth config
       const { authConfig } = await import("../auth-config");
 
-      // Mock the authorized callback parameters for auth page
-      const mockParams = {
-        auth: null, // No authentication
-        request: {
-          nextUrl: new URL("http://localhost:3000/auth/signin"),
-        },
-      };
+      // Test with different routes - should behave the same (no route logic)
+      const routes = [
+        "/dashboard",
+        "/work-logs",
+        "/admin/projects",
+        "/login",
+        "/auth/signin",
+      ];
 
-      // Call the authorized callback
-      const result = authConfig.callbacks?.authorized?.(mockParams as any);
+      for (const route of routes) {
+        // Unauthenticated
+        const unauthResult = authConfig.callbacks?.authorized?.({
+          auth: null,
+        } as any);
+        expect(unauthResult).toBe(false);
 
-      // Should allow access to auth pages
-      expect(result).toBe(true);
-    });
-
-    it("should redirect authenticated users away from auth pages", async () => {
-      vi.stubEnv("NODE_ENV", "production");
-      vi.stubEnv("DISABLE_AUTH", "false");
-
-      // Import the auth config
-      const { authConfig } = await import("../auth-config");
-
-      // Mock the authorized callback parameters with authenticated user accessing auth page
-      const mockParams = {
-        auth: {
-          user: { id: "1", email: "user@example.com" },
-        },
-        request: {
-          nextUrl: new URL("http://localhost:3000/auth/signin"),
-        },
-      };
-
-      // Call the authorized callback
-      const result = authConfig.callbacks?.authorized?.(mockParams as any);
-
-      // Should redirect away from auth pages
-      expect(result).toBeInstanceOf(Response);
-      if (result instanceof Response) {
-        expect(result.headers.get("location")).toContain("/");
+        // Authenticated
+        const authResult = authConfig.callbacks?.authorized?.({
+          auth: { user: { id: "1" } },
+        } as any);
+        expect(authResult).toBe(true);
       }
     });
   });

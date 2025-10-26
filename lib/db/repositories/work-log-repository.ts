@@ -32,6 +32,7 @@ export interface WorkLogWithRelations extends WorkLog {
 
 export interface GetWorkLogsOptions {
   userId?: string; // Filter by user (if not admin)
+  userIds?: string[]; // Filter by multiple users (for team scope)
   startDate?: Date;
   endDate?: Date;
   projectId?: string;
@@ -59,6 +60,7 @@ export async function getWorkLogs(options: GetWorkLogsOptions = {}): Promise<{
 }> {
   const {
     userId,
+    userIds,
     startDate,
     endDate,
     projectId,
@@ -73,7 +75,10 @@ export async function getWorkLogs(options: GetWorkLogsOptions = {}): Promise<{
   // Build WHERE conditions
   const conditions = [];
 
-  if (userId) {
+  // User filtering - support both single and multiple
+  if (userIds && userIds.length > 0) {
+    conditions.push(inArray(workLogs.userId, userIds));
+  } else if (userId) {
     conditions.push(eq(workLogs.userId, userId));
   }
 

@@ -1,27 +1,78 @@
+import { eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { teamMembers } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
+import { db } from "@/lib/db/connection";
 import { getAllProjects } from "@/lib/db/repositories/project-repository";
 import { getAllWorkCategories } from "@/lib/db/repositories/work-category-repository";
 import {
   createWorkLog as createWorkLogRepo,
   deleteWorkLog as deleteWorkLogRepo,
+  type GetWorkLogsOptions,
   getWorkLogs as getWorkLogsRepo,
   updateWorkLog as updateWorkLogRepo,
 } from "@/lib/db/repositories/work-log-repository";
 import { WorkLogsClient } from "./work-logs-client";
 
-export default async function WorkLogsPage() {
+interface WorkLogsPageProps {
+  searchParams: Promise<{ scope?: string }>;
+}
+
+export default async function WorkLogsPage({
+  searchParams,
+}: WorkLogsPageProps) {
   // Get authenticated session
   const session = await getAuthenticatedSession();
   if (!session) {
     throw new Error("Unauthorized");
   }
 
-  // Server-side data fetching - use repository directly instead of API
+  // Get scope from URL parameter
+  const { scope = "own" } = await searchParams;
+
+  // Build query options based on scope
+  const options: GetWorkLogsOptions = {};
+
+  if (scope === "all") {
+    // Admin can view all work logs
+    if (session.user.role !== "admin") {
+      throw new Error("Forbidden: Only admins can view all work logs");
+    }
+    // No user filter for admin viewing all
+  } else if (scope === "team") {
+    // Get user's teams
+    const userTeams = await db
+      .select({ teamId: teamMembers.teamId })
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, session.user.id));
+
+    if (userTeams.length > 0) {
+      const teamIds = userTeams.map((tm) => tm.teamId);
+
+      // Get all team members
+      const allMembers = await db
+        .select({ userId: teamMembers.userId })
+        .from(teamMembers)
+        .where(inArray(teamMembers.teamId, teamIds));
+
+      // Include current user and deduplicate
+      const uniqueTeammateIds = Array.from(
+        new Set([session.user.id, ...allMembers.map((m) => m.userId)]),
+      );
+
+      options.userIds = uniqueTeammateIds;
+    } else {
+      // User not in any team, show only own work logs
+      options.userId = session.user.id;
+    }
+  } else {
+    // scope === "own" (default)
+    options.userId = session.user.id;
+  }
+
+  // Server-side data fetching
   const [workLogsResult, projects, categories] = await Promise.all([
-    getWorkLogsRepo({
-      userId: session.user.role === "admin" ? undefined : session.user.id,
-    }),
+    getWorkLogsRepo(options),
     getAllProjects({ activeOnly: true }),
     getAllWorkCategories({ activeOnly: true }),
   ]);
@@ -85,6 +136,8 @@ export default async function WorkLogsPage() {
       initialWorkLogs={workLogs}
       projects={projects}
       categories={categories}
+      currentScope={scope as "own" | "team" | "all"}
+      userRole={session.user.role}
       onCreateWorkLog={handleCreateWorkLog}
       onUpdateWorkLog={handleUpdateWorkLog}
       onDeleteWorkLog={handleDeleteWorkLog}

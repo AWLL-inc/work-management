@@ -694,4 +694,95 @@ describe("Work Logs API - Collection Routes", () => {
       );
     });
   });
+
+  describe("Scope Parameter", () => {
+    const mockResponse = {
+      data: [],
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 0,
+      },
+    };
+
+    beforeEach(() => {
+      vi.mocked(getWorkLogs).mockResolvedValue(mockResponse);
+    });
+
+    it("should return only own work logs when scope=own (default)", async () => {
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
+        user: { id: "user-id", email: "user@example.com", role: "user" },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs?scope=own",
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      expect(getWorkLogs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: "user-id",
+        }),
+      );
+    });
+
+    it("should deny non-admin users from using scope=all", async () => {
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
+        user: { id: "user-id", email: "user@example.com", role: "user" },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs?scope=all",
+      );
+      const response = await GET(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.success).toBe(false);
+      expect(data.error.code).toBe("FORBIDDEN");
+      expect(data.error.message).toBe("Only admins can view all work logs");
+    });
+
+    it("should allow admin to view all work logs with scope=all", async () => {
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
+        user: { id: "admin-id", email: "admin@example.com", role: "admin" },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      } as any);
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs?scope=all",
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      // Admin with scope=all should not have userId filter
+      expect(getWorkLogs).toHaveBeenCalledWith(
+        expect.not.objectContaining({
+          userId: expect.anything(),
+        }),
+      );
+    });
+
+    it("should default to scope=own when no scope is specified", async () => {
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
+        user: { id: "user-id", email: "user@example.com", role: "user" },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      } as any);
+
+      const request = new NextRequest("http://localhost:3000/api/work-logs");
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      // Should default to own scope
+      expect(getWorkLogs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: "user-id",
+        }),
+      );
+    });
+  });
 });

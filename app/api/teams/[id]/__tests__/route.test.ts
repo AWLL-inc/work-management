@@ -66,7 +66,9 @@ describe("Teams API - Detail Routes", () => {
       const request = new NextRequest(
         `http://localhost:3000/api/teams/${teamId}`,
       );
-      const response = await GET(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await GET(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -92,7 +94,9 @@ describe("Teams API - Detail Routes", () => {
       const request = new NextRequest(
         `http://localhost:3000/api/teams/${teamId}`,
       );
-      const response = await GET(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await GET(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -162,7 +166,9 @@ describe("Teams API - Detail Routes", () => {
       const request = new NextRequest(
         `http://localhost:3000/api/teams/${teamId}`,
       );
-      const response = await GET(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await GET(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -185,7 +191,9 @@ describe("Teams API - Detail Routes", () => {
           body: JSON.stringify({ name: "Updated Team" }),
         },
       );
-      const response = await PUT(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await PUT(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -206,7 +214,9 @@ describe("Teams API - Detail Routes", () => {
           body: JSON.stringify({ name: "Updated Team" }),
         },
       );
-      const response = await PUT(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await PUT(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -236,7 +246,9 @@ describe("Teams API - Detail Routes", () => {
           body: JSON.stringify({ name: "Updated Team" }),
         },
       );
-      const response = await PUT(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await PUT(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -307,7 +319,9 @@ describe("Teams API - Detail Routes", () => {
           }),
         },
       );
-      const response = await PUT(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await PUT(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -367,7 +381,9 @@ describe("Teams API - Detail Routes", () => {
           body: JSON.stringify({ name: "Existing Team Name" }),
         },
       );
-      const response = await PUT(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await PUT(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -423,7 +439,9 @@ describe("Teams API - Detail Routes", () => {
           }),
         },
       );
-      const response = await PUT(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await PUT(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -447,7 +465,9 @@ describe("Teams API - Detail Routes", () => {
           }),
         },
       );
-      const response = await PUT(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await PUT(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(400);
@@ -464,7 +484,9 @@ describe("Teams API - Detail Routes", () => {
         `http://localhost:3000/api/teams/${teamId}`,
         { method: "DELETE" },
       );
-      const response = await DELETE(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await DELETE(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -482,7 +504,9 @@ describe("Teams API - Detail Routes", () => {
         `http://localhost:3000/api/teams/${teamId}`,
         { method: "DELETE" },
       );
-      const response = await DELETE(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await DELETE(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(403);
@@ -509,7 +533,9 @@ describe("Teams API - Detail Routes", () => {
         `http://localhost:3000/api/teams/${teamId}`,
         { method: "DELETE" },
       );
-      const response = await DELETE(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await DELETE(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(404);
@@ -550,7 +576,9 @@ describe("Teams API - Detail Routes", () => {
         `http://localhost:3000/api/teams/${teamId}`,
         { method: "DELETE" },
       );
-      const response = await DELETE(request, { params: Promise.resolve({ id: teamId }) });
+      const response = await DELETE(request, {
+        params: Promise.resolve({ id: teamId }),
+      });
       const data = await response.json();
 
       expect(response.status).toBe(200);

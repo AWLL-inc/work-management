@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { canEditWorkLog, canViewWorkLog, checkIfTeammates } from "../permissions";
+import {
+  canEditWorkLog,
+  canViewWorkLog,
+  checkIfTeammates,
+} from "../permissions";
 
 /**
  * Unit tests for Permission Logic

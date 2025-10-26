@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -165,6 +166,51 @@ export const workLogs = pgTable(
   }),
 );
 
+// Teams Master Table
+export const teams = pgTable(
+  "teams",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name", { length: 255 }).notNull().unique(),
+    description: text("description"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => ({
+    isActiveIdx: index("teams_is_active_idx").on(table.isActive),
+  }),
+);
+
+// Team Members Junction Table
+export const teamMembers = pgTable(
+  "team_members",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    teamId: uuid("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: varchar("role", { length: 50 }).notNull().default("member"),
+    joinedAt: timestamp("joined_at", { mode: "date" }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => ({
+    teamUserIdx: index("team_members_team_user_idx").on(
+      table.teamId,
+      table.userId,
+    ),
+    userIdx: index("team_members_user_idx").on(table.userId),
+    teamUserUnique: unique("team_members_team_user_unique").on(
+      table.teamId,
+      table.userId,
+    ),
+  }),
+);
+
 /**
  * Type exports for TypeScript
  */
@@ -180,3 +226,7 @@ export type WorkCategory = typeof workCategories.$inferSelect;
 export type NewWorkCategory = typeof workCategories.$inferInsert;
 export type WorkLog = typeof workLogs.$inferSelect;
 export type NewWorkLog = typeof workLogs.$inferInsert;
+export type Team = typeof teams.$inferSelect;
+export type NewTeam = typeof teams.$inferInsert;
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type NewTeamMember = typeof teamMembers.$inferInsert;

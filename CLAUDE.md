@@ -358,10 +358,49 @@ Based on comprehensive API design principles:
 
 ## Component Architecture
 
-### Frontend Component Strategy
+### Component Placement Rules (Next.js 15 - Pattern 3)
+
+Following Next.js 15 official **"Files split by feature/route"** pattern (2025 best practices):
+
+#### Decision Tree
+
+**1. Route-specific components** → `app/[route]/_components/`
+- Used **only within a single route**
+- Example: `app/[locale]/admin/teams/_components/team-table.tsx`
+- Note: `_components` is a **private folder** (excluded from routing by Next.js)
+- Best for: Form components, table columns, dialogs used in one page
+
+**2. Multi-route domain components** → `components/features/[domain]/`
+- Shared **across 2+ routes** within the same domain
+- Example: `components/features/auth/login-form.tsx` (if used in /login, /register, /reset-password)
+- Best for: Reusable domain-specific logic across multiple pages
+
+**3. App-wide components** → `components/ui/` or `components/layouts/`
+- **UI primitives**: `components/ui/` (shadcn/ui: buttons, inputs, badges, etc.)
+- **Layouts**: `components/layouts/` (page layouts, section wrappers)
+- **Data tables**: `components/data-table/` (TanStack Table utilities)
+- Best for: Universal components used throughout the application
+
+#### When to Move Components
+
+**Start with `app/[route]/_components/`** and move to `components/features/` only when:
+- ✅ Component is **actually reused** in 2+ routes (not just potentially reusable)
+- ✅ Follows **YAGNI principle** (You Aren't Gonna Need It)
+- ✅ Significant shared logic that benefits from centralization
+
+**Example progression:**
+```
+1. Initial: app/[locale]/admin/teams/_components/team-form.tsx
+   (Used only in /admin/teams)
+
+2. If reused: Move to components/features/admin/teams/team-form.tsx
+   (When also used in /admin/teams/[id], /dashboard, etc.)
+```
+
+### Frontend Component Strategy (Legacy Reference)
 - **UI Primitives**: `components/ui/` - shadcn/ui components (buttons, inputs, labels, etc.)
 - **Data Tables**: `components/data-table/` - TanStack Table wrappers and utilities
-- **Feature Components**: `components/features/` - Feature-specific components
+- **Feature Components**: `components/features/` - Multi-route feature-specific components
 - **Layout Components**: `components/layouts/` - Page and section layouts
 
 ### Component Development Patterns
@@ -706,6 +745,13 @@ When writing frontend specifications:
 
 ## Recent Updates
 
+### 2024-10-26
+- **Component Placement Rules**: Next.js 15 Pattern 3 documentation
+  - Route-specific components: `app/[route]/_components/`
+  - Multi-route domain components: `components/features/[domain]/`
+  - App-wide components: `components/ui/`, `components/layouts/`
+  - YAGNI principle: Start with route-specific, move only when actually reused
+
 ### 2024-10-04
 - **ADR-005**: UIライブラリとデータテーブルの選定
   - shadcn/ui + Radix UI for UI components
@@ -851,5 +897,5 @@ npm run format        # Auto-format code
 
 ---
 
-**Last Updated**: 2024-10-12
+**Last Updated**: 2024-10-26
 **Claude Instructions**: Use this context to understand the project structure, available commands, and development patterns. Always check ADRs for detailed technical decisions. When creating or reviewing Issues, follow the established templates and labeling system. Refer to the comprehensive testing guidelines and component architecture standards for development work.

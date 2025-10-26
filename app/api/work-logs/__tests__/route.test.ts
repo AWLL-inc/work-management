@@ -28,12 +28,28 @@ vi.mock("@/lib/db/repositories/work-log-repository", () => ({
   getWorkLogs: vi.fn(),
   createWorkLog: vi.fn(),
 }));
-vi.mock("@/lib/db/connection", () => ({
-  db: {},
-}));
+
+vi.mock("@/lib/db/connection", () => {
+  const selectFn = vi.fn().mockReturnThis();
+  const fromFn = vi.fn().mockReturnThis();
+  const whereFn = vi.fn().mockReturnThis();
+  const innerJoinFn = vi.fn().mockReturnThis();
+  const limitFn = vi.fn().mockResolvedValue([]);
+
+  const mockDb = {
+    select: selectFn,
+    from: fromFn,
+    where: whereFn,
+    innerJoin: innerJoinFn,
+    limit: limitFn,
+  };
+
+  return { db: mockDb };
+});
 
 import { GET, POST } from "@/app/api/work-logs/route";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
+import { db } from "@/lib/db/connection";
 import {
   createWorkLog,
   getWorkLogs,
@@ -782,6 +798,144 @@ describe("Work Logs API - Collection Routes", () => {
         expect.objectContaining({
           userId: "user-id",
         }),
+      );
+    });
+
+    it("should retrieve team work logs when scope=team and user has team members", async () => {
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
+        user: { id: "user-id", email: "user@example.com", role: "user" },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      } as any);
+
+      // Mock database responses for team membership queries
+      // First query: Get teams the user belongs to
+      const userTeams = [{ teamId: "team-1" }, { teamId: "team-2" }];
+
+      // Second query: Get all members in those teams
+      const allMembers = [
+        { userId: "user-id" },
+        { userId: "teammate-1" },
+        { userId: "teammate-2" },
+        { userId: "teammate-3" },
+      ];
+
+      // Mock chained db calls - need to handle two separate query chains
+      let callCount = 0;
+      vi.mocked(db.select).mockImplementation(() => {
+        const mockChain = {
+          from: vi.fn().mockReturnValue({
+            where: vi
+              .fn()
+              .mockResolvedValue(callCount++ === 0 ? userTeams : allMembers),
+          }),
+        };
+        return mockChain as any;
+      });
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs?scope=team",
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      // Should include all team members' user IDs (deduplicated)
+      expect(getWorkLogs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userIds: expect.arrayContaining([
+            "user-id",
+            "teammate-1",
+            "teammate-2",
+            "teammate-3",
+          ]),
+        }),
+      );
+      // Should not have userId when using userIds
+      expect(getWorkLogs).toHaveBeenCalledWith(
+        expect.not.objectContaining({
+          userId: expect.anything(),
+        }),
+      );
+    });
+
+    it("should fall back to own scope when scope=team and user has no team members", async () => {
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
+        user: { id: "user-id", email: "user@example.com", role: "user" },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      } as any);
+
+      // Mock database response: User not in any team
+      vi.mocked(db.select).mockImplementation(
+        () =>
+          ({
+            from: vi.fn().mockReturnValue({
+              where: vi.fn().mockResolvedValue([]), // Empty array - no teams
+            }),
+          }) as any,
+      );
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs?scope=team",
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      // Should fall back to own scope when user has no teams
+      expect(getWorkLogs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: "user-id",
+        }),
+      );
+      // Should not have userIds array
+      expect(getWorkLogs).toHaveBeenCalledWith(
+        expect.not.objectContaining({
+          userIds: expect.anything(),
+        }),
+      );
+    });
+
+    it("should deduplicate user IDs when scope=team includes current user", async () => {
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
+        user: { id: "user-id", email: "user@example.com", role: "user" },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      } as any);
+
+      // Mock database responses
+      const userTeams = [{ teamId: "team-1" }];
+
+      // Members include current user and some teammates
+      const allMembers = [
+        { userId: "user-id" }, // Current user appears in members
+        { userId: "user-id" }, // Duplicate current user
+        { userId: "teammate-1" },
+        { userId: "teammate-1" }, // Duplicate teammate
+        { userId: "teammate-2" },
+      ];
+
+      let callCount = 0;
+      vi.mocked(db.select).mockImplementation(
+        () =>
+          ({
+            from: vi.fn().mockReturnValue({
+              where: vi
+                .fn()
+                .mockResolvedValue(callCount++ === 0 ? userTeams : allMembers),
+            }),
+          }) as any,
+      );
+
+      const request = new NextRequest(
+        "http://localhost:3000/api/work-logs?scope=team",
+      );
+      const response = await GET(request);
+
+      expect(response.status).toBe(200);
+      const callArgs = vi.mocked(getWorkLogs).mock.calls[0]?.[0];
+
+      // Verify userIds is deduplicated
+      expect(callArgs).toBeDefined();
+      expect(callArgs?.userIds).toHaveLength(3);
+      expect(callArgs?.userIds).toEqual(
+        expect.arrayContaining(["user-id", "teammate-1", "teammate-2"]),
       );
     });
   });

@@ -147,7 +147,23 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = createTeamSchema.parse(body);
 
-    // Check if active team with same name already exists
+    /**
+     * Business Rule: Team Name Uniqueness (Active Teams Only)
+     *
+     * - Only ACTIVE teams (isActive: true) must have unique names
+     * - Multiple INACTIVE teams can share the same name
+     *
+     * Rationale:
+     * - Inactive teams are archived and no longer in active use
+     * - Allows team name reuse when old teams are deactivated
+     * - Prevents naming conflicts only among currently active teams
+     * - Supports historical record keeping without naming constraints
+     *
+     * Implementation:
+     * - Duplicate check filters by isActive: true
+     * - Soft delete (DELETE endpoint) sets isActive: false
+     * - Name becomes available for reuse after deactivation
+     */
     const existingTeam = await db
       .select()
       .from(teams)

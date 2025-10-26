@@ -173,7 +173,17 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateTeamSchema.parse(body);
 
-    // If name is being updated, check for duplicates among active teams
+    /**
+     * Business Rule: Team Name Uniqueness (Active Teams Only)
+     *
+     * When updating team name, check for duplicates only among ACTIVE teams.
+     * See POST /api/teams for detailed business rule documentation.
+     *
+     * Additional Update-Specific Rules:
+     * - Only check if name is actually being changed
+     * - Skip duplicate check if name remains the same
+     * - Allows updating other fields without name conflict check
+     */
     if (validatedData.name && validatedData.name !== existingTeam.name) {
       const [duplicateTeam] = await db
         .select()

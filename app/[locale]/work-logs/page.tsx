@@ -1,21 +1,32 @@
 import { revalidatePath } from "next/cache";
-import { getProjects } from "@/lib/api/projects";
-import { getWorkCategories } from "@/lib/api/work-categories";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
+import { getAllProjects } from "@/lib/db/repositories/project-repository";
+import { getAllWorkCategories } from "@/lib/db/repositories/work-category-repository";
 import {
-  createWorkLog,
-  deleteWorkLog,
-  getWorkLogs,
-  updateWorkLog,
-} from "@/lib/api/work-logs";
+  createWorkLog as createWorkLogRepo,
+  deleteWorkLog as deleteWorkLogRepo,
+  getWorkLogs as getWorkLogsRepo,
+  updateWorkLog as updateWorkLogRepo,
+} from "@/lib/db/repositories/work-log-repository";
 import { WorkLogsClient } from "./work-logs-client";
 
 export default async function WorkLogsPage() {
-  // Server-side data fetching
-  const [workLogs, projects, categories] = await Promise.all([
-    getWorkLogs({}),
-    getProjects(true),
-    getWorkCategories(true),
+  // Get authenticated session
+  const session = await getAuthenticatedSession();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  // Server-side data fetching - use repository directly instead of API
+  const [workLogsResult, projects, categories] = await Promise.all([
+    getWorkLogsRepo({
+      userId: session.user.role === "admin" ? undefined : session.user.id,
+    }),
+    getAllProjects({ activeOnly: true }),
+    getAllWorkCategories({ activeOnly: true }),
   ]);
+
+  const workLogs = workLogsResult.data;
 
   // Server Actions wrapped in async functions
   const handleCreateWorkLog = async (data: {
@@ -26,8 +37,12 @@ export default async function WorkLogsPage() {
     details?: string;
   }) => {
     "use server";
-    await createWorkLog({
-      date: data.date,
+    const session = await getAuthenticatedSession();
+    if (!session) throw new Error("Unauthorized");
+
+    await createWorkLogRepo({
+      userId: session.user.id,
+      date: new Date(data.date),
       hours: data.hours,
       projectId: data.projectId,
       categoryId: data.categoryId,
@@ -47,13 +62,16 @@ export default async function WorkLogsPage() {
     },
   ) => {
     "use server";
-    await updateWorkLog(id, data);
+    await updateWorkLogRepo(id, {
+      ...data,
+      date: data.date ? new Date(data.date) : undefined,
+    });
     revalidatePath("/[locale]/work-logs");
   };
 
   const handleDeleteWorkLog = async (id: string) => {
     "use server";
-    await deleteWorkLog(id);
+    await deleteWorkLogRepo(id);
     revalidatePath("/[locale]/work-logs");
   };
 

@@ -94,7 +94,14 @@
       "Bash(gh issue comment:*)",
       "Bash(gh run list:*)",
       "Bash(pnpm install)",
-      "Bash(gh pr merge:*)"
+      "Bash(gh pr merge:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run watch:*)",
+      "Bash(for issue in 62 59 58 57 56 54 53 52 50 49 43 21)",
+      "Bash(do)",
+      "Bash(done)",
+      "mcp__serena__think_about_collected_information",
+      "Bash(gh pr checks:*)"
     ],
     "deny": [],
     "ask": []

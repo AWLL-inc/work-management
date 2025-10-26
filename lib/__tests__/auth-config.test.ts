@@ -138,7 +138,7 @@ describe("auth-config simplified implementation", () => {
         "/auth/signin",
       ];
 
-      for (const route of routes) {
+      for (const _route of routes) {
         // Unauthenticated
         const unauthResult = authConfig.callbacks?.authorized?.({
           auth: null,

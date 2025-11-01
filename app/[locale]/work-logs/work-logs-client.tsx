@@ -1,14 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedWorkLogTable } from "@/components/features/work-logs/enhanced-work-log-table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 
 interface WorkLogsClientProps {
   initialWorkLogs: WorkLog[];
   projects: Project[];
   categories: WorkCategory[];
+  currentScope: "own" | "team" | "all";
+  userRole: string;
   onCreateWorkLog: (data: {
     date: string;
     hours: string;
@@ -34,12 +38,19 @@ export function WorkLogsClient({
   initialWorkLogs,
   projects,
   categories,
+  currentScope,
+  userRole,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
   onRefresh,
 }: WorkLogsClientProps) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleScopeChange = (newScope: string) => {
+    router.push(`/work-logs?scope=${newScope}`);
+  };
 
   const handleCreateWorkLog = async (data: {
     date: string;
@@ -111,7 +122,19 @@ export function WorkLogsClient({
   }, [onRefresh]);
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="px-4 sm:px-0 space-y-6">
+      {/* Scope Tabs */}
+      <Tabs value={currentScope} onValueChange={handleScopeChange}>
+        <TabsList>
+          <TabsTrigger value="own">My Work Logs</TabsTrigger>
+          <TabsTrigger value="team">Team Work Logs</TabsTrigger>
+          {userRole === "admin" && (
+            <TabsTrigger value="all">All Work Logs</TabsTrigger>
+          )}
+        </TabsList>
+      </Tabs>
+
+      {/* Work Log Table */}
       <EnhancedWorkLogTable
         workLogs={initialWorkLogs}
         projects={projects}

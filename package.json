@@ -26,6 +26,8 @@
     "docs:db:mermaid": "tsx scripts/generate-mermaid-erd.ts",
     "docs:db:markdown": "tsx scripts/generate-db-docs.ts",
     "docs:db": "npm run docs:db:dbml && npm run docs:db:mermaid && npm run docs:db:markdown",
+    "docs:openapi": "tsx scripts/generate-openapi.ts",
+    "docs": "npm run docs:db && npm run docs:openapi",
     "docker:dev": "docker-compose up",
     "docker:dev:build": "docker-compose up --build",
     "docker:dev:down": "docker-compose down",

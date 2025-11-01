@@ -844,6 +844,76 @@ This project provides structured Issue templates for efficient project managemen
 6. **Review**: Code review and testing
 7. **Closure**: Issue resolved and closed
 
+## Documentation Maintenance
+
+### API Documentation (OpenAPI)
+
+When adding or modifying API endpoints:
+
+1. **Edit Generation Script** (`scripts/generate-openapi.ts`)
+   - Add request/response schemas to `components.schemas`
+   - Add endpoint definitions to `paths`
+   - Follow existing patterns for consistency
+
+2. **Generate Documentation**
+   ```bash
+   npm run docs:openapi
+   ```
+
+3. **Verify the Generated Spec**
+   ```bash
+   npm run dev
+   # Visit http://localhost:3000/en/api-docs
+   ```
+
+4. **Commit Both Files**
+   - `scripts/generate-openapi.ts` (your manual changes)
+   - `openapi/spec.ts` (auto-generated output)
+
+**Note**: The OpenAPI spec in `openapi/spec.ts` is auto-generated from `scripts/generate-openapi.ts`. Always edit the generation script, not the output file directly.
+
+### Database Documentation
+
+When modifying database schema:
+
+1. **Update Drizzle Schema** (`drizzle/schema.ts`)
+   - Add or modify table definitions
+   - Include JSDoc comments for documentation
+
+2. **Generate Migration**
+   ```bash
+   npm run db:generate
+   ```
+
+3. **Regenerate Documentation**
+   ```bash
+   npm run docs:db
+   ```
+   This generates:
+   - `docs/database/schema.dbml` - DBML format for dbdiagram.io
+   - `docs/database/erd.md` - Mermaid ER diagram
+   - `docs/database/schema.md` - Markdown documentation
+
+4. **Commit Schema and Generated Docs**
+   - `drizzle/schema.ts` (schema changes)
+   - `drizzle/migrations/` (migration files)
+   - `docs/database/` (generated documentation)
+
+**Important**: Database documentation is fully auto-generated. Do not edit `docs/database/` files manually - they will be overwritten on next generation.
+
+### All Documentation at Once
+
+To regenerate all documentation (database + API):
+
+```bash
+npm run docs
+```
+
+This is equivalent to:
+```bash
+npm run docs:db && npm run docs:openapi
+```
+
 ## Additional Resources
 
 ### Documentation

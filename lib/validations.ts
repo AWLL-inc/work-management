@@ -28,15 +28,26 @@ export const WORK_LOG_CONSTRAINTS = {
  */
 
 // Create project schema
-export const createProjectSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Project name is required")
-    .max(255, "Project name must be 255 characters or less")
-    .trim(),
-  description: z.string().optional().nullable(),
-  isActive: z.boolean().optional().default(true),
-});
+export const createProjectSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "Project name is required")
+      .max(255, "Project name must be 255 characters or less")
+      .trim()
+      .describe("Project name (max 255 characters)"),
+    description: z
+      .string()
+      .optional()
+      .nullable()
+      .describe("Optional project description"),
+    isActive: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe("Whether the project is active (default: true)"),
+  })
+  .describe("Schema for creating a new project");
 
 // Update project schema
 export const updateProjectSchema = z.object({
@@ -51,13 +62,16 @@ export const updateProjectSchema = z.object({
 });
 
 // Query parameters for listing projects
-export const listProjectsQuerySchema = z.object({
-  active: z
-    .string()
-    .optional()
-    .transform((val) => val === "true")
-    .pipe(z.boolean()),
-});
+export const listProjectsQuerySchema = z
+  .object({
+    active: z
+      .string()
+      .optional()
+      .transform((val) => val === "true")
+      .pipe(z.boolean())
+      .describe("Filter by active status (true/false)"),
+  })
+  .describe("Query parameters for listing projects");
 
 /**
  * Work Category Validation Schemas

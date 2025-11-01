@@ -15,9 +15,13 @@ import {
 export const runtime = "nodejs";
 
 /**
- * GET /api/projects
- * Get all projects
- * @requires Authentication
+ * List all projects
+ * @description Retrieve a list of all projects, optionally filtered by active status
+ * @params listProjectsQuerySchema
+ * @response 200:ApiSuccessResponseSchema:Successfully retrieved projects list
+ * @responseDescription Array of project objects
+ * @auth bearer
+ * @openapi
  */
 export async function GET(request: NextRequest) {
   try {
@@ -95,10 +99,14 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/projects
  * Create a new project
- * @requires Authentication
- * @requires Admin role
+ * @description Create a new project with the provided details. Admin role required.
+ * @body createProjectSchema
+ * @bodyDescription Project information including name, description, and active status
+ * @response 201:ApiSuccessResponseSchema:Successfully created project
+ * @add 409:ConflictErrorSchema:Project with this name already exists
+ * @auth bearer
+ * @openapi
  */
 export async function POST(request: NextRequest) {
   try {

@@ -1,6 +1,6 @@
-import { type SQL, and, between, eq, gte, lte, sql } from "drizzle-orm";
-import { db } from "@/lib/db/connection";
+import { and, between, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { projects, users, workCategories, workLogs } from "@/drizzle/schema";
+import { db } from "@/lib/db/connection";
 
 /**
  * Dashboard Repository
@@ -87,7 +87,9 @@ export async function getPersonalStats(options: {
       logCount: sql<number>`COUNT(*)::int`,
     })
     .from(workLogs)
-    .where(and(eq(workLogs.userId, userId), between(workLogs.date, today, todayEnd)));
+    .where(
+      and(eq(workLogs.userId, userId), between(workLogs.date, today, todayEnd)),
+    );
 
   const [weekSummary] = await db
     .select({
@@ -95,7 +97,12 @@ export async function getPersonalStats(options: {
       logCount: sql<number>`COUNT(*)::int`,
     })
     .from(workLogs)
-    .where(and(eq(workLogs.userId, userId), between(workLogs.date, week.start, week.end)));
+    .where(
+      and(
+        eq(workLogs.userId, userId),
+        between(workLogs.date, week.start, week.end),
+      ),
+    );
 
   const [monthSummary] = await db
     .select({
@@ -103,7 +110,12 @@ export async function getPersonalStats(options: {
       logCount: sql<number>`COUNT(*)::int`,
     })
     .from(workLogs)
-    .where(and(eq(workLogs.userId, userId), between(workLogs.date, month.start, month.end)));
+    .where(
+      and(
+        eq(workLogs.userId, userId),
+        between(workLogs.date, month.start, month.end),
+      ),
+    );
 
   // By Project (for selected period)
   const [periodTotal] = await db
@@ -111,7 +123,12 @@ export async function getPersonalStats(options: {
       total: sql<string>`COALESCE(SUM(CAST(${workLogs.hours} AS DECIMAL)), 0)::text`,
     })
     .from(workLogs)
-    .where(and(eq(workLogs.userId, userId), between(workLogs.date, periodStart, periodEnd)));
+    .where(
+      and(
+        eq(workLogs.userId, userId),
+        between(workLogs.date, periodStart, periodEnd),
+      ),
+    );
 
   const totalHours = Number.parseFloat(periodTotal?.total || "0");
 
@@ -124,13 +141,21 @@ export async function getPersonalStats(options: {
     })
     .from(workLogs)
     .innerJoin(projects, eq(workLogs.projectId, projects.id))
-    .where(and(eq(workLogs.userId, userId), between(workLogs.date, periodStart, periodEnd)))
+    .where(
+      and(
+        eq(workLogs.userId, userId),
+        between(workLogs.date, periodStart, periodEnd),
+      ),
+    )
     .groupBy(workLogs.projectId, projects.name)
     .orderBy(sql`SUM(CAST(${workLogs.hours} AS DECIMAL)) DESC`);
 
   const byProjectWithPercentage = byProject.map((project) => ({
     ...project,
-    percentage: totalHours > 0 ? (Number.parseFloat(project.totalHours) / totalHours) * 100 : 0,
+    percentage:
+      totalHours > 0
+        ? (Number.parseFloat(project.totalHours) / totalHours) * 100
+        : 0,
   }));
 
   // By Category (for selected period)
@@ -143,13 +168,21 @@ export async function getPersonalStats(options: {
     })
     .from(workLogs)
     .innerJoin(workCategories, eq(workLogs.categoryId, workCategories.id))
-    .where(and(eq(workLogs.userId, userId), between(workLogs.date, periodStart, periodEnd)))
+    .where(
+      and(
+        eq(workLogs.userId, userId),
+        between(workLogs.date, periodStart, periodEnd),
+      ),
+    )
     .groupBy(workLogs.categoryId, workCategories.name)
     .orderBy(sql`SUM(CAST(${workLogs.hours} AS DECIMAL)) DESC`);
 
   const byCategoryWithPercentage = byCategory.map((category) => ({
     ...category,
-    percentage: totalHours > 0 ? (Number.parseFloat(category.totalHours) / totalHours) * 100 : 0,
+    percentage:
+      totalHours > 0
+        ? (Number.parseFloat(category.totalHours) / totalHours) * 100
+        : 0,
   }));
 
   // Recent logs (last 10)
@@ -175,7 +208,12 @@ export async function getPersonalStats(options: {
       totalHours: sql<string>`SUM(CAST(${workLogs.hours} AS DECIMAL))::text`,
     })
     .from(workLogs)
-    .where(and(eq(workLogs.userId, userId), between(workLogs.date, periodStart, periodEnd)))
+    .where(
+      and(
+        eq(workLogs.userId, userId),
+        between(workLogs.date, periodStart, periodEnd),
+      ),
+    )
     .groupBy(workLogs.date)
     .orderBy(workLogs.date);
 
@@ -225,7 +263,15 @@ export async function getProjectStats(options: {
   projectId?: string;
   scope?: "own" | "team" | "all";
 }) {
-  const { userId, userIds, period = "week", startDate, endDate, projectId, scope = "own" } = options;
+  const {
+    userId,
+    userIds,
+    period = "week",
+    startDate,
+    endDate,
+    projectId,
+    scope = "own",
+  } = options;
   const now = new Date();
 
   // Determine date range
@@ -265,7 +311,7 @@ export async function getProjectStats(options: {
   // Build user filter condition
   let userCondition: SQL | undefined;
   if (userIds && userIds.length > 0) {
-    userCondition = sql`${workLogs.userId} = ANY(ARRAY[${sql.raw(userIds.map((id) => `'${id}'`).join(","))}]::uuid[])`;
+    userCondition = inArray(workLogs.userId, userIds);
   } else if (userId) {
     userCondition = eq(workLogs.userId, userId);
   } else if (scope !== "all") {
@@ -347,7 +393,10 @@ export async function getProjectStats(options: {
 
       const byCategoryWithPercentage = byCategory.map((cat) => ({
         ...cat,
-        percentage: projectTotal > 0 ? (Number.parseFloat(cat.totalHours) / projectTotal) * 100 : 0,
+        percentage:
+          projectTotal > 0
+            ? (Number.parseFloat(cat.totalHours) / projectTotal) * 100
+            : 0,
       }));
 
       // Daily trend
@@ -386,7 +435,9 @@ export async function getProjectStats(options: {
 
   // Summary
   const totalProjects = projectsWithDetails.length;
-  const totalHours = projectsData.reduce((sum, p) => sum + Number.parseFloat(p.totalHours), 0).toString();
+  const totalHours = projectsData
+    .reduce((sum, p) => sum + Number.parseFloat(p.totalHours), 0)
+    .toString();
   const totalLogs = projectsData.reduce((sum, p) => sum + p.logCount, 0);
 
   return {
@@ -409,7 +460,7 @@ export async function getTeamStats(options: {
   endDate?: Date;
   userIds: string[];
 }) {
-  const { teamId, period = "week", startDate, endDate, userIds } = options;
+  const { period = "week", startDate, endDate, userIds } = options;
   const now = new Date();
 
   if (userIds.length === 0) {
@@ -450,7 +501,7 @@ export async function getTeamStats(options: {
       break;
   }
 
-  const userCondition = sql`${workLogs.userId} = ANY(ARRAY[${sql.raw(userIds.map((id) => `'${id}'`).join(","))}]::uuid[])`;
+  const userCondition = inArray(workLogs.userId, userIds);
 
   // Team summary
   const [summary] = await db
@@ -462,7 +513,8 @@ export async function getTeamStats(options: {
     .where(and(between(workLogs.date, periodStart, periodEnd), userCondition));
 
   const totalHours = Number.parseFloat(summary?.totalHours || "0");
-  const averageHoursPerMember = userIds.length > 0 ? (totalHours / userIds.length).toFixed(1) : "0";
+  const averageHoursPerMember =
+    userIds.length > 0 ? (totalHours / userIds.length).toFixed(1) : "0";
 
   // By Member
   const byMember = await db
@@ -515,7 +567,10 @@ export async function getTeamStats(options: {
   const byProjectWithDetails = byProject.map((project, index) => ({
     ...project,
     memberCount: projectMemberCounts[index],
-    percentage: totalHours > 0 ? (Number.parseFloat(project.totalHours) / totalHours) * 100 : 0,
+    percentage:
+      totalHours > 0
+        ? (Number.parseFloat(project.totalHours) / totalHours) * 100
+        : 0,
   }));
 
   // Activity status
@@ -528,17 +583,30 @@ export async function getTeamStats(options: {
 
   const activityStatus = await Promise.all(
     userIds.map(async (uid) => {
-      const [user] = await db.select({ name: users.name }).from(users).where(eq(users.id, uid));
+      const [user] = await db
+        .select({ name: users.name })
+        .from(users)
+        .where(eq(users.id, uid));
 
       const [todayLog] = await db
         .select({ count: sql<number>`COUNT(*)::int` })
         .from(workLogs)
-        .where(and(eq(workLogs.userId, uid), between(workLogs.date, today, todayEnd)));
+        .where(
+          and(
+            eq(workLogs.userId, uid),
+            between(workLogs.date, today, todayEnd),
+          ),
+        );
 
       const [weekLog] = await db
         .select({ count: sql<number>`COUNT(*)::int` })
         .from(workLogs)
-        .where(and(eq(workLogs.userId, uid), between(workLogs.date, week.start, week.end)));
+        .where(
+          and(
+            eq(workLogs.userId, uid),
+            between(workLogs.date, week.start, week.end),
+          ),
+        );
 
       const [lastLog] = await db
         .select({ date: workLogs.date })
@@ -552,7 +620,9 @@ export async function getTeamStats(options: {
         userName: user?.name || "Unknown",
         hasLogToday: (todayLog?.count || 0) > 0,
         hasLogThisWeek: (weekLog?.count || 0) > 0,
-        lastLogDate: lastLog?.date ? lastLog.date.toISOString().split("T")[0] : null,
+        lastLogDate: lastLog?.date
+          ? lastLog.date.toISOString().split("T")[0]
+          : null,
       };
     }),
   );
@@ -565,7 +635,9 @@ export async function getTeamStats(options: {
     },
     byMember: byMember.map((member) => ({
       ...member,
-      lastLogDate: member.lastLogDate ? member.lastLogDate.toISOString().split("T")[0] : null,
+      lastLogDate: member.lastLogDate
+        ? member.lastLogDate.toISOString().split("T")[0]
+        : null,
     })),
     byProject: byProjectWithDetails,
     activityStatus,

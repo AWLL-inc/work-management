@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError, z } from "zod";
 import { teamMembers, teams } from "@/drizzle/schema";
@@ -11,9 +11,40 @@ export const runtime = "nodejs";
 
 // Query parameter schema
 const teamStatsSchema = z.object({
-  period: z.enum(["today", "week", "month", "custom"]).optional().default("week"),
-  startDate: z.string().optional().transform((val) => (val ? new Date(val) : undefined)),
-  endDate: z.string().optional().transform((val) => (val ? new Date(val) : undefined)),
+  period: z
+    .enum(["today", "week", "month", "custom"])
+    .optional()
+    .default("week"),
+  startDate: z
+    .string()
+    .optional()
+    .transform((val, ctx) => {
+      if (!val) return undefined;
+      const date = new Date(val);
+      if (Number.isNaN(date.getTime())) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid date format for startDate",
+        });
+        return z.NEVER;
+      }
+      return date;
+    }),
+  endDate: z
+    .string()
+    .optional()
+    .transform((val, ctx) => {
+      if (!val) return undefined;
+      const date = new Date(val);
+      if (Number.isNaN(date.getTime())) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid date format for endDate",
+        });
+        return z.NEVER;
+      }
+      return date;
+    }),
   teamId: z.string().uuid().optional(),
 });
 
@@ -98,7 +129,10 @@ export async function GET(request: NextRequest) {
     if (validatedParams.teamId) {
       // Admin can view any team, others need to be a member
       if (session.user.role === "admin") {
-        const [team] = await db.select({ id: teams.id, name: teams.name }).from(teams).where(eq(teams.id, validatedParams.teamId));
+        const [team] = await db
+          .select({ id: teams.id, name: teams.name })
+          .from(teams)
+          .where(eq(teams.id, validatedParams.teamId));
 
         if (!team) {
           return NextResponse.json(
@@ -117,7 +151,9 @@ export async function GET(request: NextRequest) {
         targetTeamName = team.name;
       } else {
         // Check if user is a member of the specified team
-        const isMember = userTeams.some((t) => t.teamId === validatedParams.teamId);
+        const isMember = userTeams.some(
+          (t) => t.teamId === validatedParams.teamId,
+        );
 
         if (!isMember) {
           return NextResponse.json(

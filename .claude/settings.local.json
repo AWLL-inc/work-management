@@ -103,7 +103,10 @@
       "mcp__serena__think_about_collected_information",
       "Bash(gh pr checks:*)",
       "Bash(git rm:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(gh:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm run build)"
     ],
     "deny": [],
     "ask": []

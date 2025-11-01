@@ -16,7 +16,9 @@ export function PersonalSummaryCard({ summary }: PersonalSummaryCardProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{summary.today.totalHours}h</div>
-          <p className="text-xs text-muted-foreground">{summary.today.logCount}件の記録</p>
+          <p className="text-xs text-muted-foreground">
+            {summary.today.logCount}件の記録
+          </p>
         </CardContent>
       </Card>
 
@@ -25,7 +27,9 @@ export function PersonalSummaryCard({ summary }: PersonalSummaryCardProps) {
           <CardTitle className="text-sm font-medium">今週の工数</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{summary.thisWeek.totalHours}h</div>
+          <div className="text-2xl font-bold">
+            {summary.thisWeek.totalHours}h
+          </div>
           <p className="text-xs text-muted-foreground">
             {summary.thisWeek.logCount}件の記録
           </p>
@@ -37,7 +41,9 @@ export function PersonalSummaryCard({ summary }: PersonalSummaryCardProps) {
           <CardTitle className="text-sm font-medium">今月の工数</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{summary.thisMonth.totalHours}h</div>
+          <div className="text-2xl font-bold">
+            {summary.thisMonth.totalHours}h
+          </div>
           <p className="text-xs text-muted-foreground">
             {summary.thisMonth.logCount}件の記録
           </p>

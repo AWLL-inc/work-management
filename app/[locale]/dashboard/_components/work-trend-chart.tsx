@@ -1,7 +1,16 @@
 "use client";
 
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { TrendData } from "./types";
 
 interface WorkTrendChartProps {
@@ -25,7 +34,10 @@ export function WorkTrendChart({ data }: WorkTrendChartProps) {
   }
 
   const chartData = data.map((item) => ({
-    date: new Date(item.date).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" }),
+    date: new Date(item.date).toLocaleDateString("ja-JP", {
+      month: "numeric",
+      day: "numeric",
+    }),
     hours: Number.parseFloat(item.totalHours),
   }));
 
@@ -39,10 +51,18 @@ export function WorkTrendChart({ data }: WorkTrendChartProps) {
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
-            <YAxis label={{ value: "時間 (h)", angle: -90, position: "insideLeft" }} />
+            <YAxis
+              label={{ value: "時間 (h)", angle: -90, position: "insideLeft" }}
+            />
             <Tooltip formatter={(value: number) => `${value.toFixed(1)}h`} />
             <Legend />
-            <Line type="monotone" dataKey="hours" stroke="#8884d8" name="工数" activeDot={{ r: 8 }} />
+            <Line
+              type="monotone"
+              dataKey="hours"
+              stroke="#8884d8"
+              name="工数"
+              activeDot={{ r: 8 }}
+            />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>

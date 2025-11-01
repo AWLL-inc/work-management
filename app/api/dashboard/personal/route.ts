@@ -8,9 +8,40 @@ export const runtime = "nodejs";
 
 // Query parameter schema
 const personalStatsSchema = z.object({
-  period: z.enum(["today", "week", "month", "custom"]).optional().default("today"),
-  startDate: z.string().optional().transform((val) => (val ? new Date(val) : undefined)),
-  endDate: z.string().optional().transform((val) => (val ? new Date(val) : undefined)),
+  period: z
+    .enum(["today", "week", "month", "custom"])
+    .optional()
+    .default("today"),
+  startDate: z
+    .string()
+    .optional()
+    .transform((val, ctx) => {
+      if (!val) return undefined;
+      const date = new Date(val);
+      if (Number.isNaN(date.getTime())) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid date format for startDate",
+        });
+        return z.NEVER;
+      }
+      return date;
+    }),
+  endDate: z
+    .string()
+    .optional()
+    .transform((val, ctx) => {
+      if (!val) return undefined;
+      const date = new Date(val);
+      if (Number.isNaN(date.getTime())) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid date format for endDate",
+        });
+        return z.NEVER;
+      }
+      return date;
+    }),
 });
 
 /**

@@ -8,7 +8,10 @@ interface PeriodSelectorProps {
   onPeriodChange: (period: PeriodType) => void;
 }
 
-export function PeriodSelector({ period, onPeriodChange }: PeriodSelectorProps) {
+export function PeriodSelector({
+  period,
+  onPeriodChange,
+}: PeriodSelectorProps) {
   return (
     <div className="flex gap-2">
       <Button

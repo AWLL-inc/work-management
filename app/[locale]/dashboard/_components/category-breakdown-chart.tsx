@@ -1,7 +1,16 @@
 "use client";
 
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { CategoryDistribution } from "./types";
 
 interface CategoryBreakdownChartProps {
@@ -40,11 +49,18 @@ export function CategoryBreakdownChart({ data }: CategoryBreakdownChartProps) {
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis label={{ value: "時間 (h)", angle: -90, position: "insideLeft" }} />
+            <YAxis
+              label={{ value: "時間 (h)", angle: -90, position: "insideLeft" }}
+            />
             <Tooltip
-              formatter={(value: number, name: string, props: any) =>
-                [`${value.toFixed(1)}h (${props.payload.percentage.toFixed(1)}%)`, "工数"]
-              }
+              formatter={(
+                value: number,
+                _name: string,
+                props: { payload?: { percentage?: number } },
+              ) => [
+                `${value.toFixed(1)}h (${props.payload?.percentage?.toFixed(1) ?? 0}%)`,
+                "工数",
+              ]}
             />
             <Legend />
             <Bar dataKey="hours" fill="#8884d8" name="工数" />

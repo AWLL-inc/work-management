@@ -11,9 +11,40 @@ export const runtime = "nodejs";
 
 // Query parameter schema
 const projectStatsSchema = z.object({
-  period: z.enum(["today", "week", "month", "custom"]).optional().default("week"),
-  startDate: z.string().optional().transform((val) => (val ? new Date(val) : undefined)),
-  endDate: z.string().optional().transform((val) => (val ? new Date(val) : undefined)),
+  period: z
+    .enum(["today", "week", "month", "custom"])
+    .optional()
+    .default("week"),
+  startDate: z
+    .string()
+    .optional()
+    .transform((val, ctx) => {
+      if (!val) return undefined;
+      const date = new Date(val);
+      if (Number.isNaN(date.getTime())) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid date format for startDate",
+        });
+        return z.NEVER;
+      }
+      return date;
+    }),
+  endDate: z
+    .string()
+    .optional()
+    .transform((val, ctx) => {
+      if (!val) return undefined;
+      const date = new Date(val);
+      if (Number.isNaN(date.getTime())) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid date format for endDate",
+        });
+        return z.NEVER;
+      }
+      return date;
+    }),
   projectId: z.string().uuid().optional(),
   scope: z.enum(["own", "team", "all"]).optional().default("own"),
 });
@@ -123,7 +154,9 @@ export async function GET(request: NextRequest) {
           .where(inArray(teamMembers.teamId, teamIds));
 
         // Include current user and deduplicate
-        const uniqueTeammateIds = Array.from(new Set([session.user.id, ...allMembers.map((m) => m.userId)]));
+        const uniqueTeammateIds = Array.from(
+          new Set([session.user.id, ...allMembers.map((m) => m.userId)]),
+        );
 
         userIds = uniqueTeammateIds;
       } else {

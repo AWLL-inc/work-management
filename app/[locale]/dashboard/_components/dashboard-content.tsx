@@ -3,11 +3,11 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { CategoryBreakdownChart } from "./category-breakdown-chart";
-import { PersonalSummaryCard } from "./personal-summary-card";
 import { PeriodSelector } from "./period-selector";
+import { PersonalSummaryCard } from "./personal-summary-card";
 import { ProjectDistributionChart } from "./project-distribution-chart";
 import { RecentWorkLogs } from "./recent-work-logs";
-import type { PersonalStatsResponse, PeriodType } from "./types";
+import type { PeriodType, PersonalStatsResponse } from "./types";
 import { WorkTrendChart } from "./work-trend-chart";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -28,8 +28,12 @@ export function DashboardContent() {
     return (
       <div className="flex h-[400px] items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-semibold text-destructive">エラーが発生しました</p>
-          <p className="text-sm text-muted-foreground">データの取得に失敗しました</p>
+          <p className="text-lg font-semibold text-destructive">
+            エラーが発生しました
+          </p>
+          <p className="text-sm text-muted-foreground">
+            データの取得に失敗しました
+          </p>
         </div>
       </div>
     );
@@ -50,8 +54,12 @@ export function DashboardContent() {
     return (
       <div className="flex h-[400px] items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-semibold text-destructive">データの取得に失敗しました</p>
-          <p className="text-sm text-muted-foreground">{data.error?.message || "不明なエラー"}</p>
+          <p className="text-lg font-semibold text-destructive">
+            データの取得に失敗しました
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {data.error?.message || "不明なエラー"}
+          </p>
         </div>
       </div>
     );

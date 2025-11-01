@@ -65,7 +65,72 @@ jobs:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL_TEST || 'postgresql://test:test@localhost:5432/test' }}
           POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING_TEST || 'postgresql://test:test@localhost:5432/test' }}
 
-  # Job 2: Unit & Integration Tests
+  # Job 2: Documentation Generation and Verification
+  documentation:
+    name: Generate and Verify Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Database Documentation
+        run: pnpm run docs:db
+
+      - name: Generate OpenAPI Documentation
+        run: pnpm run docs:openapi
+
+      - name: Verify documentation was generated
+        run: |
+          test -f docs/database/schema.dbml || (echo "❌ schema.dbml not generated" && exit 1)
+          test -f docs/database/erd.md || (echo "❌ erd.md not generated" && exit 1)
+          test -f docs/database/schema.md || (echo "❌ schema.md not generated" && exit 1)
+          test -f openapi/spec.ts || (echo "❌ spec.ts not generated" && exit 1)
+          echo "✅ All documentation files generated successfully"
+
+      - name: Check for uncommitted changes
+        run: |
+          git diff --exit-code || (echo "❌ Generated documentation has uncommitted changes" && echo "Please run 'pnpm run docs' and commit the changes" && git diff && exit 1)
+          echo "✅ No uncommitted documentation changes detected"
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documentation
+          path: |
+            docs/database/
+            openapi/spec.ts
+          retention-days: 30
+
+  # Job 3: Unit & Integration Tests
   test:
     name: Unit & Integration Tests
     runs-on: ubuntu-latest

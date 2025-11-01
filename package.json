@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:normal": "next dev",
-    "build": "next build",
+    "build": "npm run docs && next build",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
@@ -28,6 +28,8 @@
     "docs:db": "npm run docs:db:dbml && npm run docs:db:mermaid && npm run docs:db:markdown",
     "docs:openapi": "tsx scripts/generate-openapi.ts",
     "docs": "npm run docs:db && npm run docs:openapi",
+    "openapi:generate": "npm run docs:openapi",
+    "db:docs": "npm run docs:db",
     "docker:dev": "docker-compose up",
     "docker:dev:build": "docker-compose up --build",
     "docker:dev:down": "docker-compose down",

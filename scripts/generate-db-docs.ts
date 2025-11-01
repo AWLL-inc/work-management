@@ -11,18 +11,18 @@ async function generateDatabaseDocs() {
   try {
     console.log("Generating database documentation...");
 
-    let docsContent = "# Database Schema Documentation\n\n";
-    docsContent += `Generated: ${new Date().toISOString()}\n\n`;
-    docsContent += "## Overview\n\n";
+    let docsContent = "# データベーススキーマドキュメント\n\n";
+    docsContent += `生成日時: ${new Date().toISOString()}\n\n`;
+    docsContent += "## 概要\n\n";
     docsContent +=
-      "This document provides information about the database schema, including tables and relationships.\n\n";
+      "このドキュメントは、データベーススキーマの詳細情報（テーブル構造とリレーション）を提供します。\n\n";
 
     // Get all tables from schema
     const tables = Object.entries(schema).filter(([_name, table]) =>
       is(table, PgTable),
     );
 
-    docsContent += "## Table of Contents\n\n";
+    docsContent += "## 目次\n\n";
     for (const [tableName] of tables) {
       docsContent += `- [${tableName}](#${tableName.toLowerCase().replace(/_/g, "-")})\n`;
     }
@@ -31,59 +31,59 @@ async function generateDatabaseDocs() {
     // Document each table
     for (const [tableName] of tables) {
       docsContent += `## ${tableName}\n\n`;
-      docsContent += `Table: \`${tableName}\`\n\n`;
+      docsContent += `テーブル: \`${tableName}\`\n\n`;
 
       // Standard columns (most tables have these)
-      docsContent += "### Common Columns\n\n";
-      docsContent += "| Column Name | Data Type | Description |\n";
-      docsContent += "|-------------|-----------|-------------|\n";
-      docsContent += "| id | UUID | Primary key |\n";
-      docsContent += "| createdAt | TIMESTAMP | Creation timestamp |\n";
-      docsContent += "| updatedAt | TIMESTAMP | Last update timestamp |\n";
+      docsContent += "### 共通カラム\n\n";
+      docsContent += "| カラム名 | データ型 | 説明 |\n";
+      docsContent += "|---------|---------|------|\n";
+      docsContent += "| id | UUID | 主キー |\n";
+      docsContent += "| createdAt | TIMESTAMP | 作成日時 |\n";
+      docsContent += "| updatedAt | TIMESTAMP | 更新日時 |\n";
       docsContent += "\n";
 
       // Table-specific documentation
       switch (tableName) {
         case "users":
-          docsContent += "### Additional Columns\n\n";
-          docsContent += "- email: User email address (unique)\n";
-          docsContent += "- name: User display name\n";
-          docsContent += "- password: Hashed password\n";
-          docsContent += "- role: User role (admin, manager, user)\n";
+          docsContent += "### 追加カラム\n\n";
+          docsContent += "- email: ユーザーのメールアドレス（一意制約）\n";
+          docsContent += "- name: ユーザーの表示名\n";
+          docsContent += "- password: ハッシュ化されたパスワード\n";
+          docsContent += "- role: ユーザーの役割（admin, manager, user）\n";
           break;
         case "projects":
-          docsContent += "### Additional Columns\n\n";
-          docsContent += "- name: Project name\n";
-          docsContent += "- description: Project description (optional)\n";
-          docsContent += "- isActive: Active status flag\n";
+          docsContent += "### 追加カラム\n\n";
+          docsContent += "- name: プロジェクト名\n";
+          docsContent += "- description: プロジェクトの説明（任意）\n";
+          docsContent += "- isActive: 有効状態フラグ\n";
           break;
         case "workCategories":
-          docsContent += "### Additional Columns\n\n";
-          docsContent += "- name: Category name\n";
-          docsContent += "- description: Category description (optional)\n";
-          docsContent += "- displayOrder: Sort order for display\n";
-          docsContent += "- isActive: Active status flag\n";
+          docsContent += "### 追加カラム\n\n";
+          docsContent += "- name: カテゴリ名\n";
+          docsContent += "- description: カテゴリの説明（任意）\n";
+          docsContent += "- displayOrder: 表示順序\n";
+          docsContent += "- isActive: 有効状態フラグ\n";
           break;
         case "workLogs":
-          docsContent += "### Additional Columns\n\n";
-          docsContent += "- date: Work date\n";
-          docsContent += "- hours: Hours worked (decimal)\n";
-          docsContent += "- description: Work description (optional)\n";
-          docsContent += "- userId: Reference to users table\n";
-          docsContent += "- projectId: Reference to projects table\n";
-          docsContent += "- categoryId: Reference to workCategories table\n";
+          docsContent += "### 追加カラム\n\n";
+          docsContent += "- date: 作業日\n";
+          docsContent += "- hours: 作業時間（時間単位）\n";
+          docsContent += "- description: 作業内容の説明（任意）\n";
+          docsContent += "- userId: ユーザーテーブルへの参照\n";
+          docsContent += "- projectId: プロジェクトテーブルへの参照\n";
+          docsContent += "- categoryId: 作業カテゴリテーブルへの参照\n";
           break;
         case "teams":
-          docsContent += "### Additional Columns\n\n";
-          docsContent += "- name: Team name\n";
-          docsContent += "- description: Team description (optional)\n";
-          docsContent += "- isActive: Active status flag\n";
+          docsContent += "### 追加カラム\n\n";
+          docsContent += "- name: チーム名\n";
+          docsContent += "- description: チームの説明（任意）\n";
+          docsContent += "- isActive: 有効状態フラグ\n";
           break;
         case "teamMembers":
-          docsContent += "### Additional Columns\n\n";
-          docsContent += "- teamId: Reference to teams table\n";
-          docsContent += "- userId: Reference to users table\n";
-          docsContent += "- role: Team member role\n";
+          docsContent += "### 追加カラム\n\n";
+          docsContent += "- teamId: チームテーブルへの参照\n";
+          docsContent += "- userId: ユーザーテーブルへの参照\n";
+          docsContent += "- role: チームメンバーの役割\n";
           break;
       }
 
@@ -91,7 +91,7 @@ async function generateDatabaseDocs() {
     }
 
     // Relationships Overview
-    docsContent += "## Relationships Overview\n\n";
+    docsContent += "## テーブルリレーション\n\n";
     docsContent += "```mermaid\nerDiagram\n";
 
     for (const [tableName] of tables) {
@@ -114,8 +114,8 @@ async function generateDatabaseDocs() {
     docsContent += "```\n\n";
 
     // Statistics
-    docsContent += "## Statistics\n\n";
-    docsContent += `- Total Tables: ${tables.length}\n`;
+    docsContent += "## 統計情報\n\n";
+    docsContent += `- テーブル総数: ${tables.length}\n`;
 
     // Ensure output directory exists
     const outputDir = path.join(process.cwd(), "docs", "database");

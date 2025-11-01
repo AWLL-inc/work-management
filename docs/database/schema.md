@@ -1,12 +1,12 @@
-# Database Schema Documentation
+# データベーススキーマドキュメント
 
-Generated: 2025-11-01T22:56:33.220Z
+生成日時: 2025-11-01T23:35:42.946Z
 
-## Overview
+## 概要
 
-This document provides information about the database schema, including tables and relationships.
+このドキュメントは、データベーススキーマの詳細情報（テーブル構造とリレーション）を提供します。
 
-## Table of Contents
+## 目次
 
 - [accounts](#accounts)
 - [projects](#projects)
@@ -22,175 +22,175 @@ This document provides information about the database schema, including tables a
 
 ## accounts
 
-Table: `accounts`
+テーブル: `accounts`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
 
 ---
 
 ## projects
 
-Table: `projects`
+テーブル: `projects`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
-### Additional Columns
+### 追加カラム
 
-- name: Project name
-- description: Project description (optional)
-- isActive: Active status flag
+- name: プロジェクト名
+- description: プロジェクトの説明（任意）
+- isActive: 有効状態フラグ
 
 ---
 
 ## sessions
 
-Table: `sessions`
+テーブル: `sessions`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
 
 ---
 
 ## teamMembers
 
-Table: `teamMembers`
+テーブル: `teamMembers`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
-### Additional Columns
+### 追加カラム
 
-- teamId: Reference to teams table
-- userId: Reference to users table
-- role: Team member role
+- teamId: チームテーブルへの参照
+- userId: ユーザーテーブルへの参照
+- role: チームメンバーの役割
 
 ---
 
 ## teams
 
-Table: `teams`
+テーブル: `teams`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
-### Additional Columns
+### 追加カラム
 
-- name: Team name
-- description: Team description (optional)
-- isActive: Active status flag
+- name: チーム名
+- description: チームの説明（任意）
+- isActive: 有効状態フラグ
 
 ---
 
 ## users
 
-Table: `users`
+テーブル: `users`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
-### Additional Columns
+### 追加カラム
 
-- email: User email address (unique)
-- name: User display name
-- password: Hashed password
-- role: User role (admin, manager, user)
+- email: ユーザーのメールアドレス（一意制約）
+- name: ユーザーの表示名
+- password: ハッシュ化されたパスワード
+- role: ユーザーの役割（admin, manager, user）
 
 ---
 
 ## verificationTokens
 
-Table: `verificationTokens`
+テーブル: `verificationTokens`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
 
 ---
 
 ## workCategories
 
-Table: `workCategories`
+テーブル: `workCategories`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
-### Additional Columns
+### 追加カラム
 
-- name: Category name
-- description: Category description (optional)
-- displayOrder: Sort order for display
-- isActive: Active status flag
+- name: カテゴリ名
+- description: カテゴリの説明（任意）
+- displayOrder: 表示順序
+- isActive: 有効状態フラグ
 
 ---
 
 ## workLogs
 
-Table: `workLogs`
+テーブル: `workLogs`
 
-### Common Columns
+### 共通カラム
 
-| Column Name | Data Type | Description |
-|-------------|-----------|-------------|
-| id | UUID | Primary key |
-| createdAt | TIMESTAMP | Creation timestamp |
-| updatedAt | TIMESTAMP | Last update timestamp |
+| カラム名 | データ型 | 説明 |
+|---------|---------|------|
+| id | UUID | 主キー |
+| createdAt | TIMESTAMP | 作成日時 |
+| updatedAt | TIMESTAMP | 更新日時 |
 
-### Additional Columns
+### 追加カラム
 
-- date: Work date
-- hours: Hours worked (decimal)
-- description: Work description (optional)
-- userId: Reference to users table
-- projectId: Reference to projects table
-- categoryId: Reference to workCategories table
+- date: 作業日
+- hours: 作業時間（時間単位）
+- description: 作業内容の説明（任意）
+- userId: ユーザーテーブルへの参照
+- projectId: プロジェクトテーブルへの参照
+- categoryId: 作業カテゴリテーブルへの参照
 
 ---
 
-## Relationships Overview
+## テーブルリレーション
 
 ```mermaid
 erDiagram
@@ -210,6 +210,6 @@ erDiagram
   users ||--o{ teamMembers : "references"
 ```
 
-## Statistics
+## 統計情報
 
-- Total Tables: 9
+- テーブル総数: 9

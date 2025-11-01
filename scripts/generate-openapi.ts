@@ -978,13 +978,39 @@ function generateOpenApiSpec() {
               name: "projectId",
               in: "query",
               schema: { type: "string", format: "uuid" },
-              description: "Filter by project ID",
+              description: "Filter by single project ID",
+            },
+            {
+              name: "projectIds",
+              in: "query",
+              schema: { type: "string" },
+              description:
+                "Filter by multiple project IDs (comma-separated UUIDs)",
             },
             {
               name: "categoryId",
               in: "query",
               schema: { type: "string", format: "uuid" },
-              description: "Filter by category ID",
+              description: "Filter by single category ID",
+            },
+            {
+              name: "categoryIds",
+              in: "query",
+              schema: { type: "string" },
+              description:
+                "Filter by multiple category IDs (comma-separated UUIDs)",
+            },
+            {
+              name: "userId",
+              in: "query",
+              schema: { type: "string", format: "uuid" },
+              description: "Filter by user ID (admin only when scope=all)",
+            },
+            {
+              name: "searchText",
+              in: "query",
+              schema: { type: "string" },
+              description: "Search text to filter work logs by details content",
             },
             {
               name: "scope",

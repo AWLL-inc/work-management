@@ -16,7 +16,7 @@ export const openApiSpec = {
       description: "Development server",
     },
     {
-      url: "https://your-production-domain.vercel.app",
+      url: "https://work-management-eosin.vercel.app",
       description: "Production server",
     },
   ],
@@ -277,4 +277,4 @@ export const openApiSpec = {
       },
     },
   },
-};
+} as const;

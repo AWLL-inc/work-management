@@ -108,7 +108,8 @@
       "Bash(pnpm add:*)",
       "Bash(pnpm run build)",
       "Bash(pnpm run docs:db:*)",
-      "Bash(pnpm run docs:openapi:*)"
+      "Bash(pnpm run docs:openapi:*)",
+      "Bash(pnpm run docs)"
     ],
     "deny": [],
     "ask": []

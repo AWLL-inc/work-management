@@ -147,6 +147,31 @@ npm run db:studio               # Open Drizzle Studio (GUI)
 npm run db:seed                 # Seed test data
 ```
 
+## 📖 Documentation Generation
+
+```bash
+# Database Documentation
+npm run docs:db                 # Generate all DB docs
+npm run docs:db:dbml            # Generate DBML for dbdiagram.io
+npm run docs:db:mermaid         # Generate Mermaid ER diagram
+npm run docs:db:markdown        # Generate Markdown schema docs
+
+# API Documentation (OpenAPI)
+npm run docs:openapi            # Generate OpenAPI specification
+# View at: http://localhost:3000/en/api-docs
+
+# Generate All Documentation
+npm run docs                    # Generate both DB and API docs
+```
+
+**Generated Files**:
+- `docs/database/schema.dbml` - Database schema in DBML format
+- `docs/database/erd.md` - Entity Relationship Diagram (Mermaid)
+- `docs/database/schema.md` - Database schema documentation
+- `openapi/spec.ts` - OpenAPI 3.0 specification
+
+**Note**: Database and API documentation are auto-generated. Edit source files (`drizzle/schema.ts`, `scripts/generate-openapi.ts`) instead of generated files.
+
 ## 🧪 Testing Commands
 
 ```bash

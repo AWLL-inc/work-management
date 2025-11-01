@@ -35,8 +35,6 @@ async function generateMermaidERD() {
       ["workCategories", "workLogs", "has many"],
       ["teams", "teamMembers", "has many"],
       ["users", "teamMembers", "has many"],
-      ["projects", "projectMembers", "has many"],
-      ["users", "projectMembers", "has many"],
     ];
 
     for (const [fromTable, toTable, _relation] of relationships) {

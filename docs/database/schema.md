@@ -1,6 +1,6 @@
 # Database Schema Documentation
 
-Generated: 2025-11-01T22:10:15.460Z
+Generated: 2025-11-01T22:56:33.220Z
 
 ## Overview
 
@@ -208,8 +208,6 @@ erDiagram
   workCategories ||--o{ workLogs : "references"
   teams ||--o{ teamMembers : "references"
   users ||--o{ teamMembers : "references"
-  projects ||--o{ projectMembers : "references"
-  users ||--o{ projectMembers : "references"
 ```
 
 ## Statistics

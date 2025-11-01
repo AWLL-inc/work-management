@@ -62,7 +62,5 @@ erDiagram
   workCategories ||--o{ workLogs : "references"
   teams ||--o{ teamMembers : "references"
   users ||--o{ teamMembers : "references"
-  projects ||--o{ projectMembers : "references"
-  users ||--o{ projectMembers : "references"
 ```
 

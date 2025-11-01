@@ -105,8 +105,6 @@ async function generateDatabaseDocs() {
       ["workCategories", "workLogs"],
       ["teams", "teamMembers"],
       ["users", "teamMembers"],
-      ["projects", "projectMembers"],
-      ["users", "projectMembers"],
     ];
 
     for (const [fromTable, toTable] of relationships) {

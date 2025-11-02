@@ -564,9 +564,7 @@ export function EnhancedWorkLogTable({
         filter: false,
         pinned: "right",
         editable: false,
-        cellStyle: {
-          padding: "8px 4px",
-        },
+        cellClass: "actions-cell",
       });
     }
 

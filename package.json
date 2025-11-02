@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:normal": "next dev",
-    "build": "npm run docs && next build",
+    "build": "pnpm run docs && next build",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
@@ -26,7 +26,8 @@
     "docs:db:mermaid": "tsx scripts/generate-mermaid-erd.ts",
     "docs:db:markdown": "tsx scripts/generate-db-docs.ts",
     "docs:db:tables": "tsx scripts/generate-table-docs.ts",
-    "docs:db": "npm run docs:db:dbml && npm run docs:db:mermaid && npm run docs:db:markdown && npm run docs:db:tables",
+    "docs:db:readme": "tsx scripts/generate-db-readme.ts",
+    "docs:db": "npm run docs:db:dbml && npm run docs:db:mermaid && npm run docs:db:markdown && npm run docs:db:tables && npm run docs:db:readme",
     "docs:openapi": "tsx scripts/generate-openapi.ts",
     "docs": "npm run docs:db && npm run docs:openapi",
     "openapi:generate": "npm run docs:openapi",

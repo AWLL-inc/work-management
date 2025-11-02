@@ -7,6 +7,7 @@
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import { openApiSpec } from "../openapi/spec";
+import { handleScriptError } from "./utils/error-handler";
 
 // OpenAPI 3.0 Schema (simplified version focusing on critical validations)
 const openApiSchema = {
@@ -101,8 +102,15 @@ async function validateOpenAPI() {
       console.warn("⚠️  Warning: No component schemas defined");
     }
   } catch (error) {
-    console.error("❌ OpenAPI validation error:", error);
-    process.exit(1);
+    handleScriptError(error, {
+      scriptName: "validate-openapi",
+      troubleshootingTips: [
+        "Ensure openapi/spec.ts is valid and can be imported",
+        "Verify the OpenAPI specification structure",
+        "Check that all required fields are present (openapi, info, paths)",
+        "Run 'pnpm run docs:openapi' to regenerate the spec",
+      ],
+    });
   }
 }
 

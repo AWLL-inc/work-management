@@ -1336,6 +1336,90 @@ function generateOpenApiSpec() {
           },
         },
       },
+      "/api/work-logs/batch": {
+        put: {
+          summary: "Batch update work logs",
+          description:
+            "Update multiple work logs in a single transaction. Must be owner or admin for each log.",
+          tags: ["Work Logs"],
+          security: [{ BearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      id: {
+                        type: "string",
+                        format: "uuid",
+                        description: "Work log ID to update",
+                      },
+                      data: {
+                        $ref: "#/components/schemas/UpdateWorkLogRequest",
+                      },
+                    },
+                    required: ["id", "data"],
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Successfully updated work logs",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      data: {
+                        type: "array",
+                        items: { $ref: "#/components/schemas/WorkLog" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Validation error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiErrorResponse" },
+                },
+              },
+            },
+            401: {
+              description: "Authentication required",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiErrorResponse" },
+                },
+              },
+            },
+            403: {
+              description: "Access denied - not owner of all work logs",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiErrorResponse" },
+                },
+              },
+            },
+            500: {
+              description: "Internal server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/ApiErrorResponse" },
+                },
+              },
+            },
+          },
+        },
+      },
 
       // Teams API
       "/api/teams": {

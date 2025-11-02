@@ -1151,9 +1151,9 @@ export function EnhancedWorkLogTable({
           suppressColumnVirtualisation: true, // Prevent column virtualization issues
           ensureDomOrder: true, // Ensure DOM order matches logical order
           suppressCellFocus: false, // Allow cell focus
-          suppressRowTransform: true, // Prevent row transformation that might affect data
+          suppressRowTransform: false, // Enable smooth row animations
           rowBuffer: 0, // Don't buffer rows to avoid data inconsistencies
-          animateRows: false, // Disable row animation to prevent data conflicts
+          animateRows: true, // Enable smooth row animations for better UX
           onCellKeyDown: (event: CellKeyDownEvent) => {
             const keyboardEvent = event.event as KeyboardEvent;
             const key = keyboardEvent?.key?.toLowerCase();

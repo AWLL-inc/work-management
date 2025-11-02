@@ -648,7 +648,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
         />
       )}
 
-      <div className="ag-theme-quartz h-[600px] w-full border rounded-lg">
+      <div className="ag-theme-quartz h-[600px] w-full">
         <AgGridReact
           ref={gridRef}
           className="h-full w-full"

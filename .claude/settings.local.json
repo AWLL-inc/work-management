@@ -117,7 +117,9 @@
       "Bash(pnpm run docs:db:tables:*)",
       "Bash(pnpm run docs:db:mermaid:*)",
       "Bash(pnpm biome format:*)",
-      "Bash(pnpm tsx:*)"
+      "Bash(pnpm tsx:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker rmi:*)"
     ],
     "deny": [],
     "ask": []

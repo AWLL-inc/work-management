@@ -109,7 +109,9 @@
       "Bash(pnpm run build)",
       "Bash(pnpm run docs:db:*)",
       "Bash(pnpm run docs:openapi:*)",
-      "Bash(pnpm run docs)"
+      "Bash(pnpm run docs)",
+      "Bash(pnpm run docs:db:markdown:*)",
+      "Bash(pnpm biome check:*)"
     ],
     "deny": [],
     "ask": []

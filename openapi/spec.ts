@@ -10,2928 +10,2842 @@
  * See CLAUDE.md for detailed documentation update guidelines
  */
 export const openApiSpec = {
-  "openapi": "3.0.0",
-  "info": {
-    "title": "Work Management API",
-    "version": "1.0.0",
-    "description": "RESTful API for Work Management application - Task management, user collaboration, and project organization"
+  openapi: "3.0.0",
+  info: {
+    title: "Work Management API",
+    version: "1.0.0",
+    description:
+      "RESTful API for Work Management application - Task management, user collaboration, and project organization",
   },
-  "servers": [
+  servers: [
     {
-      "url": "http://localhost:3000",
-      "description": "Development server"
+      url: "http://localhost:3000",
+      description: "Development server",
     },
     {
-      "url": "https://work-management-eosin.vercel.app",
-      "description": "Production server"
-    }
+      url: "https://work-management-eosin.vercel.app",
+      description: "Production server",
+    },
   ],
-  "components": {
-    "securitySchemes": {
-      "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "JWT authentication token from NextAuth.js"
-      }
+  components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "JWT authentication token from NextAuth.js",
+      },
     },
-    "schemas": {
-      "ApiSuccessResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "example": true
+    schemas: {
+      ApiSuccessResponse: {
+        type: "object",
+        properties: {
+          success: {
+            type: "boolean",
+            example: true,
           },
-          "data": {
-            "type": "object",
-            "description": "Response data payload"
-          }
+          data: {
+            type: "object",
+            description: "Response data payload",
+          },
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        required: ["success", "data"],
       },
-      "ApiErrorResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "example": false
+      ApiErrorResponse: {
+        type: "object",
+        properties: {
+          success: {
+            type: "boolean",
+            example: false,
           },
-          "error": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string",
-                "description": "Error code"
+          error: {
+            type: "object",
+            properties: {
+              code: {
+                type: "string",
+                description: "Error code",
               },
-              "message": {
-                "type": "string",
-                "description": "Error message"
+              message: {
+                type: "string",
+                description: "Error message",
               },
-              "details": {
-                "type": "object",
-                "description": "Additional error details"
-              }
+              details: {
+                type: "object",
+                description: "Additional error details",
+              },
             },
-            "required": [
-              "code",
-              "message"
-            ]
-          }
+            required: ["code", "message"],
+          },
         },
-        "required": [
-          "success",
-          "error"
-        ]
+        required: ["success", "error"],
       },
-      "Project": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
+      Project: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            format: "uuid",
           },
-          "name": {
-            "type": "string",
-            "maxLength": 255
+          name: {
+            type: "string",
+            maxLength: 255,
           },
-          "description": {
-            "type": "string",
-            "nullable": true
+          description: {
+            type: "string",
+            nullable: true,
           },
-          "isActive": {
-            "type": "boolean"
+          isActive: {
+            type: "boolean",
           },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
+          createdAt: {
+            type: "string",
+            format: "date-time",
           },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
+          updatedAt: {
+            type: "string",
+            format: "date-time",
+          },
         },
-        "required": [
-          "id",
-          "name",
-          "isActive"
-        ]
+        required: ["id", "name", "isActive"],
       },
-      "CreateProjectRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "description": "Project name"
+      CreateProjectRequest: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            maxLength: 255,
+            description: "Project name",
           },
-          "description": {
-            "type": "string",
-            "nullable": true,
-            "description": "Optional project description"
+          description: {
+            type: "string",
+            nullable: true,
+            description: "Optional project description",
           },
-          "isActive": {
-            "type": "boolean",
-            "default": true,
-            "description": "Whether the project is active"
-          }
+          isActive: {
+            type: "boolean",
+            default: true,
+            description: "Whether the project is active",
+          },
         },
-        "required": [
-          "name"
-        ]
+        required: ["name"],
       },
-      "UpdateProjectRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255
+      UpdateProjectRequest: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            maxLength: 255,
           },
-          "description": {
-            "type": "string",
-            "nullable": true
+          description: {
+            type: "string",
+            nullable: true,
           },
-          "isActive": {
-            "type": "boolean"
-          }
-        }
-      },
-      "WorkCategory": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
+          isActive: {
+            type: "boolean",
           },
-          "name": {
-            "type": "string",
-            "maxLength": 255
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "displayOrder": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
         },
-        "required": [
-          "id",
-          "name",
-          "displayOrder",
-          "isActive"
-        ]
       },
-      "CreateWorkCategoryRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255
+      WorkCategory: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            format: "uuid",
           },
-          "description": {
-            "type": "string",
-            "nullable": true
+          name: {
+            type: "string",
+            maxLength: 255,
           },
-          "displayOrder": {
-            "type": "integer",
-            "minimum": 0,
-            "default": 0
+          description: {
+            type: "string",
+            nullable: true,
           },
-          "isActive": {
-            "type": "boolean",
-            "default": true
-          }
+          displayOrder: {
+            type: "integer",
+            minimum: 0,
+          },
+          isActive: {
+            type: "boolean",
+          },
+          createdAt: {
+            type: "string",
+            format: "date-time",
+          },
+          updatedAt: {
+            type: "string",
+            format: "date-time",
+          },
         },
-        "required": [
-          "name"
-        ]
+        required: ["id", "name", "displayOrder", "isActive"],
       },
-      "UpdateWorkCategoryRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255
+      CreateWorkCategoryRequest: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            maxLength: 255,
           },
-          "description": {
-            "type": "string",
-            "nullable": true
+          description: {
+            type: "string",
+            nullable: true,
           },
-          "displayOrder": {
-            "type": "integer",
-            "minimum": 0
+          displayOrder: {
+            type: "integer",
+            minimum: 0,
+            default: 0,
           },
-          "isActive": {
-            "type": "boolean"
-          }
-        }
-      },
-      "WorkLog": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
+          isActive: {
+            type: "boolean",
+            default: true,
           },
-          "userId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "hours": {
-            "type": "string",
-            "pattern": "^\\d+(\\.\\d{1,2})?$"
-          },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "categoryId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "details": {
-            "type": "string",
-            "maxLength": 1000,
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
         },
-        "required": [
-          "id",
-          "userId",
-          "date",
-          "hours",
-          "projectId",
-          "categoryId"
-        ]
+        required: ["name"],
       },
-      "CreateWorkLogRequest": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
+      UpdateWorkCategoryRequest: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            maxLength: 255,
           },
-          "hours": {
-            "type": "string",
-            "pattern": "^\\d+(\\.\\d{1,2})?$"
+          description: {
+            type: "string",
+            nullable: true,
           },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
+          displayOrder: {
+            type: "integer",
+            minimum: 0,
           },
-          "categoryId": {
-            "type": "string",
-            "format": "uuid"
+          isActive: {
+            type: "boolean",
           },
-          "details": {
-            "type": "string",
-            "maxLength": 1000,
-            "nullable": true
-          }
         },
-        "required": [
-          "date",
-          "hours",
-          "projectId",
-          "categoryId"
-        ]
       },
-      "UpdateWorkLogRequest": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
+      WorkLog: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            format: "uuid",
           },
-          "hours": {
-            "type": "string",
-            "pattern": "^\\d+(\\.\\d{1,2})?$"
+          userId: {
+            type: "string",
+            format: "uuid",
           },
-          "projectId": {
-            "type": "string",
-            "format": "uuid"
+          date: {
+            type: "string",
+            format: "date",
           },
-          "categoryId": {
-            "type": "string",
-            "format": "uuid"
+          hours: {
+            type: "string",
+            pattern: "^\\d+(\\.\\d{1,2})?$",
           },
-          "details": {
-            "type": "string",
-            "maxLength": 1000,
-            "nullable": true
-          }
-        }
-      },
-      "Team": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
+          projectId: {
+            type: "string",
+            format: "uuid",
           },
-          "name": {
-            "type": "string",
-            "maxLength": 255
+          categoryId: {
+            type: "string",
+            format: "uuid",
           },
-          "description": {
-            "type": "string",
-            "nullable": true
+          details: {
+            type: "string",
+            maxLength: 1000,
+            nullable: true,
           },
-          "isActive": {
-            "type": "boolean"
+          createdAt: {
+            type: "string",
+            format: "date-time",
           },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
+          updatedAt: {
+            type: "string",
+            format: "date-time",
           },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
         },
-        "required": [
-          "id",
-          "name",
-          "isActive"
-        ]
+        required: ["id", "userId", "date", "hours", "projectId", "categoryId"],
       },
-      "CreateTeamRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255
+      CreateWorkLogRequest: {
+        type: "object",
+        properties: {
+          date: {
+            type: "string",
+            format: "date",
           },
-          "description": {
-            "type": "string",
-            "nullable": true
-          }
+          hours: {
+            type: "string",
+            pattern: "^\\d+(\\.\\d{1,2})?$",
+          },
+          projectId: {
+            type: "string",
+            format: "uuid",
+          },
+          categoryId: {
+            type: "string",
+            format: "uuid",
+          },
+          details: {
+            type: "string",
+            maxLength: 1000,
+            nullable: true,
+          },
         },
-        "required": [
-          "name"
-        ]
+        required: ["date", "hours", "projectId", "categoryId"],
       },
-      "UpdateTeamRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255
+      UpdateWorkLogRequest: {
+        type: "object",
+        properties: {
+          date: {
+            type: "string",
+            format: "date",
           },
-          "description": {
-            "type": "string",
-            "nullable": true
+          hours: {
+            type: "string",
+            pattern: "^\\d+(\\.\\d{1,2})?$",
           },
-          "isActive": {
-            "type": "boolean"
-          }
-        }
-      },
-      "AddTeamMemberRequest": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "format": "uuid"
+          projectId: {
+            type: "string",
+            format: "uuid",
           },
-          "role": {
-            "type": "string",
-            "enum": [
-              "member",
-              "leader",
-              "viewer"
-            ],
-            "default": "member"
-          }
+          categoryId: {
+            type: "string",
+            format: "uuid",
+          },
+          details: {
+            type: "string",
+            maxLength: 1000,
+            nullable: true,
+          },
         },
-        "required": [
-          "userId"
-        ]
       },
-      "PersonalStats": {
-        "type": "object",
-        "properties": {
-          "totalHours": {
-            "type": "number"
+      Team: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            format: "uuid",
           },
-          "workDays": {
-            "type": "integer"
+          name: {
+            type: "string",
+            maxLength: 255,
           },
-          "activeProjects": {
-            "type": "integer"
+          description: {
+            type: "string",
+            nullable: true,
           },
-          "topCategories": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "categoryId": {
-                  "type": "string",
-                  "format": "uuid"
+          isActive: {
+            type: "boolean",
+          },
+          createdAt: {
+            type: "string",
+            format: "date-time",
+          },
+          updatedAt: {
+            type: "string",
+            format: "date-time",
+          },
+        },
+        required: ["id", "name", "isActive"],
+      },
+      CreateTeamRequest: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            maxLength: 255,
+          },
+          description: {
+            type: "string",
+            nullable: true,
+          },
+        },
+        required: ["name"],
+      },
+      UpdateTeamRequest: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            maxLength: 255,
+          },
+          description: {
+            type: "string",
+            nullable: true,
+          },
+          isActive: {
+            type: "boolean",
+          },
+        },
+      },
+      AddTeamMemberRequest: {
+        type: "object",
+        properties: {
+          userId: {
+            type: "string",
+            format: "uuid",
+          },
+          role: {
+            type: "string",
+            enum: ["member", "leader", "viewer"],
+            default: "member",
+          },
+        },
+        required: ["userId"],
+      },
+      PersonalStats: {
+        type: "object",
+        properties: {
+          totalHours: {
+            type: "number",
+          },
+          workDays: {
+            type: "integer",
+          },
+          activeProjects: {
+            type: "integer",
+          },
+          topCategories: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                categoryId: {
+                  type: "string",
+                  format: "uuid",
                 },
-                "categoryName": {
-                  "type": "string"
+                categoryName: {
+                  type: "string",
                 },
-                "hours": {
-                  "type": "number"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                hours: {
+                  type: "number",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
-  "paths": {
+  paths: {
     "/api/projects": {
-      "get": {
-        "summary": "List all projects",
-        "description": "Retrieve a list of all projects, optionally filtered by active status",
-        "tags": [
-          "Projects"
-        ],
-        "security": [
+      get: {
+        summary: "List all projects",
+        description:
+          "Retrieve a list of all projects, optionally filtered by active status",
+        tags: ["Projects"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "active",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
+            name: "active",
+            in: "query",
+            schema: {
+              type: "boolean",
             },
-            "description": "Filter by active status"
-          }
+            description: "Filter by active status",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved projects list",
-            "content": {
+            description: "Successfully retrieved projects list",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Project"
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/Project",
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new project",
-        "description": "Create a new project with the provided details. Admin role required.",
-        "tags": [
-          "Projects"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateProjectRequest"
-              }
-            }
-          }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
         },
-        "responses": {
+      },
+      post: {
+        summary: "Create a new project",
+        description:
+          "Create a new project with the provided details. Admin role required.",
+        tags: ["Projects"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CreateProjectRequest",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Successfully created project",
-            "content": {
+            description: "Successfully created project",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/Project"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/Project",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Admin role required",
-            "content": {
+            description: "Admin role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Project with this name already exists",
-            "content": {
+            description: "Project with this name already exists",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/projects/{id}": {
-      "get": {
-        "summary": "Get project by ID",
-        "description": "Retrieve a specific project by its ID",
-        "tags": [
-          "Projects"
-        ],
-        "security": [
+      get: {
+        summary: "Get project by ID",
+        description: "Retrieve a specific project by its ID",
+        tags: ["Projects"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
             },
-            "description": "Project ID"
-          }
+            description: "Project ID",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved project",
-            "content": {
+            description: "Successfully retrieved project",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/Project"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/Project",
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Project not found",
-            "content": {
+            description: "Project not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "summary": "Update project",
-        "description": "Update an existing project. Admin role required.",
-        "tags": [
-          "Projects"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
             },
-            "description": "Project ID"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProjectRequest"
-              }
-            }
-          }
+          },
         },
-        "responses": {
+      },
+      put: {
+        summary: "Update project",
+        description: "Update an existing project. Admin role required.",
+        tags: ["Projects"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Project ID",
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/UpdateProjectRequest",
+              },
+            },
+          },
+        },
+        responses: {
           "200": {
-            "description": "Successfully updated project",
-            "content": {
+            description: "Successfully updated project",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/Project"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/Project",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Admin role required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Project not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete project (soft delete)",
-        "description": "Soft delete a project by setting isActive to false. Admin role required.",
-        "tags": [
-          "Projects"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
             },
-            "description": "Project ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully deleted project",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Admin role required",
-            "content": {
+            description: "Admin role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Project not found",
-            "content": {
+            description: "Project not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        summary: "Delete project (soft delete)",
+        description:
+          "Soft delete a project by setting isActive to false. Admin role required.",
+        tags: ["Projects"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Project ID",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Successfully deleted project",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
+                    },
+                    data: {
+                      type: "object",
+                      properties: {
+                        message: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "403": {
+            description: "Admin role required",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "404": {
+            description: "Project not found",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "500": {
+            description: "Internal server error",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/work-categories": {
-      "get": {
-        "summary": "List all work categories",
-        "description": "Retrieve a list of all work categories, optionally filtered by active status",
-        "tags": [
-          "Work Categories"
-        ],
-        "security": [
+      get: {
+        summary: "List all work categories",
+        description:
+          "Retrieve a list of all work categories, optionally filtered by active status",
+        tags: ["Work Categories"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "active",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
+            name: "active",
+            in: "query",
+            schema: {
+              type: "boolean",
             },
-            "description": "Filter by active status"
-          }
+            description: "Filter by active status",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved work categories list",
-            "content": {
+            description: "Successfully retrieved work categories list",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/WorkCategory"
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/WorkCategory",
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new work category",
-        "description": "Create a new work category with the provided details. Admin role required.",
-        "tags": [
-          "Work Categories"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateWorkCategoryRequest"
-              }
-            }
-          }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
         },
-        "responses": {
+      },
+      post: {
+        summary: "Create a new work category",
+        description:
+          "Create a new work category with the provided details. Admin role required.",
+        tags: ["Work Categories"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CreateWorkCategoryRequest",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Successfully created work category",
-            "content": {
+            description: "Successfully created work category",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/WorkCategory"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/WorkCategory",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Admin role required",
-            "content": {
+            description: "Admin role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Work category with this name already exists",
-            "content": {
+            description: "Work category with this name already exists",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/work-categories/{id}": {
-      "get": {
-        "summary": "Get work category by ID",
-        "description": "Retrieve a specific work category by its ID",
-        "tags": [
-          "Work Categories"
-        ],
-        "security": [
+      get: {
+        summary: "Get work category by ID",
+        description: "Retrieve a specific work category by its ID",
+        tags: ["Work Categories"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
             },
-            "description": "Work Category ID"
-          }
+            description: "Work Category ID",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved work category",
-            "content": {
+            description: "Successfully retrieved work category",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/WorkCategory"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/WorkCategory",
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Work category not found",
-            "content": {
+            description: "Work category not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "summary": "Update work category",
-        "description": "Update an existing work category. Admin role required.",
-        "tags": [
-          "Work Categories"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
             },
-            "description": "Work Category ID"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateWorkCategoryRequest"
-              }
-            }
-          }
+          },
         },
-        "responses": {
+      },
+      put: {
+        summary: "Update work category",
+        description: "Update an existing work category. Admin role required.",
+        tags: ["Work Categories"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Work Category ID",
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/UpdateWorkCategoryRequest",
+              },
+            },
+          },
+        },
+        responses: {
           "200": {
-            "description": "Successfully updated work category",
-            "content": {
+            description: "Successfully updated work category",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/WorkCategory"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/WorkCategory",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Admin role required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Work category not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete work category (soft delete)",
-        "description": "Soft delete a work category by setting isActive to false. Admin role required.",
-        "tags": [
-          "Work Categories"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
             },
-            "description": "Work Category ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully deleted work category",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Admin role required",
-            "content": {
+            description: "Admin role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Work category not found",
-            "content": {
+            description: "Work category not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        summary: "Delete work category (soft delete)",
+        description:
+          "Soft delete a work category by setting isActive to false. Admin role required.",
+        tags: ["Work Categories"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Work Category ID",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Successfully deleted work category",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
+                    },
+                    data: {
+                      type: "object",
+                      properties: {
+                        message: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "403": {
+            description: "Admin role required",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "404": {
+            description: "Work category not found",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "500": {
+            description: "Internal server error",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/work-logs": {
-      "get": {
-        "summary": "List work logs",
-        "description": "Retrieve a list of work logs with optional filtering and pagination",
-        "tags": [
-          "Work Logs"
+      get: {
+        summary: "List work logs",
+        description:
+          "Retrieve a list of work logs with optional filtering and pagination",
+        tags: ["Work Logs"],
+        security: [
+          {
+            BearerAuth: [],
+          },
         ],
-        "security": [
+        parameters: [
           {
-            "BearerAuth": []
-          }
+            name: "page",
+            in: "query",
+            schema: {
+              type: "integer",
+              minimum: 1,
+              default: 1,
+            },
+            description: "Page number",
+          },
+          {
+            name: "limit",
+            in: "query",
+            schema: {
+              type: "integer",
+              minimum: 1,
+              maximum: 100,
+              default: 20,
+            },
+            description: "Items per page",
+          },
+          {
+            name: "startDate",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "date",
+            },
+            description: "Filter by start date (YYYY-MM-DD)",
+          },
+          {
+            name: "endDate",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "date",
+            },
+            description: "Filter by end date (YYYY-MM-DD)",
+          },
+          {
+            name: "projectId",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Filter by single project ID",
+          },
+          {
+            name: "projectIds",
+            in: "query",
+            schema: {
+              type: "string",
+            },
+            description:
+              "Filter by multiple project IDs (comma-separated UUIDs)",
+          },
+          {
+            name: "categoryId",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Filter by single category ID",
+          },
+          {
+            name: "categoryIds",
+            in: "query",
+            schema: {
+              type: "string",
+            },
+            description:
+              "Filter by multiple category IDs (comma-separated UUIDs)",
+          },
+          {
+            name: "userId",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Filter by user ID (admin only when scope=all)",
+          },
+          {
+            name: "searchText",
+            in: "query",
+            schema: {
+              type: "string",
+            },
+            description: "Search text to filter work logs by details content",
+          },
+          {
+            name: "scope",
+            in: "query",
+            schema: {
+              type: "string",
+              enum: ["own", "team", "all"],
+              default: "own",
+            },
+            description:
+              "Scope for filtering (own: user's logs, team: team's logs, all: all logs - admin only)",
+          },
         ],
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "default": 1
-            },
-            "description": "Page number"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20
-            },
-            "description": "Items per page"
-          },
-          {
-            "name": "startDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
-            },
-            "description": "Filter by start date (YYYY-MM-DD)"
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
-            },
-            "description": "Filter by end date (YYYY-MM-DD)"
-          },
-          {
-            "name": "projectId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "description": "Filter by single project ID"
-          },
-          {
-            "name": "projectIds",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by multiple project IDs (comma-separated UUIDs)"
-          },
-          {
-            "name": "categoryId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "description": "Filter by single category ID"
-          },
-          {
-            "name": "categoryIds",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Filter by multiple category IDs (comma-separated UUIDs)"
-          },
-          {
-            "name": "userId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "description": "Filter by user ID (admin only when scope=all)"
-          },
-          {
-            "name": "searchText",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Search text to filter work logs by details content"
-          },
-          {
-            "name": "scope",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "own",
-                "team",
-                "all"
-              ],
-              "default": "own"
-            },
-            "description": "Scope for filtering (own: user's logs, team: team's logs, all: all logs - admin only)"
-          }
-        ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved work logs",
-            "content": {
+            description: "Successfully retrieved work logs",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/WorkLog"
-                      }
+                    data: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/WorkLog",
+                      },
                     },
-                    "pagination": {
-                      "type": "object",
-                      "properties": {
-                        "page": {
-                          "type": "integer"
+                    pagination: {
+                      type: "object",
+                      properties: {
+                        page: {
+                          type: "integer",
                         },
-                        "limit": {
-                          "type": "integer"
+                        limit: {
+                          type: "integer",
                         },
-                        "total": {
-                          "type": "integer"
+                        total: {
+                          type: "integer",
                         },
-                        "totalPages": {
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                        totalPages: {
+                          type: "integer",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new work log",
-        "description": "Create a new work log entry for the authenticated user",
-        "tags": [
-          "Work Logs"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateWorkLogRequest"
-              }
-            }
-          }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
         },
-        "responses": {
+      },
+      post: {
+        summary: "Create a new work log",
+        description: "Create a new work log entry for the authenticated user",
+        tags: ["Work Logs"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CreateWorkLogRequest",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Successfully created work log",
-            "content": {
+            description: "Successfully created work log",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/WorkLog"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/WorkLog",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/work-logs/{id}": {
-      "get": {
-        "summary": "Get work log by ID",
-        "description": "Retrieve a specific work log by its ID",
-        "tags": [
-          "Work Logs"
-        ],
-        "security": [
+      get: {
+        summary: "Get work log by ID",
+        description: "Retrieve a specific work log by its ID",
+        tags: ["Work Logs"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
             },
-            "description": "Work Log ID"
-          }
+            description: "Work Log ID",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved work log",
-            "content": {
+            description: "Successfully retrieved work log",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/WorkLog"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/WorkLog",
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Access denied - not your work log",
-            "content": {
+            description: "Access denied - not your work log",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Work log not found",
-            "content": {
+            description: "Work log not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "summary": "Update work log",
-        "description": "Update an existing work log. Must be owner or admin.",
-        "tags": [
-          "Work Logs"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
             },
-            "description": "Work Log ID"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateWorkLogRequest"
-              }
-            }
-          }
+          },
         },
-        "responses": {
+      },
+      put: {
+        summary: "Update work log",
+        description: "Update an existing work log. Must be owner or admin.",
+        tags: ["Work Logs"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Work Log ID",
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/UpdateWorkLogRequest",
+              },
+            },
+          },
+        },
+        responses: {
           "200": {
-            "description": "Successfully updated work log",
-            "content": {
+            description: "Successfully updated work log",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/WorkLog"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/WorkLog",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Access denied - not your work log",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Work log not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete work log",
-        "description": "Delete a work log. Must be owner or admin.",
-        "tags": [
-          "Work Logs"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
             },
-            "description": "Work Log ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully deleted work log",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Access denied - not your work log",
-            "content": {
+            description: "Access denied - not your work log",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Work log not found",
-            "content": {
+            description: "Work log not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        summary: "Delete work log",
+        description: "Delete a work log. Must be owner or admin.",
+        tags: ["Work Logs"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Work Log ID",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Successfully deleted work log",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
+                    },
+                    data: {
+                      type: "object",
+                      properties: {
+                        message: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "403": {
+            description: "Access denied - not your work log",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "404": {
+            description: "Work log not found",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "500": {
+            description: "Internal server error",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/work-logs/batch": {
-      "put": {
-        "summary": "Batch update work logs",
-        "description": "Update multiple work logs in a single transaction. Must be owner or admin for each log.",
-        "tags": [
-          "Work Logs"
-        ],
-        "security": [
+      put: {
+        summary: "Batch update work logs",
+        description:
+          "Update multiple work logs in a single transaction. Must be owner or admin for each log.",
+        tags: ["Work Logs"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
+        requestBody: {
+          required: true,
+          content: {
             "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "format": "uuid",
-                      "description": "Work log ID to update"
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      format: "uuid",
+                      description: "Work log ID to update",
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/UpdateWorkLogRequest"
-                    }
+                    data: {
+                      $ref: "#/components/schemas/UpdateWorkLogRequest",
+                    },
                   },
-                  "required": [
-                    "id",
-                    "data"
-                  ]
-                }
-              }
-            }
-          }
+                  required: ["id", "data"],
+                },
+              },
+            },
+          },
         },
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully updated work logs",
-            "content": {
+            description: "Successfully updated work logs",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/WorkLog"
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/WorkLog",
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Access denied - not owner of all work logs",
-            "content": {
+            description: "Access denied - not owner of all work logs",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/teams": {
-      "get": {
-        "summary": "List all teams",
-        "description": "Retrieve a list of all teams, optionally filtered by active status",
-        "tags": [
-          "Teams"
-        ],
-        "security": [
+      get: {
+        summary: "List all teams",
+        description:
+          "Retrieve a list of all teams, optionally filtered by active status",
+        tags: ["Teams"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "active",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
+            name: "active",
+            in: "query",
+            schema: {
+              type: "boolean",
             },
-            "description": "Filter by active status"
-          }
+            description: "Filter by active status",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved teams list",
-            "content": {
+            description: "Successfully retrieved teams list",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Team"
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/Team",
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new team",
-        "description": "Create a new team with the provided details. Admin role required.",
-        "tags": [
-          "Teams"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTeamRequest"
-              }
-            }
-          }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
         },
-        "responses": {
+      },
+      post: {
+        summary: "Create a new team",
+        description:
+          "Create a new team with the provided details. Admin role required.",
+        tags: ["Teams"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/CreateTeamRequest",
+              },
+            },
+          },
+        },
+        responses: {
           "201": {
-            "description": "Successfully created team",
-            "content": {
+            description: "Successfully created team",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/Team"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/Team",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Admin role required",
-            "content": {
+            description: "Admin role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "409": {
-            "description": "Team with this name already exists",
-            "content": {
+            description: "Team with this name already exists",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/teams/{id}": {
-      "get": {
-        "summary": "Get team by ID",
-        "description": "Retrieve a specific team by its ID",
-        "tags": [
-          "Teams"
-        ],
-        "security": [
+      get: {
+        summary: "Get team by ID",
+        description: "Retrieve a specific team by its ID",
+        tags: ["Teams"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
             },
-            "description": "Team ID"
-          }
+            description: "Team ID",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved team",
-            "content": {
+            description: "Successfully retrieved team",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/Team"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/Team",
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Team not found",
-            "content": {
+            description: "Team not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "summary": "Update team",
-        "description": "Update an existing team. Admin role required.",
-        "tags": [
-          "Teams"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
             },
-            "description": "Team ID"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTeamRequest"
-              }
-            }
-          }
+          },
         },
-        "responses": {
+      },
+      put: {
+        summary: "Update team",
+        description: "Update an existing team. Admin role required.",
+        tags: ["Teams"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Team ID",
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/UpdateTeamRequest",
+              },
+            },
+          },
+        },
+        responses: {
           "200": {
-            "description": "Successfully updated team",
-            "content": {
+            description: "Successfully updated team",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/Team"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/Team",
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Admin role required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Team not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete team (soft delete)",
-        "description": "Soft delete a team by setting isActive to false. Admin role required.",
-        "tags": [
-          "Teams"
-        ],
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
             },
-            "description": "Team ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successfully deleted team",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Admin role required",
-            "content": {
+            description: "Admin role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Team not found",
-            "content": {
+            description: "Team not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        summary: "Delete team (soft delete)",
+        description:
+          "Soft delete a team by setting isActive to false. Admin role required.",
+        tags: ["Teams"],
+        security: [
+          {
+            BearerAuth: [],
+          },
+        ],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
+            },
+            description: "Team ID",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Successfully deleted team",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
+                    },
+                    data: {
+                      type: "object",
+                      properties: {
+                        message: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "401": {
+            description: "Authentication required",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "403": {
+            description: "Admin role required",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "404": {
+            description: "Team not found",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+          "500": {
+            description: "Internal server error",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/teams/{id}/members": {
-      "post": {
-        "summary": "Add team member",
-        "description": "Add a new member to a team. Admin or team leader role required.",
-        "tags": [
-          "Teams"
-        ],
-        "security": [
+      post: {
+        summary: "Add team member",
+        description:
+          "Add a new member to a team. Admin or team leader role required.",
+        tags: ["Teams"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
             },
-            "description": "Team ID"
-          }
+            description: "Team ID",
+          },
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
+        requestBody: {
+          required: true,
+          content: {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddTeamMemberRequest"
-              }
-            }
-          }
+              schema: {
+                $ref: "#/components/schemas/AddTeamMemberRequest",
+              },
+            },
+          },
         },
-        "responses": {
+        responses: {
           "201": {
-            "description": "Successfully added team member",
-            "content": {
+            description: "Successfully added team member",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      type: "object",
+                      properties: {
+                        message: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "400": {
-            "description": "Validation error",
-            "content": {
+            description: "Validation error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Admin or team leader role required",
-            "content": {
+            description: "Admin or team leader role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Team not found",
-            "content": {
+            description: "Team not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "409": {
-            "description": "User is already a team member",
-            "content": {
+            description: "User is already a team member",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/teams/{id}/members/{userId}": {
-      "delete": {
-        "summary": "Remove team member",
-        "description": "Remove a member from a team. Admin or team leader role required.",
-        "tags": [
-          "Teams"
-        ],
-        "security": [
+      delete: {
+        summary: "Remove team member",
+        description:
+          "Remove a member from a team. Admin or team leader role required.",
+        tags: ["Teams"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
             },
-            "description": "Team ID"
+            description: "Team ID",
           },
           {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
+            name: "userId",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              format: "uuid",
             },
-            "description": "User ID"
-          }
+            description: "User ID",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully removed team member",
-            "content": {
+            description: "Successfully removed team member",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      type: "object",
+                      properties: {
+                        message: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Admin or team leader role required",
-            "content": {
+            description: "Admin or team leader role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "404": {
-            "description": "Team or member not found",
-            "content": {
+            description: "Team or member not found",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/dashboard/personal": {
-      "get": {
-        "summary": "Get personal dashboard statistics",
-        "description": "Retrieve personal work statistics for the authenticated user",
-        "tags": [
-          "Dashboard"
-        ],
-        "security": [
+      get: {
+        summary: "Get personal dashboard statistics",
+        description:
+          "Retrieve personal work statistics for the authenticated user",
+        tags: ["Dashboard"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "startDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
+            name: "startDate",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "date",
             },
-            "description": "Start date for statistics (YYYY-MM-DD)"
+            description: "Start date for statistics (YYYY-MM-DD)",
           },
           {
-            "name": "endDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
+            name: "endDate",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "date",
             },
-            "description": "End date for statistics (YYYY-MM-DD)"
-          }
+            description: "End date for statistics (YYYY-MM-DD)",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved personal statistics",
-            "content": {
+            description: "Successfully retrieved personal statistics",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/PersonalStats"
-                    }
-                  }
-                }
-              }
-            }
+                    data: {
+                      $ref: "#/components/schemas/PersonalStats",
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/dashboard/projects": {
-      "get": {
-        "summary": "Get project dashboard statistics",
-        "description": "Retrieve work statistics grouped by projects",
-        "tags": [
-          "Dashboard"
-        ],
-        "security": [
+      get: {
+        summary: "Get project dashboard statistics",
+        description: "Retrieve work statistics grouped by projects",
+        tags: ["Dashboard"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "startDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
+            name: "startDate",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "date",
             },
-            "description": "Start date for statistics (YYYY-MM-DD)"
+            description: "Start date for statistics (YYYY-MM-DD)",
           },
           {
-            "name": "endDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
+            name: "endDate",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "date",
             },
-            "description": "End date for statistics (YYYY-MM-DD)"
-          }
+            description: "End date for statistics (YYYY-MM-DD)",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved project statistics",
-            "content": {
+            description: "Successfully retrieved project statistics",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "projectId": {
-                            "type": "string",
-                            "format": "uuid"
+                    data: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          projectId: {
+                            type: "string",
+                            format: "uuid",
                           },
-                          "projectName": {
-                            "type": "string"
+                          projectName: {
+                            type: "string",
                           },
-                          "totalHours": {
-                            "type": "number"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                          totalHours: {
+                            type: "number",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
     },
     "/api/dashboard/team": {
-      "get": {
-        "summary": "Get team dashboard statistics",
-        "description": "Retrieve team work statistics. Team leader or admin role required.",
-        "tags": [
-          "Dashboard"
-        ],
-        "security": [
+      get: {
+        summary: "Get team dashboard statistics",
+        description:
+          "Retrieve team work statistics. Team leader or admin role required.",
+        tags: ["Dashboard"],
+        security: [
           {
-            "BearerAuth": []
-          }
+            BearerAuth: [],
+          },
         ],
-        "parameters": [
+        parameters: [
           {
-            "name": "startDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
+            name: "startDate",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "date",
             },
-            "description": "Start date for statistics (YYYY-MM-DD)"
+            description: "Start date for statistics (YYYY-MM-DD)",
           },
           {
-            "name": "endDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
+            name: "endDate",
+            in: "query",
+            schema: {
+              type: "string",
+              format: "date",
             },
-            "description": "End date for statistics (YYYY-MM-DD)"
-          }
+            description: "End date for statistics (YYYY-MM-DD)",
+          },
         ],
-        "responses": {
+        responses: {
           "200": {
-            "description": "Successfully retrieved team statistics",
-            "content": {
+            description: "Successfully retrieved team statistics",
+            content: {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: {
+                      type: "boolean",
+                      example: true,
                     },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "totalHours": {
-                          "type": "number"
+                    data: {
+                      type: "object",
+                      properties: {
+                        totalHours: {
+                          type: "number",
                         },
-                        "memberCount": {
-                          "type": "integer"
+                        memberCount: {
+                          type: "integer",
                         },
-                        "topProjects": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "projectId": {
-                                "type": "string",
-                                "format": "uuid"
+                        topProjects: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              projectId: {
+                                type: "string",
+                                format: "uuid",
                               },
-                              "projectName": {
-                                "type": "string"
+                              projectName: {
+                                type: "string",
                               },
-                              "totalHours": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                              totalHours: {
+                                type: "number",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           "401": {
-            "description": "Authentication required",
-            "content": {
+            description: "Authentication required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "403": {
-            "description": "Team leader or admin role required",
-            "content": {
+            description: "Team leader or admin role required",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
           },
           "500": {
-            "description": "Internal server error",
-            "content": {
+            description: "Internal server error",
+            content: {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                schema: {
+                  $ref: "#/components/schemas/ApiErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
-  "tags": [
+  tags: [
     {
-      "name": "Projects",
-      "description": "Project management endpoints"
+      name: "Projects",
+      description: "Project management endpoints",
     },
     {
-      "name": "Work Categories",
-      "description": "Work category management endpoints"
+      name: "Work Categories",
+      description: "Work category management endpoints",
     },
     {
-      "name": "Work Logs",
-      "description": "Work log management endpoints"
+      name: "Work Logs",
+      description: "Work log management endpoints",
     },
     {
-      "name": "Teams",
-      "description": "Team management endpoints"
+      name: "Teams",
+      description: "Team management endpoints",
     },
     {
-      "name": "Dashboard",
-      "description": "Dashboard statistics endpoints"
-    }
-  ]
+      name: "Dashboard",
+      description: "Dashboard statistics endpoints",
+    },
+  ],
 } as const;

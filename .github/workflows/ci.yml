@@ -120,7 +120,7 @@ jobs:
           echo "🔍 Validating OpenAPI specification..."
 
           # Create a temporary validation script
-          cat > /tmp/validate-openapi.mjs << 'EOF'
+          cat > validate-openapi.mjs << 'EOF'
           import Ajv from 'ajv';
           import addFormats from 'ajv-formats';
           import { readFile } from 'fs/promises';
@@ -234,8 +234,9 @@ jobs:
           validateOpenAPI();
           EOF
 
-          # Run validation
-          node /tmp/validate-openapi.mjs
+          # Run validation from project directory (so node can find modules)
+          node validate-openapi.mjs
+          rm validate-openapi.mjs
 
       - name: Check for uncommitted changes
         run: |

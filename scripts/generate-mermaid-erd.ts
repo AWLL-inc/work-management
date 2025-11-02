@@ -31,6 +31,17 @@ async function generateMermaidERD() {
     for (const [tableName, table] of tables) {
       const config = getTableConfig(table);
 
+      // Build a set of foreign key column names from actual FK definitions
+      const foreignKeyColumns = new Set<string>();
+      if (config.foreignKeys && config.foreignKeys.length > 0) {
+        for (const fk of config.foreignKeys) {
+          const fkColumns = fk.reference().columns;
+          for (const fkCol of fkColumns) {
+            foreignKeyColumns.add(fkCol.name);
+          }
+        }
+      }
+
       mermaidContent += `\n  ${tableName} {\n`;
 
       // Add all columns from schema
@@ -63,8 +74,8 @@ async function generateMermaidERD() {
 
         // Add primary key notation
         const pkNotation = column.primary ? " PK" : "";
-        const fkNotation =
-          column.name.endsWith("_id") && !column.primary ? " FK" : "";
+        // Use actual FK definitions instead of naming conventions
+        const fkNotation = foreignKeyColumns.has(column.name) ? " FK" : "";
 
         mermaidContent += `    ${columnType} ${column.name}${pkNotation}${fkNotation}\n`;
       }

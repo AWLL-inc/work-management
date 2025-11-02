@@ -7,7 +7,7 @@ erDiagram
     uuid user_id FK
     varchar type
     varchar provider
-    varchar provider_account_id FK
+    varchar provider_account_id
     text refresh_token
     text access_token
     integer expires_at

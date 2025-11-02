@@ -106,7 +106,18 @@
       "Bash(gh api:*)",
       "Bash(gh:*)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm run build)"
+      "Bash(pnpm run build)",
+      "Bash(pnpm run docs:db:*)",
+      "Bash(pnpm run docs:openapi:*)",
+      "Bash(pnpm run docs)",
+      "Bash(pnpm run docs:db:markdown:*)",
+      "Bash(pnpm biome check:*)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm run docs:db:tables:*)",
+      "Bash(pnpm run docs:db:mermaid:*)",
+      "Bash(pnpm biome format:*)",
+      "Bash(pnpm tsx:*)"
     ],
     "deny": [],
     "ask": []

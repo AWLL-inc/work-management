@@ -356,6 +356,119 @@ Based on comprehensive API design principles:
   - 404: Not Found
   - 500: Internal Server Error
 
+### API Versioning Policy
+
+This project follows a pragmatic API versioning approach that balances stability with flexibility.
+
+#### Current Versioning Strategy
+
+**No URL-based Versioning (Current Implementation)**
+- API endpoints do NOT include version numbers in URLs (e.g., `/api/projects` not `/api/v1/projects`)
+- The OpenAPI specification version is `1.0.0` (informational only)
+- This approach is suitable for the current stage of development where:
+  - The API is still evolving with new features
+  - All clients (frontend) are tightly coupled and deployed together
+  - Breaking changes can be coordinated across the entire application
+
+**Rationale**:
+- Simpler implementation and maintenance
+- Easier refactoring and rapid iteration
+- Single codebase without version branching
+- Natural fit for monolithic Next.js App Router architecture
+
+#### When to Introduce Versioning
+
+Implement URL-based versioning (`/api/v2/...`) when:
+1. **External API Consumers**: Third-party applications or mobile apps depend on the API
+2. **Decoupled Deployment**: Frontend and backend are deployed independently
+3. **Long-term Support**: Need to maintain multiple API versions simultaneously
+4. **Stable Contract**: API has matured and requires backwards compatibility guarantees
+
+#### Breaking vs Non-breaking Changes
+
+**Breaking Changes** (require major version bump or careful migration):
+- Removing endpoints or fields
+- Renaming fields or changing data types
+- Changing authentication/authorization requirements
+- Modifying response structure (e.g., changing `data` from object to array)
+- Changing HTTP status codes for existing operations
+- Making optional fields required
+
+**Non-breaking Changes** (safe to deploy):
+- Adding new endpoints
+- Adding optional fields to requests
+- Adding fields to responses
+- Adding new error codes
+- Deprecating fields (with grace period)
+- Performance improvements without behavior changes
+
+#### Current Change Management
+
+Since we're not using URL versioning:
+
+1. **Coordinated Deployment**
+   - Frontend and backend changes are deployed together
+   - Breaking changes are acceptable within the same deployment
+   - Always verify frontend compatibility before merging
+
+2. **Database Migrations**
+   - Use backward-compatible migrations when possible
+   - Follow the expand-contract pattern:
+     1. Expand: Add new columns/tables
+     2. Migrate: Dual-write to old and new schemas
+     3. Contract: Remove old columns/tables after verification
+
+3. **Documentation Updates**
+   - Update OpenAPI specification for all API changes
+   - Document breaking changes in commit messages and PR descriptions
+   - Update frontend code and tests in the same PR
+
+#### Future Versioning Approach (When Needed)
+
+If versioning becomes necessary, follow this strategy:
+
+**URL-based Versioning**
+```
+/api/v1/projects     # Stable, long-term support
+/api/v2/projects     # Latest version with new features
+```
+
+**Version Negotiation**
+- Default to latest version if no version specified
+- Support multiple versions simultaneously (max 2 concurrent versions)
+- Clear deprecation timeline (minimum 6 months notice)
+
+**Implementation Pattern**
+```typescript
+// Route structure
+app/api/v1/projects/route.ts
+app/api/v2/projects/route.ts
+app/api/projects/route.ts  // Redirects to latest version
+```
+
+**Deprecation Process**
+1. Announce deprecation in API documentation and response headers
+2. Provide migration guide with code examples
+3. Monitor usage metrics of deprecated endpoints
+4. Remove deprecated version after grace period
+
+#### OpenAPI Specification Versioning
+
+The OpenAPI spec version (`info.version`) follows Semantic Versioning:
+- **Major**: Breaking changes to API contract
+- **Minor**: New features, non-breaking additions
+- **Patch**: Bug fixes, documentation updates, clarifications
+
+Current version: `1.0.0`
+
+#### Best Practices
+
+1. **Additive Changes**: Prefer adding new fields over modifying existing ones
+2. **Optional by Default**: Make new request fields optional when possible
+3. **Ignore Unknown Fields**: Clients should ignore unknown response fields
+4. **Clear Errors**: Provide detailed error messages for version mismatches
+5. **Testing**: Ensure comprehensive API tests cover all supported versions
+
 ## Component Architecture
 
 ### Component Placement Rules (Next.js 15 - Pattern 3)
@@ -843,6 +956,76 @@ This project provides structured Issue templates for efficient project managemen
 5. **Implementation**: Development work
 6. **Review**: Code review and testing
 7. **Closure**: Issue resolved and closed
+
+## Documentation Maintenance
+
+### API Documentation (OpenAPI)
+
+When adding or modifying API endpoints:
+
+1. **Edit Generation Script** (`scripts/generate-openapi.ts`)
+   - Add request/response schemas to `components.schemas`
+   - Add endpoint definitions to `paths`
+   - Follow existing patterns for consistency
+
+2. **Generate Documentation**
+   ```bash
+   npm run docs:openapi
+   ```
+
+3. **Verify the Generated Spec**
+   ```bash
+   npm run dev
+   # Visit http://localhost:3000/en/api-docs
+   ```
+
+4. **Commit Both Files**
+   - `scripts/generate-openapi.ts` (your manual changes)
+   - `openapi/spec.ts` (auto-generated output)
+
+**Note**: The OpenAPI spec in `openapi/spec.ts` is auto-generated from `scripts/generate-openapi.ts`. Always edit the generation script, not the output file directly.
+
+### Database Documentation
+
+When modifying database schema:
+
+1. **Update Drizzle Schema** (`drizzle/schema.ts`)
+   - Add or modify table definitions
+   - Include JSDoc comments for documentation
+
+2. **Generate Migration**
+   ```bash
+   npm run db:generate
+   ```
+
+3. **Regenerate Documentation**
+   ```bash
+   npm run docs:db
+   ```
+   This generates:
+   - `docs/database/schema.dbml` - DBML format for dbdiagram.io
+   - `docs/database/erd.md` - Mermaid ER diagram
+   - `docs/database/schema.md` - Markdown documentation
+
+4. **Commit Schema and Generated Docs**
+   - `drizzle/schema.ts` (schema changes)
+   - `drizzle/migrations/` (migration files)
+   - `docs/database/` (generated documentation)
+
+**Important**: Database documentation is fully auto-generated. Do not edit `docs/database/` files manually - they will be overwritten on next generation.
+
+### All Documentation at Once
+
+To regenerate all documentation (database + API):
+
+```bash
+npm run docs
+```
+
+This is equivalent to:
+```bash
+npm run docs:db && npm run docs:openapi
+```
 
 ## Additional Resources
 

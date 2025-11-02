@@ -64,7 +64,93 @@ function mergeLocaleCookie(
   return authResponse;
 }
 
-// Export auth-wrapped middleware
+/**
+ * Middleware handler type for processing requests
+ */
+type MiddlewareHandler = (
+  req: Parameters<Parameters<typeof auth>[0]>[0],
+  intlResponse: NextResponse | null,
+) => NextResponse | null;
+
+/**
+ * Handle API documentation access control
+ * Requires admin authentication for /api-docs and /api/openapi
+ */
+function handleApiDocsAccess(
+  req: Parameters<Parameters<typeof auth>[0]>[0],
+  intlResponse: NextResponse | null,
+): NextResponse | null {
+  const pathname = req.nextUrl.pathname;
+  const isApiDocsPath =
+    pathname.includes("/api-docs") || pathname === "/api/openapi";
+
+  if (!isApiDocsPath) return null;
+
+  // 1. Check authentication and admin role
+  if (!req.auth || req.auth.user.role !== "admin") {
+    const loginUrl = new URL("/login", req.nextUrl.origin);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return addPathnameHeader(
+      req as NextRequest,
+      NextResponse.redirect(loginUrl),
+    );
+  }
+
+  // 2. Production environment: check if API docs are explicitly enabled
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ENABLE_API_DOCS !== "true"
+  ) {
+    return new NextResponse("Not Found", { status: 404 });
+  }
+
+  // 3. Admin user with enabled API docs: allow access
+  const response = intlResponse || NextResponse.next();
+  return addPathnameHeader(req as NextRequest, response);
+}
+
+/**
+ * Handle public paths that don't require authentication
+ */
+function handlePublicPaths(
+  req: Parameters<Parameters<typeof auth>[0]>[0],
+  intlResponse: NextResponse | null,
+): NextResponse | null {
+  const pathname = req.nextUrl.pathname;
+
+  if (!isPublicPath(pathname)) return null;
+
+  const response = intlResponse || NextResponse.next();
+  return addPathnameHeader(req as NextRequest, response);
+}
+
+/**
+ * Handle authentication for protected paths
+ */
+function handleAuthentication(
+  req: Parameters<Parameters<typeof auth>[0]>[0],
+  _intlResponse: NextResponse | null,
+): NextResponse | null {
+  const pathname = req.nextUrl.pathname;
+
+  // If not authenticated, redirect to login
+  if (!req.auth) {
+    const loginUrl = new URL("/login", req.nextUrl.origin);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    const response = NextResponse.redirect(loginUrl);
+    return addPathnameHeader(req as NextRequest, response);
+  }
+
+  // If authenticated and on /login, redirect to home
+  if (pathname === "/login") {
+    const response = NextResponse.redirect(new URL("/", req.nextUrl.origin));
+    return addPathnameHeader(req as NextRequest, response);
+  }
+
+  return null;
+}
+
+// Export auth-wrapped middleware with handler chain
 export default auth((req) => {
   const pathname = req.nextUrl.pathname;
 
@@ -73,28 +159,19 @@ export default auth((req) => {
     ? null
     : intlMiddleware(req as NextRequest);
 
-  // Public paths: allow access
-  if (isPublicPath(pathname)) {
-    const response = intlResponse || NextResponse.next();
-    return addPathnameHeader(req as NextRequest, response);
+  // Process middleware handlers in order
+  const handlers: MiddlewareHandler[] = [
+    handleApiDocsAccess,
+    handlePublicPaths,
+    handleAuthentication,
+  ];
+
+  for (const handler of handlers) {
+    const response = handler(req, intlResponse);
+    if (response) return response;
   }
 
-  // Protected paths: check authentication
-  if (!req.auth) {
-    // Redirect unauthenticated users to login
-    const loginUrl = new URL("/login", req.nextUrl.origin);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    const response = NextResponse.redirect(loginUrl);
-    return addPathnameHeader(req as NextRequest, response);
-  }
-
-  // Redirect authenticated users from /login to home
-  if (pathname === "/login") {
-    const response = NextResponse.redirect(new URL("/", req.nextUrl.origin));
-    return addPathnameHeader(req as NextRequest, response);
-  }
-
-  // Authenticated: merge i18n and continue
+  // Default: Authenticated user, allow access with i18n
   const response = intlResponse || NextResponse.next();
   const mergedResponse = mergeLocaleCookie(response, intlResponse);
   return addPathnameHeader(req as NextRequest, mergedResponse);

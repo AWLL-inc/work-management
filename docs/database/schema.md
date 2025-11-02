@@ -1,6 +1,6 @@
 # データベーススキーマドキュメント
 
-生成日時: 2025-11-02T01:24:10.221Z
+生成日時: 2025-11-02T04:36:58.237Z
 
 ## 概要
 
@@ -215,7 +215,7 @@
 - `work_logs_category_id_idx`: INDEX (category_id)
 - `work_logs_date_user_idx`: INDEX (date, user_id)
 - `work_logs_project_category_idx`: INDEX (project_id, category_id)
-- `work_logs_details_gin_idx`: INDEX ()
+- `work_logs_details_gin_idx`: INDEX (expression)
 
 ### 外部キー制約
 

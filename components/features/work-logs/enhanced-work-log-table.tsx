@@ -566,9 +566,6 @@ export function EnhancedWorkLogTable({
         editable: false,
         cellStyle: {
           padding: "8px 4px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
         },
       });
     }

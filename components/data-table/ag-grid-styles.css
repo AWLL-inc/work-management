@@ -79,9 +79,7 @@
 
 .ag-row {
   border-bottom: 1px solid hsl(var(--border) / 0.5);
-  transition:
-    background-color 0.15s ease-in-out,
-    transform 0.1s ease-in-out;
+  transition: background-color 0.15s ease-in-out;
 }
 
 .ag-row:hover {
@@ -100,18 +98,6 @@
 .ag-row-selected {
   background-color: hsl(var(--primary) / 0.08) !important;
   border-left: 3px solid hsl(var(--primary));
-  position: relative;
-}
-
-.ag-row-selected::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: hsl(var(--primary));
-  transition: width 0.2s ease-in-out;
 }
 
 .ag-row-selected:hover {

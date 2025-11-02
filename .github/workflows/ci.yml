@@ -115,6 +115,128 @@ jobs:
           test -f openapi/spec.ts || (echo "❌ spec.ts not generated" && exit 1)
           echo "✅ All documentation files generated successfully"
 
+      - name: Validate OpenAPI Specification
+        run: |
+          echo "🔍 Validating OpenAPI specification..."
+
+          # Create a temporary validation script
+          cat > /tmp/validate-openapi.mjs << 'EOF'
+          import Ajv from 'ajv';
+          import addFormats from 'ajv-formats';
+          import { readFile } from 'fs/promises';
+
+          // OpenAPI 3.0 Schema (simplified version focusing on critical validations)
+          const openApiSchema = {
+            type: 'object',
+            required: ['openapi', 'info', 'paths'],
+            properties: {
+              openapi: {
+                type: 'string',
+                pattern: '^3\\.0\\.\\d+$',
+                description: 'OpenAPI version (3.0.x)'
+              },
+              info: {
+                type: 'object',
+                required: ['title', 'version'],
+                properties: {
+                  title: { type: 'string' },
+                  version: { type: 'string' },
+                  description: { type: 'string' }
+                }
+              },
+              paths: {
+                type: 'object',
+                patternProperties: {
+                  '^/': {
+                    type: 'object',
+                    patternProperties: {
+                      '^(get|post|put|patch|delete|options|head)$': {
+                        type: 'object',
+                        properties: {
+                          summary: { type: 'string' },
+                          description: { type: 'string' },
+                          operationId: { type: 'string' },
+                          parameters: { type: 'array' },
+                          requestBody: { type: 'object' },
+                          responses: { type: 'object' }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              components: {
+                type: 'object',
+                properties: {
+                  schemas: { type: 'object' },
+                  responses: { type: 'object' },
+                  parameters: { type: 'object' },
+                  securitySchemes: { type: 'object' }
+                }
+              }
+            }
+          };
+
+          async function validateOpenAPI() {
+            try {
+              // Read and parse the TypeScript spec file
+              const specContent = await readFile('openapi/spec.ts', 'utf-8');
+
+              // Extract JSON from TypeScript export
+              const jsonMatch = specContent.match(/export const openApiSpec = ({[\s\S]*}) as const;/);
+              if (!jsonMatch) {
+                throw new Error('Could not extract OpenAPI spec from TypeScript file');
+              }
+
+              const spec = JSON.parse(jsonMatch[1]);
+
+              // Validate with Ajv
+              const ajv = new Ajv({
+                allErrors: true,
+                strict: false,
+                allowUnionTypes: true
+              });
+              addFormats(ajv);
+
+              const validate = ajv.compile(openApiSchema);
+              const valid = validate(spec);
+
+              if (!valid) {
+                console.error('❌ OpenAPI validation failed:');
+                console.error(JSON.stringify(validate.errors, null, 2));
+                process.exit(1);
+              }
+
+              // Additional semantic checks
+              const pathCount = Object.keys(spec.paths || {}).length;
+              const schemaCount = Object.keys(spec.components?.schemas || {}).length;
+
+              console.log('✅ OpenAPI specification is valid');
+              console.log(`   - Version: ${spec.openapi}`);
+              console.log(`   - Title: ${spec.info.title}`);
+              console.log(`   - API Version: ${spec.info.version}`);
+              console.log(`   - Paths: ${pathCount}`);
+              console.log(`   - Schemas: ${schemaCount}`);
+
+              if (pathCount === 0) {
+                console.warn('⚠️  Warning: No API paths defined');
+              }
+              if (schemaCount === 0) {
+                console.warn('⚠️  Warning: No component schemas defined');
+              }
+
+            } catch (error) {
+              console.error('❌ OpenAPI validation error:', error.message);
+              process.exit(1);
+            }
+          }
+
+          validateOpenAPI();
+          EOF
+
+          # Run validation
+          node /tmp/validate-openapi.mjs
+
       - name: Check for uncommitted changes
         run: |
           # Create a filtered diff that excludes timestamp-only changes

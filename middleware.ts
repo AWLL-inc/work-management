@@ -74,9 +74,16 @@ export default auth((req) => {
     : intlMiddleware(req as NextRequest);
 
   // API Documentation access control
-  // Block /api-docs and /api/openapi in production unless explicitly enabled
+  // Require admin authentication for /api-docs and /api/openapi
   if (pathname.includes("/api-docs") || pathname === "/api/openapi") {
-    // In production, block access unless ENABLE_API_DOCS is set
+    // Always require authentication and admin role
+    if (!req.auth || req.auth.user.role !== "admin") {
+      const loginUrl = new URL("/login", req.nextUrl.origin);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // In production, additionally check if API docs are explicitly enabled
     if (
       process.env.NODE_ENV === "production" &&
       process.env.ENABLE_API_DOCS !== "true"
@@ -84,14 +91,7 @@ export default auth((req) => {
       return new NextResponse("Not Found", { status: 404 });
     }
 
-    // In development or when enabled, require admin role
-    if (!req.auth || req.auth.user.role !== "admin") {
-      const loginUrl = new URL("/login", req.nextUrl.origin);
-      loginUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Admin user: allow access
+    // Admin user with enabled API docs: allow access
     const response = intlResponse || NextResponse.next();
     return addPathnameHeader(req as NextRequest, response);
   }

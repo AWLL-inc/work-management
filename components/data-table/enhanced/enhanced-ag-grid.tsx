@@ -623,7 +623,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
   );
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col h-full space-y-4">
       {enableToolbar && (
         <GridToolbar
           gridApi={gridApi || undefined}
@@ -648,7 +648,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
         />
       )}
 
-      <div className="ag-theme-quartz h-[600px] w-full">
+      <div className="ag-theme-quartz flex-1 min-h-[400px] w-full overflow-auto">
         <AgGridReact
           ref={gridRef}
           className="h-full w-full"

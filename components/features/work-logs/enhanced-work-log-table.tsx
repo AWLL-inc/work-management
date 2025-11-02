@@ -1067,7 +1067,7 @@ export function EnhancedWorkLogTable({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full space-y-4">
       {/* Search Controls */}
       <SearchControls
         filters={searchFilters}
@@ -1109,73 +1109,78 @@ export function EnhancedWorkLogTable({
           }
         }}
         isLoading={isLoading}
-        className="mb-4"
+        className="shrink-0"
       />
 
-      <EnhancedAGGrid<WorkLog>
-        rowData={rowData}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        getRowClass={getRowClass}
-        getRowHeight={getRowHeight}
-        onGridReady={onGridReady}
-        // Cell value changes handled via column definitions
-        // onCellEditingStarted handled at column level
-        onRowAdd={handleRowAdd} // Pass our handleRowAdd to toolbar
-        onDataChange={undefined} // Disable data change callback to prevent external interference
-        onRowUpdate={handleRowUpdate}
-        onRowDelete={batchEditingEnabled ? handleBatchDelete : handleRowDelete}
-        enableToolbar={true}
-        batchEditingEnabled={batchEditingEnabled}
-        enableUndoRedo={true}
-        maxUndoRedoSteps={20}
-        // Filtering features
-        enableQuickFilter={false}
-        enableFloatingFilter={false}
-        enableFilterToolPanel={false}
-        // Work Log specific toolbar buttons
-        onToggleBatchEdit={() => setBatchEditingEnabled(true)}
-        onAddWorkLog={() => {
-          setSelectedWorkLog(null);
-          setFormOpen(true);
-        }}
-        onBatchSave={handleBatchSave}
-        onCancelBatchEdit={handleCancelBatchEditing}
-        isSavingBatch={isSubmitting}
-        gridOptions={{
-          rowSelection: "multiple",
-          suppressRowClickSelection: false, // Always allow row selection
-          singleClickEdit: batchEditingEnabled,
-          stopEditingWhenCellsLoseFocus: true,
-          enterNavigatesVertically: true,
-          suppressColumnVirtualisation: true, // Prevent column virtualization issues
-          ensureDomOrder: true, // Ensure DOM order matches logical order
-          suppressCellFocus: false, // Allow cell focus
-          suppressRowTransform: false, // Enable smooth row animations
-          rowBuffer: 0, // Don't buffer rows to avoid data inconsistencies
-          animateRows: true, // Enable smooth row animations for better UX
-          onCellKeyDown: (event: CellKeyDownEvent) => {
-            const keyboardEvent = event.event as KeyboardEvent;
-            const key = keyboardEvent?.key?.toLowerCase();
-            const ctrlKey = keyboardEvent?.ctrlKey;
+      {/* Table - Takes remaining height */}
+      <div className="flex-1 min-h-0">
+        <EnhancedAGGrid<WorkLog>
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          getRowClass={getRowClass}
+          getRowHeight={getRowHeight}
+          onGridReady={onGridReady}
+          // Cell value changes handled via column definitions
+          // onCellEditingStarted handled at column level
+          onRowAdd={handleRowAdd} // Pass our handleRowAdd to toolbar
+          onDataChange={undefined} // Disable data change callback to prevent external interference
+          onRowUpdate={handleRowUpdate}
+          onRowDelete={
+            batchEditingEnabled ? handleBatchDelete : handleRowDelete
+          }
+          enableToolbar={true}
+          batchEditingEnabled={batchEditingEnabled}
+          enableUndoRedo={true}
+          maxUndoRedoSteps={20}
+          // Filtering features
+          enableQuickFilter={false}
+          enableFloatingFilter={false}
+          enableFilterToolPanel={false}
+          // Work Log specific toolbar buttons
+          onToggleBatchEdit={() => setBatchEditingEnabled(true)}
+          onAddWorkLog={() => {
+            setSelectedWorkLog(null);
+            setFormOpen(true);
+          }}
+          onBatchSave={handleBatchSave}
+          onCancelBatchEdit={handleCancelBatchEditing}
+          isSavingBatch={isSubmitting}
+          gridOptions={{
+            rowSelection: "multiple",
+            suppressRowClickSelection: false, // Always allow row selection
+            singleClickEdit: batchEditingEnabled,
+            stopEditingWhenCellsLoseFocus: true,
+            enterNavigatesVertically: true,
+            suppressColumnVirtualisation: true, // Prevent column virtualization issues
+            ensureDomOrder: true, // Ensure DOM order matches logical order
+            suppressCellFocus: false, // Allow cell focus
+            suppressRowTransform: false, // Enable smooth row animations
+            rowBuffer: 0, // Don't buffer rows to avoid data inconsistencies
+            animateRows: true, // Enable smooth row animations for better UX
+            onCellKeyDown: (event: CellKeyDownEvent) => {
+              const keyboardEvent = event.event as KeyboardEvent;
+              const key = keyboardEvent?.key?.toLowerCase();
+              const ctrlKey = keyboardEvent?.ctrlKey;
 
-            if (ctrlKey && key === "n" && batchEditingEnabled) {
-              keyboardEvent?.preventDefault();
-              handleRowAdd([]);
-            } else if (
-              key === "delete" &&
-              !event.api.getEditingCells().length
-            ) {
-              // Delete selected rows when not editing
-              keyboardEvent?.preventDefault();
-              handleRowDelete([]);
-            } else if (ctrlKey && key === "d" && batchEditingEnabled) {
-              // Duplicate selected rows handled by toolbar
-              keyboardEvent?.preventDefault();
-            }
-          },
-        }}
-      />
+              if (ctrlKey && key === "n" && batchEditingEnabled) {
+                keyboardEvent?.preventDefault();
+                handleRowAdd([]);
+              } else if (
+                key === "delete" &&
+                !event.api.getEditingCells().length
+              ) {
+                // Delete selected rows when not editing
+                keyboardEvent?.preventDefault();
+                handleRowDelete([]);
+              } else if (ctrlKey && key === "d" && batchEditingEnabled) {
+                // Duplicate selected rows handled by toolbar
+                keyboardEvent?.preventDefault();
+              }
+            },
+          }}
+        />
+      </div>
 
       <WorkLogFormDialog
         open={formOpen}

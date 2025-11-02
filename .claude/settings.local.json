@@ -119,7 +119,9 @@
       "Bash(pnpm biome format:*)",
       "Bash(pnpm tsx:*)",
       "Bash(docker volume rm:*)",
-      "Bash(docker rmi:*)"
+      "Bash(docker rmi:*)",
+      "Bash(pnpm run dev)",
+      "Bash(docker logs:*)"
     ],
     "deny": [],
     "ask": []

@@ -122,7 +122,7 @@ export function WorkLogsClient({
   }, [onRefresh]);
 
   return (
-    <div className="px-4 sm:px-0 space-y-6">
+    <div className="flex flex-col h-[calc(100vh-8rem)] px-4 sm:px-0 space-y-6">
       {/* Scope Tabs */}
       <Tabs value={currentScope} onValueChange={handleScopeChange}>
         <TabsList>
@@ -134,18 +134,20 @@ export function WorkLogsClient({
         </TabsList>
       </Tabs>
 
-      {/* Work Log Table */}
-      <EnhancedWorkLogTable
-        workLogs={initialWorkLogs}
-        projects={projects}
-        categories={categories}
-        onCreateWorkLog={handleCreateWorkLog}
-        onUpdateWorkLog={handleUpdateWorkLog}
-        onDeleteWorkLog={handleDeleteWorkLog}
-        onRefresh={handleRefresh}
-        onFilterChange={() => {}}
-        isLoading={isLoading}
-      />
+      {/* Work Log Table - Takes remaining height */}
+      <div className="flex-1 min-h-0">
+        <EnhancedWorkLogTable
+          workLogs={initialWorkLogs}
+          projects={projects}
+          categories={categories}
+          onCreateWorkLog={handleCreateWorkLog}
+          onUpdateWorkLog={handleUpdateWorkLog}
+          onDeleteWorkLog={handleDeleteWorkLog}
+          onRefresh={handleRefresh}
+          onFilterChange={() => {}}
+          isLoading={isLoading}
+        />
+      </div>
     </div>
   );
 }

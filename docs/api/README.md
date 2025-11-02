@@ -22,59 +22,52 @@ The OpenAPI 3.0 schema is available at:
 
 ### Configuration
 
-The OpenAPI configuration is stored in `.openapirc.json` at the project root.
+The OpenAPI specification is automatically generated from `scripts/generate-openapi.ts`.
 
 #### Updating the Schema
 
-1. Edit `.openapirc.json` to add or modify API endpoints
-2. Follow the OpenAPI 3.0 specification: https://swagger.io/specification/
-3. Restart the development server to see changes
+1. Edit `scripts/generate-openapi.ts` to add or modify API endpoints:
+   - Add request/response schemas to `components.schemas`
+   - Add endpoint definitions to `paths`
+2. Run `npm run docs:openapi` to regenerate the specification
+3. Verify at http://localhost:3000/en/api-docs
 
-#### Schema Structure
-
-```json
-{
-  "openapi": "3.0.0",
-  "info": { ... },
-  "servers": [ ... ],
-  "security": [ ... ],
-  "paths": { ... },
-  "components": {
-    "securitySchemes": { ... },
-    "schemas": { ... }
-  }
-}
-```
+See CLAUDE.md "Documentation Maintenance > API Documentation" for detailed guidelines.
 
 ### Adding New Endpoints
 
 To document a new API endpoint:
 
-1. Add the endpoint definition to `paths` in `.openapirc.json`
-2. Define request/response schemas in `components.schemas`
-3. Include authentication requirements if needed
-4. Add appropriate tags for organization
+1. Edit `scripts/generate-openapi.ts`
+2. Add the endpoint definition to the `paths` object
+3. Define request/response schemas in `components.schemas`
+4. Include authentication requirements if needed
+5. Add appropriate tags for organization
+6. Run `npm run docs:openapi` to regenerate the specification
 
 Example:
 
-```json
-"/api/example": {
-  "get": {
-    "summary": "Get example data",
-    "tags": ["Example"],
-    "responses": {
-      "200": {
-        "description": "Success",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ExampleResponse"
-            }
-          }
-        }
-      }
-    }
-  }
+```typescript
+// In scripts/generate-openapi.ts
+paths: {
+  "/api/example": {
+    get: {
+      summary: "Get example data",
+      tags: ["Example"],
+      responses: {
+        200: {
+          description: "Success",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ExampleResponse",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 }
 ```
 

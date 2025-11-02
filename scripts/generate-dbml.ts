@@ -14,6 +14,16 @@ async function generateDBML() {
     // Generate DBML content
     const dbml = pgGenerate({ schema });
 
+    // Add generation metadata header
+    const timestamp = new Date().toISOString();
+    const dbmlWithHeader = `// Database Markup Language (DBML) Schema
+// 自動生成日時: ${timestamp}
+// 注意: このファイルは drizzle/schema.ts から自動生成されます。直接編集しないでください。
+// 再生成: npm run docs:db:dbml
+// 可視化: https://dbdiagram.io/d
+
+${dbml}`;
+
     // Ensure output directory exists
     const outputDir = path.join(process.cwd(), "docs", "database");
     if (!fs.existsSync(outputDir)) {
@@ -23,7 +33,7 @@ async function generateDBML() {
 
     // Write DBML file
     const outputPath = path.join(outputDir, "schema.dbml");
-    fs.writeFileSync(outputPath, dbml, "utf-8");
+    fs.writeFileSync(outputPath, dbmlWithHeader, "utf-8");
 
     console.log(`✅ DBML file generated successfully: ${outputPath}`);
     console.log("📝 You can visualize this schema at: https://dbdiagram.io/d");

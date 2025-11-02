@@ -4,6 +4,7 @@
  * Automatically generates OpenAPI 3.0 specification from Zod schemas and API routes
  */
 
+import { execSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -2178,6 +2179,22 @@ export const openApiSpec = ${JSON.stringify(spec, null, 2)} as const;
 `;
 
     writeFileSync(outputPath, content, "utf-8");
+
+    // Format the generated file with Biome
+    console.log("📝 Formatting generated file with Biome...");
+    try {
+      execSync(`pnpm biome format --write "${outputPath}"`, {
+        stdio: "inherit",
+      });
+      console.log("✅ File formatted successfully");
+    } catch (formatError) {
+      console.warn(
+        "⚠️  Warning: Failed to format file with Biome. The file was generated but may need manual formatting.",
+      );
+      if (formatError instanceof Error) {
+        console.warn(`   ${formatError.message}`);
+      }
+    }
 
     console.log(
       `✅ OpenAPI specification generated successfully: ${outputPath}`,

@@ -1,7 +1,7 @@
 /**
  * OpenAPI 3.0 Specification
  * Generated from scripts/generate-openapi.ts
- * Last updated: 2025-11-02T04:37:02.175Z
+ * Last updated: 2025-11-02T05:09:12.014Z
  *
  * To add or modify API endpoints:
  * 1. Edit scripts/generate-openapi.ts to update the specification

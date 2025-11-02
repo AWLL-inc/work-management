@@ -57,7 +57,7 @@ const COLUMN_WIDTHS = {
   HOURS: 100,
   PROJECT: 200,
   CATEGORY: 180,
-  ACTIONS: 150,
+  ACTIONS: 100,
 } as const;
 
 interface EnhancedWorkLogTableProps {
@@ -259,12 +259,12 @@ export function EnhancedWorkLogTable({
     };
 
     return (
-      <div className="flex gap-2 h-full items-center">
+      <div className="flex h-full items-center justify-center">
         <Button
           variant="outline"
           size="sm"
           onClick={onEdit}
-          className="h-7 px-2"
+          className="h-7 px-3 text-xs"
         >
           Edit
         </Button>
@@ -559,10 +559,17 @@ export function EnhancedWorkLogTable({
         headerName: "Actions",
         cellRenderer: ActionsCellRenderer,
         width: COLUMN_WIDTHS.ACTIONS,
+        minWidth: 100,
         sortable: false,
         filter: false,
         pinned: "right",
         editable: false,
+        cellStyle: {
+          padding: "8px 4px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        },
       });
     }
 

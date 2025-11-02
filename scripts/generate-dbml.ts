@@ -28,7 +28,22 @@ async function generateDBML() {
     console.log(`✅ DBML file generated successfully: ${outputPath}`);
     console.log("📝 You can visualize this schema at: https://dbdiagram.io/d");
   } catch (error) {
-    console.error("❌ Error generating DBML:", error);
+    console.error("❌ Error generating DBML:");
+    if (error instanceof Error) {
+      console.error(`   Error: ${error.message}`);
+      if (error.stack) {
+        console.error(`   Stack trace:\n${error.stack}`);
+      }
+    } else {
+      console.error(`   Unknown error: ${String(error)}`);
+    }
+    console.error("\n💡 Troubleshooting tips:");
+    console.error("   - Ensure drizzle/schema.ts is valid and can be imported");
+    console.error("   - Check that all table definitions are correct");
+    console.error("   - Verify drizzle-dbml-generator package is installed");
+    console.error(
+      "   - Run 'npm install' to ensure dependencies are up to date",
+    );
     process.exit(1);
   }
 }

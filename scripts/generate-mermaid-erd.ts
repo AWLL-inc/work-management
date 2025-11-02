@@ -129,7 +129,25 @@ async function generateMermaidERD() {
     console.log(`   - ${tables.length} tables documented`);
     console.log(`   - ${relationships.size} relationships mapped`);
   } catch (error) {
-    console.error("❌ Error generating Mermaid ER diagram:", error);
+    console.error("❌ Error generating Mermaid ER diagram:");
+    if (error instanceof Error) {
+      console.error(`   Error: ${error.message}`);
+      if (error.stack) {
+        console.error(`   Stack trace:\n${error.stack}`);
+      }
+    } else {
+      console.error(`   Unknown error: ${String(error)}`);
+    }
+    console.error("\n💡 Troubleshooting tips:");
+    console.error("   - Ensure drizzle/schema.ts is valid and can be imported");
+    console.error(
+      "   - Verify all foreign key definitions are correctly configured",
+    );
+    console.error("   - Check that table relationships are properly defined");
+    console.error("   - Ensure output directory docs/database/ is writable");
+    console.error(
+      "   - Verify Mermaid syntax is compatible with your renderer",
+    );
     process.exit(1);
   }
 }

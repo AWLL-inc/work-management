@@ -385,7 +385,24 @@ async function generateTableDocs() {
     );
     console.log(`📂 Output directory: ${outputDir}`);
   } catch (error) {
-    console.error("❌ Error generating table documentation:", error);
+    console.error("❌ Error generating table documentation:");
+    if (error instanceof Error) {
+      console.error(`   Error: ${error.message}`);
+      if (error.stack) {
+        console.error(`   Stack trace:\n${error.stack}`);
+      }
+    } else {
+      console.error(`   Unknown error: ${String(error)}`);
+    }
+    console.error("\n💡 Troubleshooting tips:");
+    console.error("   - Ensure drizzle/schema.ts is valid and can be imported");
+    console.error("   - Verify all table configurations have proper structure");
+    console.error("   - Check that foreign key references are valid");
+    console.error(
+      "   - Ensure output directory docs/database/tables/ is writable",
+    );
+    console.error("   - Verify all table relationships are correctly defined");
+    console.error("   - Run 'npm run db:generate' if schema changes were made");
     process.exit(1);
   }
 }

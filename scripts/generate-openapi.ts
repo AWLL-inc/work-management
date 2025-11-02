@@ -2189,7 +2189,30 @@ export const openApiSpec = ${JSON.stringify(spec, null, 2)} as const;
       `🏷️  Defined ${Object.keys(spec.components?.schemas || {}).length} schemas`,
     );
   } catch (error) {
-    console.error("❌ Error generating OpenAPI specification:", error);
+    console.error("❌ Error generating OpenAPI specification:");
+    if (error instanceof Error) {
+      console.error(`   Error: ${error.message}`);
+      if (error.stack) {
+        console.error(`   Stack trace:\n${error.stack}`);
+      }
+    } else {
+      console.error(`   Unknown error: ${String(error)}`);
+    }
+    console.error("\n💡 Troubleshooting tips:");
+    console.error(
+      "   - Ensure all API schemas are properly defined in generateOpenApiSpec()",
+    );
+    console.error(
+      "   - Check that JSON structure is valid (no trailing commas)",
+    );
+    console.error("   - Verify all schema references match defined schemas");
+    console.error(
+      "   - Ensure output directory openapi/ exists and is writable",
+    );
+    console.error("   - Review scripts/generate-openapi.ts for syntax errors");
+    console.error(
+      "   - Run 'npm run type-check' to verify TypeScript compilation",
+    );
     process.exit(1);
   }
 }

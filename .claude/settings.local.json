@@ -111,7 +111,12 @@
       "Bash(pnpm run docs:openapi:*)",
       "Bash(pnpm run docs)",
       "Bash(pnpm run docs:db:markdown:*)",
-      "Bash(pnpm biome check:*)"
+      "Bash(pnpm biome check:*)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm run docs:db:tables:*)",
+      "Bash(pnpm run docs:db:mermaid:*)",
+      "Bash(pnpm biome format:*)"
     ],
     "deny": [],
     "ask": []

@@ -2167,7 +2167,6 @@ function main() {
     const content = `/**
  * OpenAPI 3.0 Specification
  * Generated from scripts/generate-openapi.ts
- * Last updated: ${new Date().toISOString()}
  *
  * To add or modify API endpoints:
  * 1. Edit scripts/generate-openapi.ts to update the specification

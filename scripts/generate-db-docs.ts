@@ -155,7 +155,6 @@ async function generateDatabaseDocs() {
     console.log("Generating database documentation...");
 
     let docsContent = "# データベーススキーマドキュメント\n\n";
-    docsContent += `生成日時: ${new Date().toISOString()}\n\n`;
     docsContent += "## 概要\n\n";
     docsContent +=
       "このドキュメントは、Drizzle ORMスキーマから自動生成されたデータベース構造の詳細情報です。\n\n";

@@ -325,7 +325,6 @@ function generateTableDoc(
 
   // Footer
   content += "---\n\n";
-  content += `生成日時: ${new Date().toISOString()}\n\n`;
   content += "[← スキーマ概要に戻る](../schema.md)\n";
 
   return content;
@@ -362,7 +361,6 @@ async function generateTableDocs() {
 
     // Generate index file
     let indexContent = "# データベーステーブル詳細ドキュメント\n\n";
-    indexContent += `生成日時: ${new Date().toISOString()}\n\n`;
     indexContent += "## テーブル一覧\n\n";
 
     for (const [tableName, table] of tables) {

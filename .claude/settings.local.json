@@ -116,7 +116,8 @@
       "Bash(pnpm test:*)",
       "Bash(pnpm run docs:db:tables:*)",
       "Bash(pnpm run docs:db:mermaid:*)",
-      "Bash(pnpm biome format:*)"
+      "Bash(pnpm biome format:*)",
+      "Bash(pnpm tsx:*)"
     ],
     "deny": [],
     "ask": []

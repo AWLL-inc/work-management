@@ -363,7 +363,8 @@ async function generateTableDocs() {
     // Generate index file
     let indexContent = "# データベーステーブル詳細ドキュメント\n\n";
     indexContent += `> **自動生成日時**: ${new Date().toISOString()}\n`;
-    indexContent += "> **注意**: このファイルは `drizzle/schema.ts` から自動生成されます。直接編集しないでください。\n";
+    indexContent +=
+      "> **注意**: このファイルは `drizzle/schema.ts` から自動生成されます。直接編集しないでください。\n";
     indexContent += "> \n";
     indexContent += "> 再生成: `npm run docs:db:tables`\n\n";
     indexContent += "## テーブル一覧\n\n";

@@ -15,7 +15,8 @@ async function generateMermaidERD() {
     const timestamp = new Date().toISOString();
     let mermaidContent = "# Database Entity Relationship Diagram\n\n";
     mermaidContent += `> **自動生成日時**: ${timestamp}\n`;
-    mermaidContent += "> **注意**: このファイルは `drizzle/schema.ts` から自動生成されます。直接編集しないでください。\n";
+    mermaidContent +=
+      "> **注意**: このファイルは `drizzle/schema.ts` から自動生成されます。直接編集しないでください。\n";
     mermaidContent += "> \n";
     mermaidContent += "> 再生成: `npm run docs:db:mermaid`\n\n";
     mermaidContent += "```mermaid\nerDiagram\n";

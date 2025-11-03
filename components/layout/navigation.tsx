@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcherButton } from "./language-switcher";
+import { ThemeToggle } from "./theme-toggle";
 
 interface NavigationProps {
   userEmail?: string | null;
@@ -70,7 +71,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
   return (
     <nav
       id="main-navigation"
-      className="bg-white border-b border-border shadow-sm"
+      className="bg-background border-b border-border shadow-sm"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -146,6 +147,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
           {/* User Info */}
           <div className="flex items-center space-x-4">
             <LanguageSwitcherButton />
+            <ThemeToggle />
             {userEmail && (
               <span className="text-sm text-muted-foreground">{userEmail}</span>
             )}

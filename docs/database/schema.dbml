@@ -1,5 +1,5 @@
 // Database Markup Language (DBML) Schema
-// 自動生成日時: 2025-11-03T07:54:33.611Z
+// 自動生成日時: 2025-11-03T13:29:10.986Z
 // 注意: このファイルは drizzle/schema.ts から自動生成されます。直接編集しないでください。
 // 再生成: npm run docs:db:dbml
 // 可視化: https://dbdiagram.io/d

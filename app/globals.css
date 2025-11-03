@@ -52,6 +52,55 @@
   --radius: 0.5rem;
 }
 
+.dark {
+  /* Background & Surface - Improved contrast */
+  --background: 222 47% 11%; /* #0F172A - Very dark slate background */
+  --foreground: 210 40% 96%; /* #F1F5F9 - Light gray text (not pure white) */
+  --card: 217 33% 17%; /* #1E293B - Lighter card background for contrast */
+  --card-foreground: 210 40% 96%; /* #F1F5F9 - Light gray text */
+
+  /* Popover - Darker for better contrast */
+  --popover: 222 47% 11%; /* #0F172A - Same as background */
+  --popover-foreground: 210 40% 96%;
+
+  /* Primary - Brighter for dark mode */
+  --primary: 217 91% 60%; /* #60A5FA - Bright blue */
+  --primary-foreground: 222 47% 11%; /* Dark text on bright button */
+
+  /* Secondary - Better visibility */
+  --secondary: 217 33% 23%; /* #334155 - Medium dark gray */
+  --secondary-foreground: 210 40% 96%;
+
+  /* Muted - More visible subtle elements */
+  --muted: 217 33% 23%; /* #334155 - Medium gray for backgrounds */
+  --muted-foreground: 215 20% 65%; /* #94A3B8 - Lighter muted text */
+
+  /* Accent - Bright and visible */
+  --accent: 217 91% 60%; /* #60A5FA - Bright blue */
+  --accent-foreground: 222 47% 11%;
+
+  /* Destructive - Visible red */
+  --destructive: 0 84% 60%; /* #EF4444 - Brighter red for visibility */
+  --destructive-foreground: 210 40% 98%; /* Almost white for contrast */
+
+  /* Success - Bright green */
+  --success: 142 71% 45%; /* #22C55E - Green */
+  --success-foreground: 210 40% 98%; /* Light text */
+
+  /* Warning - Bright amber */
+  --warning: 38 92% 50%; /* #F59E0B - Amber */
+  --warning-foreground: 222 47% 11%; /* Dark text for contrast */
+
+  /* Info - Bright sky blue */
+  --info: 199 89% 48%; /* #0EA5E9 - Sky blue */
+  --info-foreground: 222 47% 11%; /* Dark text for contrast */
+
+  /* Borders & Inputs - More visible */
+  --border: 217 33% 30%; /* #475569 - Lighter border for visibility */
+  --input: 217 33% 23%; /* #334155 - Input background */
+  --ring: 217 91% 60%; /* #60A5FA - Bright focus ring */
+}
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

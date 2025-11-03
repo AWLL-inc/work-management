@@ -343,7 +343,7 @@ export function GridToolbar({
           <div className="flex-1" />
 
           {selectedRowCount > 0 && (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground">
               {selectedRowCount}行選択中
             </div>
           )}

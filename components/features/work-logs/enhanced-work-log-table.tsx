@@ -1167,7 +1167,7 @@ export function EnhancedWorkLogTable({
           isSavingBatch={isSubmitting}
           gridOptions={{
             rowSelection: "multiple",
-            suppressRowClickSelection: false, // Always allow row selection
+            suppressRowClickSelection: batchEditingEnabled, // In batch edit mode, suppress row selection to allow cell editing
             singleClickEdit: batchEditingEnabled,
             stopEditingWhenCellsLoseFocus: true,
             enterNavigatesVertically: true,

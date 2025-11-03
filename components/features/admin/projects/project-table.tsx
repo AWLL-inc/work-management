@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Project } from "@/drizzle/schema";
 import { createProjectColumns } from "./project-columns";
-import { ProjectFormDialog } from "./project-form-dialog";
+import { ProjectFormDialog } from "@/app/[locale]/admin/projects/_components/project-form-dialog";
 
 interface ProjectTableProps {
   projects: Project[];

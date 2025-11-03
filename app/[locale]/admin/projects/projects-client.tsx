@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { EnhancedProjectTable } from "@/components/features/admin/projects/enhanced-project-table";
 import type { Project } from "@/drizzle/schema";
+import { EnhancedProjectTable } from "./_components/enhanced-project-table";
 
 interface ProjectsClientProps {
   initialProjects: Project[];

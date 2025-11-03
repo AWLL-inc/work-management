@@ -1,16 +1,12 @@
 "use client";
 
 import type { ICellEditorParams } from "ag-grid-community";
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 export const CustomDateEditor = forwardRef((props: ICellEditorParams, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  // Use ref to store current value for getValue()
+  const valueRef = useRef<string>("");
 
   // Get initial value
   const getInitialValue = () => {
@@ -30,7 +26,14 @@ export const CustomDateEditor = forwardRef((props: ICellEditorParams, ref) => {
     return "";
   };
 
-  const [value, setValue] = useState(getInitialValue());
+  // Initialize value ref
+  useEffect(() => {
+    const initialValue = getInitialValue();
+    valueRef.current = initialValue;
+    if (inputRef.current) {
+      inputRef.current.value = initialValue;
+    }
+  }, []);
 
   // Auto-open date picker when component mounts
   useEffect(() => {
@@ -53,7 +56,10 @@ export const CustomDateEditor = forwardRef((props: ICellEditorParams, ref) => {
   // Expose AG Grid required methods
   useImperativeHandle(ref, () => ({
     getValue: () => {
-      return value || null;
+      // Return the current value from the input directly
+      const currentValue = inputRef.current?.value || valueRef.current;
+      console.log("CustomDateEditor getValue called:", currentValue);
+      return currentValue || null;
     },
 
     // Prevent AG Grid from canceling the edit
@@ -85,8 +91,12 @@ export const CustomDateEditor = forwardRef((props: ICellEditorParams, ref) => {
     <input
       ref={inputRef}
       type="date"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
+      defaultValue={getInitialValue()}
+      onChange={(e) => {
+        // Update value ref when changed
+        valueRef.current = e.target.value;
+        console.log("Date changed to:", e.target.value);
+      }}
       onClick={() => {
         // Also try to open on click
         try {

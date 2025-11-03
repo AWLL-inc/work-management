@@ -25,6 +25,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { KeyboardShortcutsDialog } from "@/components/ui/keyboard-shortcuts-dialog";
+import { LiveRegion, useLiveRegion } from "@/components/ui/live-region";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { useMediaQuery } from "@/lib/hooks";
@@ -113,6 +115,9 @@ export function EnhancedWorkLogTable({
 }: EnhancedWorkLogTableProps) {
   // Responsive design hook
   const { isMobile, isTablet } = useMediaQuery();
+
+  // Accessibility - Live region announcements
+  const { announce } = useLiveRegion();
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
@@ -664,7 +669,9 @@ export function EnhancedWorkLogTable({
       });
 
       if (result?.add && result.add.length > 0) {
-        toast.success("新しい行を追加しました（Ctrl+N で連続追加可能）");
+        const message = "新しい行を追加しました（Ctrl+N で連続追加可能）";
+        toast.success(message);
+        announce(message);
 
         // Just focus on the new row without starting edit mode for better UX
         setTimeout(() => {
@@ -674,7 +681,7 @@ export function EnhancedWorkLogTable({
         }, 100);
       }
     },
-    [batchEditingEnabled, gridApi],
+    [batchEditingEnabled, gridApi, announce],
   );
 
   // Handle row updates
@@ -753,11 +760,11 @@ export function EnhancedWorkLogTable({
       // Remove from AG Grid only (don't call API)
       gridApi.applyTransaction({ remove: selectedData });
 
-      toast.success(
-        `${selectedData.length}行をバッチ削除対象に追加しました（保存時に反映されます）`,
-      );
+      const message = `${selectedData.length}行をバッチ削除対象に追加しました（保存時に反映されます）`;
+      toast.success(message);
+      announce(message);
     },
-    [gridApi],
+    [gridApi, announce],
   );
 
   // Handle form submission
@@ -927,7 +934,12 @@ export function EnhancedWorkLogTable({
         )
         .join("\n");
 
-      toast.error(`バリデーションエラー:\n${errorMessages}`);
+      const validationMessage = `バリデーションエラー:\n${errorMessages}`;
+      toast.error(validationMessage);
+      announce(
+        `バリデーションエラーが${validationErrors.size}件あります`,
+        "assertive",
+      );
       setFailedWorkLogIds(new Set(validationErrors.keys()));
       return;
     }
@@ -987,18 +999,21 @@ export function EnhancedWorkLogTable({
       if (deletedRows.length > 0)
         changeDetails.push(`${deletedRows.length}件削除`);
 
-      toast.success(`バッチ処理完了: ${changeDetails.join(", ")}`);
+      const successMessage = `バッチ処理完了: ${changeDetails.join(", ")}`;
+      toast.success(successMessage);
+      announce(successMessage);
       setFailedWorkLogIds(new Set());
       setBatchEditingEnabled(false);
       onRefresh?.();
     } catch (error) {
       console.error("Batch save error:", error);
 
-      if (error instanceof Error) {
-        toast.error(ERROR_MESSAGES.SAVE.FAILED(error.message));
-      } else {
-        toast.error(ERROR_MESSAGES.SAVE.FAILED());
-      }
+      const errorMessage =
+        error instanceof Error
+          ? ERROR_MESSAGES.SAVE.FAILED(error.message)
+          : ERROR_MESSAGES.SAVE.FAILED();
+      toast.error(errorMessage);
+      announce(errorMessage, "assertive");
 
       // Mark all changed rows as failed (for new/updated rows)
       const failedIds = [...newRows, ...updatedRows].map((row) => row.id);
@@ -1016,6 +1031,7 @@ export function EnhancedWorkLogTable({
     onUpdateWorkLog,
     onDeleteWorkLog,
     onRefresh,
+    announce,
   ]);
 
   // AG Grid standard: Simplified cancel batch editing
@@ -1140,52 +1156,75 @@ export function EnhancedWorkLogTable({
 
   return (
     <div className="flex flex-col h-full space-y-4">
+      {/* Skip link for keyboard navigation */}
+      <a
+        href="#work-log-grid"
+        className="skip-link"
+        aria-label="メインコンテンツへスキップ"
+      >
+        メインコンテンツへスキップ
+      </a>
+
+      {/* Live region for screen reader announcements */}
+      <LiveRegion />
+
       {/* Search Controls */}
-      <SearchControls
-        filters={searchFilters}
-        onFiltersChange={handleFiltersChange}
-        projects={projects}
-        categories={categories}
-        // users={users} // Will be added when user API is available
-        showUserFilter={false} // Will be true when user role checking is implemented
-        onApplyFilters={() => {
-          if (onFilterChange) {
-            const apiFilters: GetWorkLogsOptions = {
-              startDate: searchFilters.dateRange.from
-                ?.toISOString()
-                .split("T")[0],
-              endDate: searchFilters.dateRange.to?.toISOString().split("T")[0],
-              projectIds:
-                searchFilters.projectIds.length > 0
-                  ? searchFilters.projectIds.join(",")
-                  : undefined,
-              categoryIds:
-                searchFilters.categoryIds.length > 0
-                  ? searchFilters.categoryIds.join(",")
-                  : undefined,
-              userId: searchFilters.userId ?? undefined,
+      <div className="flex items-center justify-between gap-2 shrink-0">
+        <SearchControls
+          filters={searchFilters}
+          onFiltersChange={handleFiltersChange}
+          projects={projects}
+          categories={categories}
+          // users={users} // Will be added when user API is available
+          showUserFilter={false} // Will be true when user role checking is implemented
+          onApplyFilters={() => {
+            if (onFilterChange) {
+              const apiFilters: GetWorkLogsOptions = {
+                startDate: searchFilters.dateRange.from
+                  ?.toISOString()
+                  .split("T")[0],
+                endDate: searchFilters.dateRange.to
+                  ?.toISOString()
+                  .split("T")[0],
+                projectIds:
+                  searchFilters.projectIds.length > 0
+                    ? searchFilters.projectIds.join(",")
+                    : undefined,
+                categoryIds:
+                  searchFilters.categoryIds.length > 0
+                    ? searchFilters.categoryIds.join(",")
+                    : undefined,
+                userId: searchFilters.userId ?? undefined,
+              };
+              onFilterChange(apiFilters);
+            }
+          }}
+          onClearFilters={() => {
+            const clearedFilters: SearchFilters = {
+              dateRange: { from: undefined, to: undefined },
+              projectIds: [],
+              categoryIds: [],
+              userId: null,
             };
-            onFilterChange(apiFilters);
-          }
-        }}
-        onClearFilters={() => {
-          const clearedFilters: SearchFilters = {
-            dateRange: { from: undefined, to: undefined },
-            projectIds: [],
-            categoryIds: [],
-            userId: null,
-          };
-          handleFiltersChange(clearedFilters);
-          if (onFilterChange) {
-            onFilterChange({});
-          }
-        }}
-        isLoading={isLoading}
-        className="shrink-0"
-      />
+            handleFiltersChange(clearedFilters);
+            if (onFilterChange) {
+              onFilterChange({});
+            }
+          }}
+          isLoading={isLoading}
+          className="flex-1"
+        />
+
+        {/* Keyboard shortcuts help button */}
+        <KeyboardShortcutsDialog />
+      </div>
 
       {/* Table - Takes remaining height */}
-      <div className="flex-1 min-h-0">
+      <section
+        className="flex-1 min-h-0"
+        id="work-log-grid"
+        aria-label="作業ログ一覧"
+      >
         <EnhancedAGGrid<WorkLog>
           rowData={rowData}
           columnDefs={columnDefs}
@@ -1233,7 +1272,7 @@ export function EnhancedWorkLogTable({
             // Keyboard shortcuts are now handled globally in EnhancedAGGrid
           }}
         />
-      </div>
+      </section>
 
       <WorkLogFormDialog
         open={formOpen}

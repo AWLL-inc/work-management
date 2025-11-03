@@ -579,3 +579,159 @@
     outline: 3px solid hsl(var(--primary)) !important;
   }
 }
+
+/* =================================
+   Accessibility - WCAG 2.1 AA Compliance
+   ================================= */
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 8px 16px;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 0 0 4px 0;
+  z-index: 9999;
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Enhanced focus indicators - WCAG 2.1 AA compliant */
+*:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Button focus states */
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px hsl(var(--ring) / 0.1);
+}
+
+/* Input focus states */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 0px;
+  border-color: hsl(var(--ring));
+}
+
+/* Link focus states */
+a:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+/* AG Grid specific accessibility improvements */
+.ag-root-wrapper {
+  /* Ensure proper focus management */
+  isolation: isolate;
+}
+
+.ag-cell:focus-visible {
+  outline: 3px solid hsl(var(--ring)) !important;
+  outline-offset: -3px;
+  box-shadow: inset 0 0 0 3px hsl(var(--ring)) !important;
+  z-index: 10;
+}
+
+.ag-header-cell:focus-visible {
+  outline: 3px solid hsl(var(--ring)) !important;
+  outline-offset: -3px;
+  background-color: hsl(var(--muted) / 0.8);
+}
+
+/* Checkbox focus - larger for accessibility */
+.ag-checkbox-input-wrapper:focus-within {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Ensure sufficient color contrast - WCAG 2.1 AA */
+.ag-row-selected .ag-cell {
+  /* Ensure selected row text has sufficient contrast */
+  color: hsl(var(--foreground));
+}
+
+.ag-cell-invalid {
+  /* Error state with high contrast */
+  border: 3px solid hsl(var(--destructive)) !important;
+  background-color: hsl(var(--destructive) / 0.15);
+  color: hsl(var(--destructive-foreground));
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .ag-theme-quartz {
+    border: 2px solid hsl(var(--foreground));
+  }
+
+  .ag-cell {
+    border-right: 2px solid hsl(var(--border));
+  }
+
+  .ag-row {
+    border-bottom: 2px solid hsl(var(--border));
+  }
+
+  .ag-cell-focus,
+  .ag-cell:focus-visible {
+    outline: 4px solid hsl(var(--ring)) !important;
+    outline-offset: -4px;
+  }
+
+  .ag-row-selected {
+    border-left: 5px solid hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.2) !important;
+  }
+}
+
+/* Keyboard navigation helper */
+[data-keyboard-nav="true"] *:focus {
+  /* Show focus outline only when navigating with keyboard */
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* ARIA live region styling */
+[role="status"],
+[role="alert"] {
+  /* Visually hidden but accessible to screen readers */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

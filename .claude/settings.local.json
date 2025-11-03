@@ -117,7 +117,16 @@
       "Bash(pnpm run docs:db:tables:*)",
       "Bash(pnpm run docs:db:mermaid:*)",
       "Bash(pnpm biome format:*)",
-      "Bash(pnpm tsx:*)"
+      "Bash(pnpm tsx:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker rmi:*)",
+      "Bash(pnpm run dev)",
+      "Bash(docker logs:*)",
+      "Bash(pnpm dlx shadcn@latest add:*)",
+      "WebFetch(domain:www.ag-grid.com)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:blog.ag-grid.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

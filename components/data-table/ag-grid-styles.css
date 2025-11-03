@@ -1,159 +1,465 @@
 /**
- * Enhanced AG Grid styles
+ * Enhanced AG Grid styles - Modern Design (2025)
  *
- * These styles provide enhanced visual feedback for the AG Grid
- * with support for clipboard operations, validation, and improved UX.
+ * Modern, clean design with proper spacing, typography hierarchy,
+ * smooth animations, and consistent integration with shadcn/ui.
  */
 
-/* Invalid cell styling for validation feedback */
-.ag-cell-invalid {
-  border: 2px solid hsl(var(--destructive));
-  background-color: hsl(var(--destructive) / 0.1);
+/* =================================
+   CSS Custom Properties
+   ================================= */
+
+:root {
+  /* AG Grid spacing */
+  --ag-grid-cell-padding-x: 16px;
+  --ag-grid-cell-padding-y: 12px;
+  --ag-grid-header-padding-x: 16px;
+  --ag-grid-header-padding-y: 12px;
+
+  /* AG Grid sizing */
+  --ag-grid-border-radius: 12px;
+  --ag-grid-scrollbar-size: 10px;
+  --ag-grid-min-row-height: 50px;
+
+  /* AG Grid transitions */
+  --ag-grid-transition-fast: 0.15s ease-in-out;
+  --ag-grid-transition-normal: 0.2s ease-in-out;
 }
 
-/* Editing cell styling for better UX */
-.ag-cell-editing {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: -2px;
-}
+/* =================================
+   Grid Container & Layout
+   ================================= */
 
-/* Row hover effects */
-.ag-row:hover {
-  background-color: hsl(var(--muted) / 0.5);
-}
-
-/* Enhanced cell border for better visibility during editing */
-.ag-cell {
-  border-right: 1px solid hsl(var(--border));
-}
-
-.ag-cell:focus-within {
-  outline: 1px solid hsl(var(--primary));
-  outline-offset: -1px;
-}
-
-/* Error row highlighting for failed operations */
-.ag-row.ag-row-error {
-  background-color: hsl(var(--destructive) / 0.1);
-  border-left: 3px solid hsl(var(--destructive));
-}
-
-/* Selection styling */
-.ag-row-selected {
-  background-color: hsl(var(--primary) / 0.1);
-  border-left: 3px solid hsl(var(--primary));
-}
-
-/* Range selection styling for clipboard operations */
-.ag-cell-range-selected {
-  background-color: hsl(var(--primary) / 0.2);
-}
-
-.ag-cell-range-selected-1 {
-  background-color: hsl(var(--primary) / 0.3);
-}
-
-.ag-cell-range-selected-2 {
-  background-color: hsl(var(--primary) / 0.4);
-}
-
-/* Copy/paste styling */
-.ag-cell-range-copy {
-  border: 2px dashed hsl(var(--primary));
-  background-color: hsl(var(--primary) / 0.1);
-}
-
-/* Context menu styling */
-.ag-menu {
-  border-radius: 8px;
-  border: 1px solid hsl(var(--border));
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-}
-
-.ag-menu-option {
-  padding: 8px 12px;
-  font-size: 14px;
-}
-
-.ag-menu-option:hover {
-  background-color: hsl(var(--accent));
-}
-
-/* Toolbar integration styling */
 .ag-theme-quartz {
-  border-radius: 8px;
+  border-radius: var(--ag-grid-border-radius);
   border: 1px solid hsl(var(--border));
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.1),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-/* Focus styling for keyboard navigation */
-.ag-cell-focus {
-  border: 2px solid hsl(var(--primary));
-  outline: none;
+/* =================================
+   Column Headers - Enhanced Visual Hierarchy
+   ================================= */
+
+.ag-header {
+  background: hsl(var(--muted) / 0.5);
+  border-bottom: 2px solid hsl(var(--border));
 }
 
-/* Loading overlay styling */
-.ag-overlay-loading-wrapper {
-  background-color: hsl(var(--background) / 0.8);
-}
-
-.ag-overlay-loading-center {
-  color: hsl(var(--muted-foreground));
-}
-
-/* Column header styling */
 .ag-header-cell {
   border-right: 1px solid hsl(var(--border));
-  background-color: hsl(var(--muted) / 0.3);
+  background-color: transparent;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  padding: var(--ag-grid-header-padding-y) var(--ag-grid-header-padding-x);
+  transition: background-color var(--ag-grid-transition-fast);
 }
 
 .ag-header-cell:hover {
-  background-color: hsl(var(--muted) / 0.5);
+  background-color: hsl(var(--muted) / 0.7);
 }
 
-/* Sort indicator styling */
+.ag-header-cell-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Sort indicators */
 .ag-sort-ascending-icon,
 .ag-sort-descending-icon {
   color: hsl(var(--primary));
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
 }
 
-/* Filter icon styling */
+.ag-header-cell:not(.ag-header-cell-sorted-asc):not(.ag-header-cell-sorted-desc)
+  .ag-sort-icon {
+  opacity: 0.3;
+}
+
+/* Filter icons */
 .ag-filter-icon {
   color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease-in-out;
 }
 
 .ag-header-cell-filtered .ag-filter-icon {
   color: hsl(var(--primary));
 }
 
-/* Error row styling for validation failures */
-.ag-row-error {
-  background-color: hsl(var(--destructive) / 0.1);
+/* =================================
+   Rows - Modern Hover & Selection
+   ================================= */
+
+.ag-row {
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  transition: background-color var(--ag-grid-transition-fast);
+}
+
+.ag-row:hover {
+  background-color: hsl(var(--muted) / 0.4);
+}
+
+.ag-row-odd {
+  background-color: transparent;
+}
+
+.ag-row-even {
+  background-color: hsl(var(--muted) / 0.1);
+}
+
+/* Selected rows */
+.ag-row-selected {
+  background-color: hsl(var(--primary) / 0.08) !important;
+  border-left: 3px solid hsl(var(--primary));
+}
+
+.ag-row-selected:hover {
+  background-color: hsl(var(--primary) / 0.12) !important;
+}
+
+/* =================================
+   Cells - Better Spacing & Typography
+   ================================= */
+
+.ag-cell {
+  border-right: 1px solid hsl(var(--border) / 0.3);
+  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x);
+  line-height: 1.5;
+  transition: background-color var(--ag-grid-transition-fast);
+}
+
+.ag-cell-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cell focus */
+.ag-cell-focus {
+  border: 2px solid hsl(var(--primary)) !important;
+  outline: none;
+  z-index: 1;
+}
+
+.ag-cell:focus-within {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* =================================
+   Editing States - Clear Visual Feedback
+   ================================= */
+
+.ag-cell-editing {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: -2px;
+  background-color: hsl(var(--primary) / 0.05);
+  z-index: 2;
+  padding: 0 !important; /* Remove padding to allow editor to fill cell */
+}
+
+/* Cell editor wrapper - fill entire cell */
+.ag-cell-inline-editing {
+  padding: 0 !important;
+}
+
+.ag-cell-editor {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+}
+
+/* Text input editors - fill cell */
+.ag-cell-editor .ag-text-field-input,
+.ag-cell-editor input[type="text"],
+.ag-cell-editor input[type="number"],
+.ag-cell-editor input[type="date"] {
+  width: 100% !important;
+  height: 100% !important;
+  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+}
+
+/* Select editors - fill cell */
+.ag-cell-editor select {
+  width: 100% !important;
+  height: 100% !important;
+  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+}
+
+/* Large text editor (popup) - already handled by AG Grid */
+.ag-large-text-input {
+  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.ag-cell-invalid {
+  border: 2px solid hsl(var(--destructive));
+  background-color: hsl(var(--destructive) / 0.08);
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+/* =================================
+   Error & Validation States
+   ================================= */
+
+.ag-row.ag-row-error {
+  background-color: hsl(var(--destructive) / 0.08);
   border-left: 4px solid hsl(var(--destructive));
+  animation: slideInLeft 0.3s ease-out;
 }
 
-.ag-row-error:hover {
-  background-color: hsl(var(--destructive) / 0.2);
+.ag-row.ag-row-error:hover {
+  background-color: hsl(var(--destructive) / 0.12);
 }
 
-.ag-row-error .ag-cell {
-  border-color: hsl(var(--destructive) / 0.3);
+.ag-row.ag-row-error .ag-cell {
+  border-color: hsl(var(--destructive) / 0.2);
 }
 
-/* Details cell multi-line display styling */
-.ag-cell.details-cell {
+@keyframes slideInLeft {
+  from {
+    border-left-width: 0;
+    opacity: 0.8;
+  }
+  to {
+    border-left-width: 4px;
+    opacity: 1;
+  }
+}
+
+/* =================================
+   Selection & Range Operations
+   ================================= */
+
+.ag-cell-range-selected {
+  background-color: hsl(var(--primary) / 0.12);
+  border: 1px solid hsl(var(--primary) / 0.3);
+}
+
+.ag-cell-range-selected-1 {
+  background-color: hsl(var(--primary) / 0.16);
+}
+
+.ag-cell-range-selected-2 {
+  background-color: hsl(var(--primary) / 0.2);
+}
+
+/* Copy/paste indicator */
+.ag-cell-range-copy {
+  border: 2px dashed hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.08);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* =================================
+   Context Menu - shadcn/ui Style
+   ================================= */
+
+.ag-menu {
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  background-color: hsl(var(--popover));
+  padding: 4px;
+}
+
+.ag-menu-option {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  color: hsl(var(--popover-foreground));
+}
+
+.ag-menu-option:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.ag-menu-option-active {
+  background-color: hsl(var(--accent));
+}
+
+/* =================================
+   Loading & Overlays
+   ================================= */
+
+.ag-overlay-loading-wrapper {
+  background-color: hsl(var(--background) / 0.9);
+  backdrop-filter: blur(4px);
+}
+
+.ag-overlay-loading-center {
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  padding: 24px;
+  border-radius: 8px;
+  background-color: hsl(var(--card));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.ag-overlay-no-rows-center {
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+}
+
+/* =================================
+   Details Cell - Multi-line Support
+   ================================= */
+
+.ag-cell.details-cell:not(.ag-cell-editing) {
   white-space: pre-wrap !important;
   word-wrap: break-word !important;
   overflow: visible !important;
-  line-height: 1.4 !important;
-  padding: 8px !important;
+  line-height: 1.6 !important;
+  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
   display: block !important;
   text-align: left !important;
   vertical-align: top !important;
+  align-items: flex-start !important;
 }
 
-.ag-cell.details-cell .ag-cell-value {
+.ag-cell.details-cell:not(.ag-cell-editing) .ag-cell-value {
   white-space: pre-wrap !important;
   word-wrap: break-word !important;
   overflow: visible !important;
   display: block !important;
+}
+
+/* =================================
+   Actions Cell - Button Layout
+   ================================= */
+
+.ag-cell.actions-cell:not(.ag-cell-editing) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 4px !important;
+}
+
+/* =================================
+   Scrollbar Styling
+   ================================= */
+
+.ag-body-viewport::-webkit-scrollbar {
+  width: var(--ag-grid-scrollbar-size);
+  height: var(--ag-grid-scrollbar-size);
+}
+
+.ag-body-viewport::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 5px;
+}
+
+.ag-body-viewport::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 5px;
+  transition: background 0.2s ease-in-out;
+}
+
+.ag-body-viewport::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* =================================
+   Animations - Smooth Transitions
+   ================================= */
+
+.ag-row.ag-row-animation {
+  transition:
+    transform 0.2s ease-out,
+    opacity 0.2s ease-out;
+}
+
+.ag-row-animation-enter {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.ag-row-animation-enter-active {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* =================================
+   Checkbox Selection
+   ================================= */
+
+.ag-checkbox-input-wrapper {
+  font-size: 16px;
+  line-height: 16px;
+  width: 18px;
+  height: 18px;
+}
+
+.ag-checkbox-input-wrapper input {
+  cursor: pointer;
+}
+
+.ag-checkbox-input-wrapper.ag-checked::after {
+  color: hsl(var(--primary));
+  transition: all 0.15s ease-in-out;
+}
+
+/* =================================
+   Reduced Motion Support
+   ================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-row,
+  .ag-cell,
+  .ag-header-cell,
+  .ag-menu-option {
+    transition: none !important;
+    animation: none !important;
+  }
 }

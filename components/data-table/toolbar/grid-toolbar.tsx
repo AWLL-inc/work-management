@@ -13,8 +13,14 @@ import {
   Undo,
   X,
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -44,6 +50,8 @@ export function GridToolbar({
   onCancelBatchEdit,
   isSavingBatch = false,
 }: ToolbarProps) {
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+
   return (
     <TooltipProvider>
       <div className="flex items-center justify-between p-4 border-b bg-muted/50">
@@ -260,32 +268,75 @@ export function GridToolbar({
 
           {/* Keyboard Shortcuts Help */}
           <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <Popover open={isShortcutsOpen} onOpenChange={setIsShortcutsOpen}>
+              <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 px-2 text-muted-foreground"
+                  className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                  aria-label="キーボードショートカットを表示"
                 >
                   <Info className="w-4 h-4" />
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm">
-                <div className="space-y-2">
-                  <p className="font-semibold">キーボードショートカット</p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span>Ctrl+C</span>
-                      <span>コピー</span>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="start">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">
+                      キーボードショートカット
+                    </h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={() => setIsShortcutsOpen(false)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Ctrl+C</span>
+                      <span>セルをコピー</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Ctrl+V</span>
-                      <span>ペースト</span>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Ctrl+V</span>
+                      <span>セルにペースト</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Ctrl+N</span>
+                      <span>新しい行を追加</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Ctrl+D</span>
+                      <span>行を複製</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Delete</span>
+                      <span>選択行を削除</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Ctrl+Z</span>
+                      <span>元に戻す</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Ctrl+Y</span>
+                      <span>やり直し</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">
+                        ダブルクリック
+                      </span>
+                      <span>セルを編集</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Enter</span>
+                      <span>編集を確定</span>
                     </div>
                   </div>
                 </div>
-              </TooltipContent>
-            </Tooltip>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Status Info */}

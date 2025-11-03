@@ -2,7 +2,6 @@
 
 import type {
   CellEditingStartedEvent,
-  CellKeyDownEvent,
   CellValueChangedEvent,
   ColDef,
   GridApi,
@@ -27,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { CustomDateEditor } from "./custom-date-editor";
@@ -57,7 +57,7 @@ const COLUMN_WIDTHS = {
   HOURS: 100,
   PROJECT: 200,
   CATEGORY: 180,
-  ACTIONS: 150,
+  ACTIONS: 100,
 } as const;
 
 interface EnhancedWorkLogTableProps {
@@ -195,7 +195,7 @@ export function EnhancedWorkLogTable({
           onFilterChange(apiFilters);
         } catch (error) {
           console.error("Filter application error:", error);
-          toast.error("フィルタの適用に失敗しました。もう一度お試しください。");
+          toast.error(ERROR_MESSAGES.FILTER.APPLY_FAILED);
         }
       }
     },
@@ -211,7 +211,7 @@ export function EnhancedWorkLogTable({
         debouncedFilterChange(newFilters); // デバウンスされたAPI呼び出し
       } catch (error) {
         console.error("Filter state update error:", error);
-        toast.error("フィルタの更新に失敗しました。");
+        toast.error(ERROR_MESSAGES.FILTER.UPDATE_FAILED);
       }
     },
     [updateUrlWithFilters, debouncedFilterChange],
@@ -259,12 +259,12 @@ export function EnhancedWorkLogTable({
     };
 
     return (
-      <div className="flex gap-2 h-full items-center">
+      <div className="flex h-full items-center justify-center">
         <Button
           variant="outline"
           size="sm"
           onClick={onEdit}
-          className="h-7 px-2"
+          className="h-7 px-3 text-xs"
         >
           Edit
         </Button>
@@ -547,7 +547,6 @@ export function EnhancedWorkLogTable({
         whiteSpace: "pre-wrap", // 改行文字を表示
         wordWrap: "break-word",
         overflow: "visible",
-        display: "block",
         textAlign: "left",
       },
       cellClass: "details-cell",
@@ -559,10 +558,12 @@ export function EnhancedWorkLogTable({
         headerName: "Actions",
         cellRenderer: ActionsCellRenderer,
         width: COLUMN_WIDTHS.ACTIONS,
+        minWidth: 100,
         sortable: false,
         filter: false,
         pinned: "right",
         editable: false,
+        cellClass: "actions-cell",
       });
     }
 
@@ -628,7 +629,7 @@ export function EnhancedWorkLogTable({
       }
 
       if (!gridApi) {
-        toast.error("グリッドが初期化されていません");
+        toast.error(ERROR_MESSAGES.GRID.NOT_INITIALIZED);
         return;
       }
 
@@ -861,7 +862,7 @@ export function EnhancedWorkLogTable({
   // AG Grid standard: Simplified batch save with validation
   const handleBatchSave = useCallback(async () => {
     if (!gridApi) {
-      toast.error("グリッドが初期化されていません");
+      toast.error(ERROR_MESSAGES.GRID.NOT_INITIALIZED);
       return;
     }
 
@@ -985,9 +986,9 @@ export function EnhancedWorkLogTable({
       console.error("Batch save error:", error);
 
       if (error instanceof Error) {
-        toast.error(`保存に失敗しました: ${error.message}`);
+        toast.error(ERROR_MESSAGES.SAVE.FAILED(error.message));
       } else {
-        toast.error("保存に失敗しました");
+        toast.error(ERROR_MESSAGES.SAVE.FAILED());
       }
 
       // Mark all changed rows as failed (for new/updated rows)
@@ -1015,29 +1016,73 @@ export function EnhancedWorkLogTable({
       return;
     }
 
-    // Check for any changes (additions or deletions)
-    const currentRowCount = gridApi.getDisplayedRowCount();
-    const originalRowCount = workLogs.length;
+    // Stop any editing in progress before checking for changes
+    gridApi.stopEditing(false);
 
-    // Also check if any rows were deleted
-    const currentIds = new Set<string>();
+    // Get current grid data
+    const currentGridData: WorkLogGridRow[] = [];
     gridApi.forEachNode((node) => {
-      if (node.data?.id) currentIds.add(node.data.id);
+      if (node.data) {
+        currentGridData.push(node.data);
+      }
     });
 
-    const _originalIds = new Set(workLogs.map((wl) => wl.id));
+    const currentRowCount = currentGridData.length;
+    const originalRowCount = workLogs.length;
+
+    // Check for row additions or deletions
+    const currentIds = new Set(currentGridData.map((row) => row.id));
+
     const hasDeletedRows = workLogs.some((wl) => !currentIds.has(wl.id));
     const hasNewRows = currentRowCount > originalRowCount;
 
-    if (hasNewRows || hasDeletedRows) {
+    // Check for cell value changes
+    let hasCellChanges = false;
+    if (!hasNewRows && !hasDeletedRows) {
+      // Check if any cell values have changed
+      for (const currentRow of currentGridData) {
+        const originalRow = workLogs.find((wl) => wl.id === currentRow.id);
+        if (!originalRow) continue;
+
+        // Normalize dates for comparison
+        const normalizeDate = (date: Date | string | unknown): string => {
+          if (date instanceof Date) {
+            return date.toISOString().split("T")[0];
+          }
+          if (typeof date === "string") {
+            return date.split("T")[0];
+          }
+          return String(date);
+        };
+
+        const currentDate = normalizeDate(currentRow.date);
+        const originalDate = normalizeDate(originalRow.date);
+
+        // Compare all editable fields
+        if (
+          currentDate !== originalDate ||
+          String(currentRow.hours) !== String(originalRow.hours) ||
+          currentRow.projectId !== originalRow.projectId ||
+          currentRow.categoryId !== originalRow.categoryId ||
+          (currentRow.details || "") !== (originalRow.details || "")
+        ) {
+          hasCellChanges = true;
+          break;
+        }
+      }
+    }
+
+    // Show confirmation dialog if there are any changes
+    if (hasNewRows || hasDeletedRows || hasCellChanges) {
       setCancelDialogOpen(true);
     } else {
+      // No changes, just exit batch editing mode
       setBatchEditingEnabled(false);
     }
   }, [gridApi, workLogs]);
 
   // AG Grid standard: Reset to original data and clear all state
-  const handleConfirmCancel = () => {
+  const handleConfirmCancel = useCallback(() => {
     if (gridApi) {
       // Stop any editing in progress
       gridApi.stopEditing(true);
@@ -1046,14 +1091,32 @@ export function EnhancedWorkLogTable({
       gridApi.deselectAll();
 
       // Reset AG Grid data to original workLogs data
-      gridApi.setGridOption("rowData", rowData);
+      // Create a fresh copy to ensure AG Grid detects the change
+      const freshRowData = workLogs.map((workLog) => {
+        const workLogCopy = JSON.parse(JSON.stringify(workLog));
+        return {
+          ...workLogCopy,
+          date:
+            workLogCopy.date instanceof Date
+              ? workLogCopy.date.toISOString().split("T")[0]
+              : typeof workLogCopy.date === "string"
+                ? workLogCopy.date.split("T")[0]
+                : new Date(workLogCopy.date).toISOString().split("T")[0],
+          projectId: workLogCopy.projectId || "",
+          projectName: projectsMap.get(workLogCopy.projectId) || "Unknown",
+          categoryId: workLogCopy.categoryId || "",
+          categoryName: categoriesMap.get(workLogCopy.categoryId) || "Unknown",
+        };
+      });
+
+      gridApi.setGridOption("rowData", freshRowData);
     }
 
     // Clear all state
     setFailedWorkLogIds(new Set());
     setBatchEditingEnabled(false);
     setCancelDialogOpen(false);
-  };
+  }, [gridApi, workLogs, projectsMap, categoriesMap]);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     setGridApi(params.api);
@@ -1067,7 +1130,7 @@ export function EnhancedWorkLogTable({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full space-y-4">
       {/* Search Controls */}
       <SearchControls
         filters={searchFilters}
@@ -1109,73 +1172,59 @@ export function EnhancedWorkLogTable({
           }
         }}
         isLoading={isLoading}
-        className="mb-4"
+        className="shrink-0"
       />
 
-      <EnhancedAGGrid<WorkLog>
-        rowData={rowData}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        getRowClass={getRowClass}
-        getRowHeight={getRowHeight}
-        onGridReady={onGridReady}
-        // Cell value changes handled via column definitions
-        // onCellEditingStarted handled at column level
-        onRowAdd={handleRowAdd} // Pass our handleRowAdd to toolbar
-        onDataChange={undefined} // Disable data change callback to prevent external interference
-        onRowUpdate={handleRowUpdate}
-        onRowDelete={batchEditingEnabled ? handleBatchDelete : handleRowDelete}
-        enableToolbar={true}
-        batchEditingEnabled={batchEditingEnabled}
-        enableUndoRedo={true}
-        maxUndoRedoSteps={20}
-        // Filtering features
-        enableQuickFilter={false}
-        enableFloatingFilter={false}
-        enableFilterToolPanel={false}
-        // Work Log specific toolbar buttons
-        onToggleBatchEdit={() => setBatchEditingEnabled(true)}
-        onAddWorkLog={() => {
-          setSelectedWorkLog(null);
-          setFormOpen(true);
-        }}
-        onBatchSave={handleBatchSave}
-        onCancelBatchEdit={handleCancelBatchEditing}
-        isSavingBatch={isSubmitting}
-        gridOptions={{
-          rowSelection: "multiple",
-          suppressRowClickSelection: false, // Always allow row selection
-          singleClickEdit: batchEditingEnabled,
-          stopEditingWhenCellsLoseFocus: true,
-          enterNavigatesVertically: true,
-          suppressColumnVirtualisation: true, // Prevent column virtualization issues
-          ensureDomOrder: true, // Ensure DOM order matches logical order
-          suppressCellFocus: false, // Allow cell focus
-          suppressRowTransform: true, // Prevent row transformation that might affect data
-          rowBuffer: 0, // Don't buffer rows to avoid data inconsistencies
-          animateRows: false, // Disable row animation to prevent data conflicts
-          onCellKeyDown: (event: CellKeyDownEvent) => {
-            const keyboardEvent = event.event as KeyboardEvent;
-            const key = keyboardEvent?.key?.toLowerCase();
-            const ctrlKey = keyboardEvent?.ctrlKey;
-
-            if (ctrlKey && key === "n" && batchEditingEnabled) {
-              keyboardEvent?.preventDefault();
-              handleRowAdd([]);
-            } else if (
-              key === "delete" &&
-              !event.api.getEditingCells().length
-            ) {
-              // Delete selected rows when not editing
-              keyboardEvent?.preventDefault();
-              handleRowDelete([]);
-            } else if (ctrlKey && key === "d" && batchEditingEnabled) {
-              // Duplicate selected rows handled by toolbar
-              keyboardEvent?.preventDefault();
-            }
-          },
-        }}
-      />
+      {/* Table - Takes remaining height */}
+      <div className="flex-1 min-h-0">
+        <EnhancedAGGrid<WorkLog>
+          rowData={rowData}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          getRowClass={getRowClass}
+          getRowHeight={getRowHeight}
+          onGridReady={onGridReady}
+          // Cell value changes handled via column definitions
+          // onCellEditingStarted handled at column level
+          onRowAdd={handleRowAdd} // Pass our handleRowAdd to toolbar
+          onDataChange={undefined} // Disable data change callback to prevent external interference
+          onRowUpdate={handleRowUpdate}
+          onRowDelete={
+            batchEditingEnabled ? handleBatchDelete : handleRowDelete
+          }
+          enableToolbar={true}
+          batchEditingEnabled={batchEditingEnabled}
+          enableUndoRedo={true}
+          maxUndoRedoSteps={20}
+          // Filtering features
+          enableQuickFilter={false}
+          enableFloatingFilter={false}
+          enableFilterToolPanel={false}
+          // Work Log specific toolbar buttons
+          onToggleBatchEdit={() => setBatchEditingEnabled(true)}
+          onAddWorkLog={() => {
+            setSelectedWorkLog(null);
+            setFormOpen(true);
+          }}
+          onBatchSave={handleBatchSave}
+          onCancelBatchEdit={handleCancelBatchEditing}
+          isSavingBatch={isSubmitting}
+          gridOptions={{
+            rowSelection: "multiple",
+            suppressRowClickSelection: batchEditingEnabled, // In batch edit mode, suppress row selection to allow cell editing
+            singleClickEdit: batchEditingEnabled,
+            stopEditingWhenCellsLoseFocus: true,
+            enterNavigatesVertically: true,
+            suppressColumnVirtualisation: true, // Prevent column virtualization issues
+            ensureDomOrder: true, // Ensure DOM order matches logical order
+            suppressCellFocus: false, // Allow cell focus
+            suppressRowTransform: false, // Enable smooth row animations
+            rowBuffer: 0, // Don't buffer rows to avoid data inconsistencies
+            animateRows: true, // Enable smooth row animations for better UX
+            // Keyboard shortcuts are now handled globally in EnhancedAGGrid
+          }}
+        />
+      </div>
 
       <WorkLogFormDialog
         open={formOpen}

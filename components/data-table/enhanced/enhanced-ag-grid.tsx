@@ -21,7 +21,7 @@ import type {
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -428,6 +428,121 @@ export function EnhancedAGGrid<T extends { id: string }>({
     toast.info("操作をやり直しました");
   }, [historyStack.redoStack, gridApi]);
 
+  /**
+   * Global keyboard shortcuts handler
+   *
+   * Provides comprehensive keyboard shortcuts for grid operations in batch editing mode.
+   *
+   * Supported shortcuts:
+   * - Ctrl+Z: Undo last operation
+   * - Ctrl+Y / Ctrl+Shift+Z: Redo last undone operation
+   * - Ctrl+N: Add new row to the grid
+   * - Ctrl+D: Duplicate selected rows
+   * - Delete: Delete selected rows
+   *
+   * Key behaviors:
+   * 1. Only active when batch editing mode is enabled
+   * 2. Automatically disabled during cell editing to allow normal input (e.g., date pickers)
+   * 3. Ignores input fields outside the grid to avoid interference
+   * 4. Works on both Windows (Ctrl) and Mac (Cmd)
+   *
+   * @see handleUndo - Undo operation handler
+   * @see handleRedo - Redo operation handler
+   * @see handleAddRow - Row addition handler
+   * @see handleDuplicateRows - Row duplication handler
+   * @see handleDeleteRows - Row deletion handler
+   */
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle shortcuts when batch editing is enabled
+      if (!batchEditingEnabled) return;
+
+      // CRITICAL: Don't handle any shortcuts while editing a cell
+      // This allows date pickers, text inputs, etc. to work normally
+      const editingCells = gridApi?.getEditingCells();
+      if (editingCells && editingCells.length > 0) {
+        return; // Cell is being edited - skip all shortcuts
+      }
+
+      // Check if focus is within the grid or if no specific input is focused
+      const activeElement = document.activeElement;
+      const isInputFocused =
+        activeElement?.tagName === "INPUT" ||
+        activeElement?.tagName === "TEXTAREA" ||
+        activeElement?.getAttribute("contenteditable") === "true";
+
+      // Don't interfere with regular input fields (outside the grid)
+      if (
+        isInputFocused &&
+        !activeElement?.closest(".ag-theme-quartz") &&
+        !activeElement?.classList.contains("ag-cell-editor")
+      ) {
+        return;
+      }
+
+      const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+
+      // Ctrl+Z: Undo
+      if (isCtrlOrCmd && event.key.toLowerCase() === "z" && !event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleUndo();
+        return;
+      }
+
+      // Ctrl+Y or Ctrl+Shift+Z: Redo
+      if (
+        (isCtrlOrCmd && event.key.toLowerCase() === "y") ||
+        (isCtrlOrCmd && event.shiftKey && event.key.toLowerCase() === "z")
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleRedo();
+        return;
+      }
+
+      // Ctrl+N: Add new row
+      if (isCtrlOrCmd && event.key.toLowerCase() === "n") {
+        event.preventDefault();
+        event.stopPropagation();
+        handleAddRow();
+        return;
+      }
+
+      // Ctrl+D: Duplicate rows
+      if (isCtrlOrCmd && event.key.toLowerCase() === "d") {
+        event.preventDefault();
+        event.stopPropagation();
+        handleDuplicateRows();
+        return;
+      }
+
+      // Delete: Delete selected rows
+      if (event.key === "Delete" && !isInputFocused) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleDeleteRows();
+        return;
+      }
+    };
+
+    // Add event listener
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [
+    batchEditingEnabled,
+    handleUndo,
+    handleRedo,
+    handleAddRow,
+    handleDuplicateRows,
+    handleDeleteRows,
+    gridApi,
+  ]);
+
   // Fallback copy function for older browsers
   const fallbackCopyTextToClipboard = useCallback((text: string) => {
     const textArea = document.createElement("textarea");
@@ -565,12 +680,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
   // Enhanced grid options (Community edition compatible)
   const enhancedGridOptions: GridOptions = useMemo(
     () => ({
-      ...gridOptions,
       rowSelection: "multiple",
       animateRows: true,
-      suppressRowClickSelection: false,
       suppressMenuHide: false,
-      undoRedoCellEditing: enableUndoRedo,
+      undoRedoCellEditing: false, // Disable AG Grid's default undo/redo to use custom implementation
       undoRedoCellEditingLimit: maxUndoRedoSteps,
       getRowHeight: getRowHeight,
       // Custom keyboard handling for clipboard
@@ -608,9 +721,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
             hiddenByDefault: true,
           }
         : undefined,
+      // Merge parent gridOptions last to allow overrides
+      ...gridOptions,
     }),
     [
-      gridOptions,
       enableUndoRedo,
       maxUndoRedoSteps,
       getRowHeight,
@@ -619,11 +733,12 @@ export function EnhancedAGGrid<T extends { id: string }>({
       enableFloatingFilter,
       enableFilterToolPanel,
       quickFilterText,
+      gridOptions,
     ],
   );
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col h-full space-y-4">
       {enableToolbar && (
         <GridToolbar
           gridApi={gridApi || undefined}
@@ -648,7 +763,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
         />
       )}
 
-      <div className="ag-theme-quartz h-[600px] w-full border rounded-lg">
+      <div className="ag-theme-quartz flex-1 min-h-[400px] w-full overflow-auto">
         <AgGridReact
           ref={gridRef}
           className="h-full w-full"

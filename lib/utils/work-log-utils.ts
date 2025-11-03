@@ -8,8 +8,10 @@ import type { WorkLog } from "@/drizzle/schema";
 
 /**
  * WorkLogGridRow extends WorkLog with additional display fields
+ * Note: date is normalized to string format (YYYY-MM-DD) for AG Grid compatibility
  */
-export interface WorkLogGridRow extends WorkLog {
+export interface WorkLogGridRow extends Omit<WorkLog, "date"> {
+  date: string;
   projectName?: string;
   categoryName?: string;
 }

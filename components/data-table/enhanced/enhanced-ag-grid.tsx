@@ -428,7 +428,30 @@ export function EnhancedAGGrid<T extends { id: string }>({
     toast.info("操作をやり直しました");
   }, [historyStack.redoStack, gridApi]);
 
-  // Global keyboard shortcuts handler
+  /**
+   * Global keyboard shortcuts handler
+   *
+   * Provides comprehensive keyboard shortcuts for grid operations in batch editing mode.
+   *
+   * Supported shortcuts:
+   * - Ctrl+Z: Undo last operation
+   * - Ctrl+Y / Ctrl+Shift+Z: Redo last undone operation
+   * - Ctrl+N: Add new row to the grid
+   * - Ctrl+D: Duplicate selected rows
+   * - Delete: Delete selected rows
+   *
+   * Key behaviors:
+   * 1. Only active when batch editing mode is enabled
+   * 2. Automatically disabled during cell editing to allow normal input (e.g., date pickers)
+   * 3. Ignores input fields outside the grid to avoid interference
+   * 4. Works on both Windows (Ctrl) and Mac (Cmd)
+   *
+   * @see handleUndo - Undo operation handler
+   * @see handleRedo - Redo operation handler
+   * @see handleAddRow - Row addition handler
+   * @see handleDuplicateRows - Row duplication handler
+   * @see handleDeleteRows - Row deletion handler
+   */
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle shortcuts when batch editing is enabled

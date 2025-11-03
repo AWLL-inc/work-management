@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { CustomDateEditor } from "./custom-date-editor";
@@ -194,7 +195,7 @@ export function EnhancedWorkLogTable({
           onFilterChange(apiFilters);
         } catch (error) {
           console.error("Filter application error:", error);
-          toast.error("フィルタの適用に失敗しました。もう一度お試しください。");
+          toast.error(ERROR_MESSAGES.FILTER.APPLY_FAILED);
         }
       }
     },
@@ -210,7 +211,7 @@ export function EnhancedWorkLogTable({
         debouncedFilterChange(newFilters); // デバウンスされたAPI呼び出し
       } catch (error) {
         console.error("Filter state update error:", error);
-        toast.error("フィルタの更新に失敗しました。");
+        toast.error(ERROR_MESSAGES.FILTER.UPDATE_FAILED);
       }
     },
     [updateUrlWithFilters, debouncedFilterChange],
@@ -628,7 +629,7 @@ export function EnhancedWorkLogTable({
       }
 
       if (!gridApi) {
-        toast.error("グリッドが初期化されていません");
+        toast.error(ERROR_MESSAGES.GRID.NOT_INITIALIZED);
         return;
       }
 
@@ -861,7 +862,7 @@ export function EnhancedWorkLogTable({
   // AG Grid standard: Simplified batch save with validation
   const handleBatchSave = useCallback(async () => {
     if (!gridApi) {
-      toast.error("グリッドが初期化されていません");
+      toast.error(ERROR_MESSAGES.GRID.NOT_INITIALIZED);
       return;
     }
 
@@ -985,9 +986,9 @@ export function EnhancedWorkLogTable({
       console.error("Batch save error:", error);
 
       if (error instanceof Error) {
-        toast.error(`保存に失敗しました: ${error.message}`);
+        toast.error(ERROR_MESSAGES.SAVE.FAILED(error.message));
       } else {
-        toast.error("保存に失敗しました");
+        toast.error(ERROR_MESSAGES.SAVE.FAILED());
       }
 
       // Mark all changed rows as failed (for new/updated rows)

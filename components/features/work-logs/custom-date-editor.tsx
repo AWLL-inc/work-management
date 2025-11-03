@@ -1,112 +1,65 @@
 "use client";
 
-import type { ICellEditor, ICellEditorParams } from "ag-grid-community";
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import type { ICellEditorParams } from "ag-grid-community";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
-interface CustomDateEditorProps extends ICellEditorParams {}
+export const CustomDateEditor = forwardRef((props: ICellEditorParams, ref) => {
+  const inputRef = useRef<HTMLInputElement>(null);
 
-export const CustomDateEditor = forwardRef<ICellEditor, CustomDateEditorProps>(
-  (props, ref) => {
-    const inputRef = useRef<HTMLInputElement>(null);
+  // Get initial value
+  const getInitialValue = () => {
+    const value = props.value;
+    if (!value) return "";
 
-    // Get the initial value from the cell
-    const getInitialValue = useCallback(() => {
-      const fieldName = props.colDef?.field;
-      if (!fieldName) return "";
+    // Convert Date object to YYYY-MM-DD string
+    if (value instanceof Date) {
+      return value.toISOString().split("T")[0];
+    }
 
-      const value = props.data[fieldName];
+    // If it's already a string, ensure it's in the right format
+    if (typeof value === "string") {
+      return value.split("T")[0]; // Remove time part if present
+    }
 
-      if (!value) return "";
+    return "";
+  };
 
-      // Convert Date object to YYYY-MM-DD string
-      if (value instanceof Date) {
-        return value.toISOString().split("T")[0];
-      }
+  const [value, setValue] = useState(getInitialValue());
 
-      // If it's already a string, ensure it's in the right format
-      if (typeof value === "string") {
-        return value.split("T")[0]; // Remove time part if present
-      }
+  // Expose AG Grid required methods
+  useImperativeHandle(ref, () => ({
+    getValue: () => {
+      return value || null;
+    },
 
-      return "";
-    }, [props.colDef?.field, props.data]);
-
-    useEffect(() => {
-      // Set initial value and focus
+    afterGuiAttached: () => {
       if (inputRef.current) {
-        inputRef.current.value = getInitialValue();
         inputRef.current.focus();
-        inputRef.current.select();
+        // Open the date picker automatically
+        inputRef.current.showPicker?.();
       }
-    }, [getInitialValue]);
+    },
+  }));
 
-    // AG Grid interface methods
-    useImperativeHandle(ref, () => ({
-      getValue: () => {
-        if (!inputRef.current || !inputRef.current.value) {
-          return null;
-        }
-
-        // Return the date string in YYYY-MM-DD format
-        return inputRef.current.value;
-      },
-
-      getGui: () => inputRef.current as HTMLInputElement,
-
-      afterGuiAttached: () => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-          inputRef.current.select();
-        }
-      },
-
-      isPopup: () => false,
-
-      isCancelBeforeStart: () => false,
-
-      isCancelAfterEnd: () => false,
-
-      focusIn: () => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      },
-
-      focusOut: () => {
-        // Not needed for this implementation
-      },
-    }));
-
-    return (
-      <input
-        ref={inputRef}
-        type="date"
-        className="ag-input-field-input ag-text-field-input"
-        style={{
-          width: "100%",
-          height: "100%",
-          padding: "0 8px",
-          border: "none",
-          outline: "none",
-          fontSize: "inherit",
-          fontFamily: "inherit",
-        }}
-        onKeyDown={(e) => {
-          // Allow normal keyboard navigation
-          if (e.key === "Enter" || e.key === "Tab") {
-            // Let AG Grid handle navigation
-            return;
-          }
-        }}
-      />
-    );
-  },
-);
+  return (
+    <input
+      ref={inputRef}
+      type="date"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      style={{
+        width: "100%",
+        height: "100%",
+        padding: "12px 16px",
+        border: "none",
+        outline: "none",
+        fontSize: "14px",
+        fontFamily: "inherit",
+        backgroundColor: "transparent",
+        boxSizing: "border-box",
+      }}
+    />
+  );
+});
 
 CustomDateEditor.displayName = "CustomDateEditor";

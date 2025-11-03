@@ -28,6 +28,7 @@ import {
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
+import { CustomDateEditor } from "./custom-date-editor";
 import { SearchControls } from "./search/search-controls";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
 
@@ -291,10 +292,8 @@ export function EnhancedWorkLogTable({
       field: "date",
       width: COLUMN_WIDTHS.DATE,
       editable: batchEditingEnabled,
-      cellEditor: "agTextCellEditor",
-      cellEditorParams: {
-        maxLength: 10,
-      },
+      cellEditor: CustomDateEditor,
+      cellEditorParams: {},
       // Use inline editing for better UX
       cellEditorPopup: false,
       valueGetter: (params) => {

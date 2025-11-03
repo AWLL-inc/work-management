@@ -13,6 +13,7 @@ export {
 } from "./use-category-data";
 // Utility hooks
 export { useIncrementalSearch } from "./use-incremental-search";
+export { type MediaQueryState, useMediaQuery } from "./use-media-query";
 export {
   type UseProjectDataOptions,
   type UseProjectDataResult,

@@ -463,3 +463,119 @@
     animation: none !important;
   }
 }
+
+/* =================================
+   Mobile & Touch Device Support
+   ================================= */
+
+/* Mobile devices (< 768px) */
+@media (max-width: 767px) {
+  /* Increase touch target sizes for better mobile UX */
+  .ag-cell {
+    min-height: 44px !important;
+    padding: 12px 8px !important;
+  }
+
+  .ag-header-cell {
+    min-height: 44px !important;
+    padding: 12px 8px !important;
+  }
+
+  /* Larger checkboxes for touch */
+  .ag-checkbox-input-wrapper {
+    width: 24px;
+    height: 24px;
+    font-size: 20px;
+    line-height: 20px;
+  }
+
+  /* Larger touch targets for buttons */
+  .ag-cell button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Adjust row height for touch */
+  .ag-row {
+    min-height: 44px !important;
+  }
+
+  /* Better horizontal scrolling on mobile */
+  .ag-body-horizontal-scroll-viewport {
+    height: 12px !important;
+  }
+
+  .ag-horizontal-left-spacer,
+  .ag-horizontal-right-spacer {
+    height: 12px !important;
+  }
+
+  /* Improve scrollbar visibility on mobile */
+  .ag-body-viewport::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  .ag-body-viewport::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.5);
+    border-radius: 6px;
+  }
+
+  /* Simplify date column width for mobile */
+  .ag-theme-quartz {
+    font-size: 13px;
+  }
+}
+
+/* Tablet devices (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Slightly larger touch targets for tablets */
+  .ag-cell {
+    min-height: 40px !important;
+    padding: 10px 12px !important;
+  }
+
+  .ag-header-cell {
+    min-height: 40px !important;
+    padding: 10px 12px !important;
+  }
+
+  .ag-checkbox-input-wrapper {
+    width: 20px;
+    height: 20px;
+    font-size: 18px;
+    line-height: 18px;
+  }
+
+  .ag-cell button {
+    min-height: 40px !important;
+    min-width: 40px !important;
+  }
+}
+
+/* Touch device specific improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .ag-row:hover {
+    background-color: transparent;
+  }
+
+  /* Better tap feedback */
+  .ag-row:active {
+    background-color: hsl(var(--muted) / 0.6);
+  }
+
+  .ag-header-cell:hover {
+    background-color: transparent;
+  }
+
+  .ag-header-cell:active {
+    background-color: hsl(var(--muted) / 0.8);
+  }
+
+  /* Improve cell editing on touch */
+  .ag-cell-editing {
+    outline: 3px solid hsl(var(--primary)) !important;
+  }
+}

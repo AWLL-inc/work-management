@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
+import { useMediaQuery } from "@/lib/hooks";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { CustomDateEditor } from "./custom-date-editor";
@@ -110,6 +111,9 @@ export function EnhancedWorkLogTable({
   onFilterChange,
   isLoading,
 }: EnhancedWorkLogTableProps) {
+  // Responsive design hook
+  const { isMobile, isTablet } = useMediaQuery();
+
   const [formOpen, setFormOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -438,6 +442,7 @@ export function EnhancedWorkLogTable({
       headerName: "Project",
       field: "projectId", // Always use projectId field
       width: COLUMN_WIDTHS.PROJECT,
+      hide: isMobile, // Hide on mobile devices
       editable: batchEditingEnabled,
       cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
       cellEditorParams: batchEditingEnabled
@@ -484,6 +489,7 @@ export function EnhancedWorkLogTable({
       headerName: "Category",
       field: "categoryId", // Always use categoryId field
       width: COLUMN_WIDTHS.CATEGORY,
+      hide: isMobile, // Hide on mobile devices
       editable: batchEditingEnabled,
       cellEditor: batchEditingEnabled ? "agSelectCellEditor" : undefined,
       cellEditorParams: batchEditingEnabled
@@ -530,6 +536,7 @@ export function EnhancedWorkLogTable({
       headerName: "Details",
       field: "details",
       flex: 1,
+      hide: isMobile || isTablet, // Hide on mobile and tablet devices
       editable: batchEditingEnabled,
       cellEditor: "agLargeTextCellEditor",
       cellEditorParams: {
@@ -575,6 +582,8 @@ export function EnhancedWorkLogTable({
     projectsMap,
     categoriesMap,
     ActionsCellRenderer,
+    isMobile,
+    isTablet,
   ]);
 
   // Row height calculation for multi-line details

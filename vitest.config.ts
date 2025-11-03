@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
+  css: {
+    postcss: {}, // Use empty PostCSS config in tests
+  },
   test: {
     environment: "happy-dom",
     globals: true,

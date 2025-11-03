@@ -186,16 +186,28 @@ export function EnhancedProjectTable({
     try {
       if (selectedProject) {
         await onUpdateProject(selectedProject.id, data);
-        toast.success("Project updated successfully");
       } else {
         await onCreateProject(data);
-        toast.success("Project created successfully");
       }
       setFormOpen(false);
       setSelectedProject(null);
     } catch (error) {
-      console.error("Failed to save project:", error);
-      toast.error("Failed to save project");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to save project";
+
+      // Structured logging for debugging
+      console.error("Project save failed:", {
+        error,
+        context: {
+          projectId: selectedProject?.id,
+          operation: selectedProject ? "update" : "create",
+          data,
+        },
+      });
+
+      // User feedback with detailed message
+      toast.error(errorMessage);
+      throw error; // Re-throw to let parent handle if needed
     } finally {
       setIsSubmitting(false);
     }
@@ -207,12 +219,24 @@ export function EnhancedProjectTable({
     setIsSubmitting(true);
     try {
       await onDeleteProject(selectedProject.id);
-      toast.success("Project deleted successfully");
       setDeleteDialogOpen(false);
       setSelectedProject(null);
     } catch (error) {
-      console.error("Failed to delete project:", error);
-      toast.error("Failed to delete project");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete project";
+
+      // Structured logging for debugging
+      console.error("Project delete failed:", {
+        error,
+        context: {
+          projectId: selectedProject.id,
+          projectName: selectedProject.name,
+        },
+      });
+
+      // User feedback with detailed message
+      toast.error(errorMessage);
+      throw error; // Re-throw to let parent handle if needed
     } finally {
       setIsSubmitting(false);
     }

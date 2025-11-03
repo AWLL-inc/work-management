@@ -1039,7 +1039,7 @@ export function EnhancedWorkLogTable({
   }, [gridApi, workLogs]);
 
   // AG Grid standard: Reset to original data and clear all state
-  const handleConfirmCancel = () => {
+  const handleConfirmCancel = useCallback(() => {
     if (gridApi) {
       // Stop any editing in progress
       gridApi.stopEditing(true);
@@ -1048,14 +1048,32 @@ export function EnhancedWorkLogTable({
       gridApi.deselectAll();
 
       // Reset AG Grid data to original workLogs data
-      gridApi.setGridOption("rowData", rowData);
+      // Create a fresh copy to ensure AG Grid detects the change
+      const freshRowData = workLogs.map((workLog) => {
+        const workLogCopy = JSON.parse(JSON.stringify(workLog));
+        return {
+          ...workLogCopy,
+          date:
+            workLogCopy.date instanceof Date
+              ? workLogCopy.date.toISOString().split("T")[0]
+              : typeof workLogCopy.date === "string"
+                ? workLogCopy.date.split("T")[0]
+                : new Date(workLogCopy.date).toISOString().split("T")[0],
+          projectId: workLogCopy.projectId || "",
+          projectName: projectsMap.get(workLogCopy.projectId) || "Unknown",
+          categoryId: workLogCopy.categoryId || "",
+          categoryName: categoriesMap.get(workLogCopy.categoryId) || "Unknown",
+        };
+      });
+
+      gridApi.setGridOption("rowData", freshRowData);
     }
 
     // Clear all state
     setFailedWorkLogIds(new Set());
     setBatchEditingEnabled(false);
     setCancelDialogOpen(false);
-  };
+  }, [gridApi, workLogs, projectsMap, categoriesMap]);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     setGridApi(params.api);

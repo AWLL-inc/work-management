@@ -6,7 +6,6 @@ import type {
   ICellRendererParams,
 } from "ag-grid-community";
 import { useCallback, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -192,9 +191,6 @@ export function EnhancedProjectTable({
       setFormOpen(false);
       setSelectedProject(null);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to save project";
-
       // Structured logging for debugging
       console.error("Project save failed:", {
         error,
@@ -205,9 +201,8 @@ export function EnhancedProjectTable({
         },
       });
 
-      // User feedback with detailed message
-      toast.error(errorMessage);
-      throw error; // Re-throw to let parent handle if needed
+      // Re-throw to let parent handle error notification
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -222,9 +217,6 @@ export function EnhancedProjectTable({
       setDeleteDialogOpen(false);
       setSelectedProject(null);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to delete project";
-
       // Structured logging for debugging
       console.error("Project delete failed:", {
         error,
@@ -234,9 +226,8 @@ export function EnhancedProjectTable({
         },
       });
 
-      // User feedback with detailed message
-      toast.error(errorMessage);
-      throw error; // Re-throw to let parent handle if needed
+      // Re-throw to let parent handle error notification
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

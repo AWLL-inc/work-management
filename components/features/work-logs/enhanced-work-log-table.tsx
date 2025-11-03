@@ -1016,23 +1016,67 @@ export function EnhancedWorkLogTable({
       return;
     }
 
-    // Check for any changes (additions or deletions)
-    const currentRowCount = gridApi.getDisplayedRowCount();
-    const originalRowCount = workLogs.length;
+    // Stop any editing in progress before checking for changes
+    gridApi.stopEditing(false);
 
-    // Also check if any rows were deleted
-    const currentIds = new Set<string>();
+    // Get current grid data
+    const currentGridData: WorkLogGridRow[] = [];
     gridApi.forEachNode((node) => {
-      if (node.data?.id) currentIds.add(node.data.id);
+      if (node.data) {
+        currentGridData.push(node.data);
+      }
     });
 
-    const _originalIds = new Set(workLogs.map((wl) => wl.id));
+    const currentRowCount = currentGridData.length;
+    const originalRowCount = workLogs.length;
+
+    // Check for row additions or deletions
+    const currentIds = new Set(currentGridData.map((row) => row.id));
+
     const hasDeletedRows = workLogs.some((wl) => !currentIds.has(wl.id));
     const hasNewRows = currentRowCount > originalRowCount;
 
-    if (hasNewRows || hasDeletedRows) {
+    // Check for cell value changes
+    let hasCellChanges = false;
+    if (!hasNewRows && !hasDeletedRows) {
+      // Check if any cell values have changed
+      for (const currentRow of currentGridData) {
+        const originalRow = workLogs.find((wl) => wl.id === currentRow.id);
+        if (!originalRow) continue;
+
+        // Normalize dates for comparison
+        const normalizeDate = (date: Date | string | unknown): string => {
+          if (date instanceof Date) {
+            return date.toISOString().split("T")[0];
+          }
+          if (typeof date === "string") {
+            return date.split("T")[0];
+          }
+          return String(date);
+        };
+
+        const currentDate = normalizeDate(currentRow.date);
+        const originalDate = normalizeDate(originalRow.date);
+
+        // Compare all editable fields
+        if (
+          currentDate !== originalDate ||
+          String(currentRow.hours) !== String(originalRow.hours) ||
+          currentRow.projectId !== originalRow.projectId ||
+          currentRow.categoryId !== originalRow.categoryId ||
+          (currentRow.details || "") !== (originalRow.details || "")
+        ) {
+          hasCellChanges = true;
+          break;
+        }
+      }
+    }
+
+    // Show confirmation dialog if there are any changes
+    if (hasNewRows || hasDeletedRows || hasCellChanges) {
       setCancelDialogOpen(true);
     } else {
+      // No changes, just exit batch editing mode
       setBatchEditingEnabled(false);
     }
   }, [gridApi, workLogs]);

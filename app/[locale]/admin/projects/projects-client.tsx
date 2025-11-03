@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { ProjectTable } from "@/components/features/admin/projects/project-table";
+import { EnhancedProjectTable } from "@/components/features/admin/projects/enhanced-project-table";
 import type { Project } from "@/drizzle/schema";
 
 interface ProjectsClientProps {
@@ -89,7 +89,7 @@ export function ProjectsClient({
 
   return (
     <div className="px-4 sm:px-0">
-      <ProjectTable
+      <EnhancedProjectTable
         projects={initialProjects}
         onCreateProject={handleCreateProject}
         onUpdateProject={handleUpdateProject}

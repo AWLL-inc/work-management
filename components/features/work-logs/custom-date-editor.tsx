@@ -56,6 +56,16 @@ export const CustomDateEditor = forwardRef((props: ICellEditorParams, ref) => {
       return value || null;
     },
 
+    // Prevent AG Grid from canceling the edit
+    isCancelAfterEnd: () => {
+      return false;
+    },
+
+    // This is not a popup editor
+    isPopup: () => {
+      return false;
+    },
+
     afterGuiAttached: () => {
       if (inputRef.current) {
         inputRef.current.focus();

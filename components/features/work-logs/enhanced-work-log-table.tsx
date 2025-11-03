@@ -547,7 +547,6 @@ export function EnhancedWorkLogTable({
         whiteSpace: "pre-wrap", // 改行文字を表示
         wordWrap: "break-word",
         overflow: "visible",
-        display: "block",
         textAlign: "left",
       },
       cellClass: "details-cell",

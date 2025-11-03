@@ -1,6 +1,10 @@
 "use client";
 
-import type { ColDef, GridReadyEvent, ICellRendererParams } from "ag-grid-community";
+import type {
+  ColDef,
+  GridReadyEvent,
+  ICellRendererParams,
+} from "ag-grid-community";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
@@ -47,7 +51,6 @@ export function EnhancedProjectTable({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [gridApi, setGridApi] = useState<any>(null);
 
   // Actions cell renderer
   const ActionsCellRenderer = useCallback(
@@ -216,7 +219,6 @@ export function EnhancedProjectTable({
   };
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
-    setGridApi(params.api);
     params.api.sizeColumnsToFit();
   }, []);
 

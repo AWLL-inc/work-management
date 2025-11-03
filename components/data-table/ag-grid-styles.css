@@ -286,7 +286,7 @@
    Details Cell - Multi-line Support
    ================================= */
 
-.ag-cell.details-cell {
+.ag-cell.details-cell:not(.ag-cell-editing) {
   white-space: pre-wrap !important;
   word-wrap: break-word !important;
   overflow: visible !important;
@@ -298,7 +298,7 @@
   align-items: flex-start !important;
 }
 
-.ag-cell.details-cell .ag-cell-value {
+.ag-cell.details-cell:not(.ag-cell-editing) .ag-cell-value {
   white-space: pre-wrap !important;
   word-wrap: break-word !important;
   overflow: visible !important;
@@ -309,7 +309,7 @@
    Actions Cell - Button Layout
    ================================= */
 
-.ag-cell.actions-cell {
+.ag-cell.actions-cell:not(.ag-cell-editing) {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;

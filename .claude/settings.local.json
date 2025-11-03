@@ -121,7 +121,12 @@
       "Bash(docker volume rm:*)",
       "Bash(docker rmi:*)",
       "Bash(pnpm run dev)",
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(pnpm dlx shadcn@latest add:*)",
+      "WebFetch(domain:www.ag-grid.com)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:blog.ag-grid.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

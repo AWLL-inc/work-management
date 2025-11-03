@@ -1,102 +1,58 @@
 "use client";
 
-import type { ICellEditorParams } from "ag-grid-community";
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import type { CustomCellEditorProps } from "ag-grid-react";
+import { useEffect, useRef, useState } from "react";
+import type { WorkLog } from "@/drizzle/schema";
 
-export const CustomDateEditor = forwardRef((props: ICellEditorParams, ref) => {
+export const CustomDateEditor = ({
+  initialValue,
+  onValueChange,
+}: CustomCellEditorProps<WorkLog, Date | string>) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  // Use ref to store current value for getValue()
-  const valueRef = useRef<string>("");
 
-  // Get initial value
-  const getInitialValue = () => {
-    const value = props.value;
-    if (!value) return "";
-
-    // Convert Date object to YYYY-MM-DD string
-    if (value instanceof Date) {
-      return value.toISOString().split("T")[0];
+  // Format date value for input[type="date"]
+  const formatDate = (val: Date | string | null | undefined): string => {
+    if (!val) return "";
+    if (val instanceof Date) {
+      return val.toISOString().split("T")[0];
     }
-
-    // If it's already a string, ensure it's in the right format
-    if (typeof value === "string") {
-      return value.split("T")[0]; // Remove time part if present
+    if (typeof val === "string") {
+      return val.split("T")[0];
     }
-
     return "";
   };
 
-  // Initialize value ref
-  useEffect(() => {
-    const initialValue = getInitialValue();
-    valueRef.current = initialValue;
-    if (inputRef.current) {
-      inputRef.current.value = initialValue;
-    }
-  }, []);
+  const [currentValue, setCurrentValue] = useState(formatDate(initialValue));
 
-  // Auto-open date picker when component mounts
+  // Focus and open date picker on mount
   useEffect(() => {
     const timer = setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
-        // Try to open the date picker
         try {
           inputRef.current.showPicker?.();
         } catch (error) {
-          // showPicker() might not be supported in all browsers
+          // showPicker() not supported in all browsers
           console.debug("showPicker not supported:", error);
         }
       }
-    }, 100); // Small delay to ensure DOM is ready
+    }, 100);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Expose AG Grid required methods
-  useImperativeHandle(ref, () => ({
-    getValue: () => {
-      // Return the current value from the input directly
-      const currentValue = inputRef.current?.value || valueRef.current;
-      console.log("CustomDateEditor getValue called:", currentValue);
-      return currentValue || null;
-    },
-
-    // Prevent AG Grid from canceling the edit
-    isCancelAfterEnd: () => {
-      return false;
-    },
-
-    // This is not a popup editor
-    isPopup: () => {
-      return false;
-    },
-
-    afterGuiAttached: () => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        // Try to open the date picker after attachment
-        setTimeout(() => {
-          try {
-            inputRef.current?.showPicker?.();
-          } catch (error) {
-            console.debug("showPicker not supported:", error);
-          }
-        }, 50);
-      }
-    },
-  }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setCurrentValue(newValue);
+    onValueChange(newValue || null); // Immediately notify grid
+  };
 
   return (
     <input
       ref={inputRef}
       type="date"
-      defaultValue={getInitialValue()}
-      onChange={(e) => {
-        // Update value ref when changed
-        valueRef.current = e.target.value;
-        console.log("Date changed to:", e.target.value);
-      }}
+      value={currentValue}
+      onChange={handleChange}
       onClick={() => {
         // Also try to open on click
         try {
@@ -119,6 +75,6 @@ export const CustomDateEditor = forwardRef((props: ICellEditorParams, ref) => {
       }}
     />
   );
-});
+};
 
 CustomDateEditor.displayName = "CustomDateEditor";

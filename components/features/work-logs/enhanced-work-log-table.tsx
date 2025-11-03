@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
+import { KeyboardShortcutsDialog } from "@/app/[locale]/work-logs/_components/keyboard-shortcuts-dialog";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +33,6 @@ import { useMediaQuery } from "@/lib/hooks";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { CustomDateEditor } from "./custom-date-editor";
-import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog";
 import { SearchControls } from "./search/search-controls";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
 

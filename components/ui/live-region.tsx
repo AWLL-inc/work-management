@@ -85,6 +85,13 @@ export type AnnounceFunction = (
   priority?: LiveRegionPriority,
 ) => void;
 
+// Type definition for window with optional toast
+interface WindowWithToast extends Window {
+  toast?: {
+    error: (message: string) => void;
+  };
+}
+
 export function useLiveRegion() {
   const announce: AnnounceFunction = (message, priority = "polite") => {
     try {
@@ -93,7 +100,12 @@ export function useLiveRegion() {
       });
       window.dispatchEvent(event);
     } catch (error) {
-      console.warn("Live region announcement failed:", message, error);
+      console.error("Live region announcement failed:", message, error);
+      // Fallback: visual notification via toast if available
+      const windowWithToast = window as unknown as WindowWithToast;
+      if (typeof window !== "undefined" && windowWithToast.toast) {
+        windowWithToast.toast.error(message);
+      }
     }
   };
 

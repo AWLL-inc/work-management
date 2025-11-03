@@ -63,6 +63,9 @@ export function KeyboardShortcutsDialog() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // ダイアログが既に開いている場合は何もしない
+      if (open) return;
+
       // Open dialog with ? key
       if (
         event.key === "?" &&
@@ -85,7 +88,7 @@ export function KeyboardShortcutsDialog() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

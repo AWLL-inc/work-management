@@ -71,7 +71,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
   return (
     <nav
       id="main-navigation"
-      className="bg-white border-b border-border shadow-sm"
+      className="bg-background border-b border-border shadow-sm"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">

@@ -144,77 +144,171 @@
 
 /* Cell focus */
 .ag-cell-focus {
-  outline: 3px solid hsl(var(--ring)) !important;
-  outline-offset: -3px;
-  box-shadow: inset 0 0 0 3px hsl(var(--ring)) !important;
+  outline: 1px solid hsl(var(--ring)) !important;
+  outline-offset: -1px;
+  box-shadow: inset 0 0 0 1px hsl(var(--ring)) !important;
   z-index: 10;
 }
 
 .ag-cell:focus-within {
-  outline: 3px solid hsl(var(--ring));
-  outline-offset: -3px;
-  box-shadow: inset 0 0 0 3px hsl(var(--ring));
+  outline: 1px solid hsl(var(--ring));
+  outline-offset: -1px;
+  box-shadow: inset 0 0 0 1px hsl(var(--ring));
   z-index: 10;
 }
 
 /* =================================
-   Editing States - Clear Visual Feedback
+   Editing States - Clean & Readable UI
    ================================= */
 
+/* Editing cell container - visual feedback */
 .ag-cell-editing {
   outline: 2px solid hsl(var(--primary));
   outline-offset: -2px;
   background-color: hsl(var(--primary) / 0.05);
   z-index: 2;
-  padding: 0 !important; /* Remove padding to allow editor to fill cell */
-}
-
-/* Cell editor wrapper - fill entire cell */
-.ag-cell-inline-editing {
   padding: 0 !important;
 }
 
+/* Remove ALL spacing from wrapper layers - they stack up and create gaps */
+.ag-cell-editing .ag-cell-wrapper,
+.ag-cell-editing .ag-cell-editor,
+.ag-cell-editing .ag-cell-inline-editing,
+.ag-cell-editing .ag-input-wrapper,
+.ag-cell-editing .ag-text-field-input-wrapper,
+.ag-cell-editing .ag-picker-field-wrapper,
+.ag-cell-editing .ag-picker-field-display,
+.ag-cell-editing .ag-rich-select,
+.ag-cell-editing .ag-wrapper,
 .ag-cell-editor {
   width: 100% !important;
   height: 100% !important;
   padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: stretch !important;
 }
 
-/* Text input editors - fill cell */
-.ag-cell-editor .ag-text-field-input,
+/* Input fields - fill cell completely to border edges */
+.ag-cell-editing input[type="text"],
+.ag-cell-editing input[type="number"],
+.ag-cell-editing input[type="date"],
+.ag-cell-editing input[type="time"],
+.ag-cell-editing input[type="datetime-local"],
+.ag-cell-editing input:not([type="checkbox"]):not([type="radio"]),
 .ag-cell-editor input[type="text"],
 .ag-cell-editor input[type="number"],
-.ag-cell-editor input[type="date"] {
+.ag-cell-editor input[type="date"],
+.ag-cell-editor input:not([type="checkbox"]):not([type="radio"]) {
+  /* Fill entire cell to the edges */
   width: 100% !important;
   height: 100% !important;
-  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  /* Add small internal text offset for readability */
+  text-indent: 8px !important;
+
+  /* Remove default styling */
   border: none !important;
+  border-radius: 0 !important;
   outline: none !important;
-  background: transparent !important;
+
+  /* Theme colors */
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+
+  /* Typography */
   font-size: 14px !important;
   line-height: 1.5 !important;
+
+  /* Box model */
   box-sizing: border-box !important;
+
+  /* Remove browser default styles */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
 }
 
-/* Select editors - fill cell */
+/* Select dropdowns - fill cell completely to border edges */
+.ag-cell-editing select,
 .ag-cell-editor select {
+  /* Fill entire cell to the edges */
   width: 100% !important;
   height: 100% !important;
-  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  /* Add small internal text offset for readability */
+  padding-left: 8px !important;
+
+  /* Remove default styling */
   border: none !important;
+  border-radius: 0 !important;
   outline: none !important;
-  background: transparent !important;
+
+  /* Theme colors */
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+
+  /* Typography */
   font-size: 14px !important;
   line-height: 1.5 !important;
+
+  /* Box model */
   box-sizing: border-box !important;
   cursor: pointer !important;
+
+  /* Remove browser default styles */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
 }
 
-/* Large text editor (popup) - already handled by AG Grid */
-.ag-large-text-input {
+/* Checkbox - container fills cell, checkbox centered inside */
+.ag-cell-editing .ag-checkbox-input-wrapper,
+.ag-cell-editor .ag-checkbox-input-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ag-cell-editing input[type="checkbox"],
+.ag-cell-editor input[type="checkbox"],
+.ag-cell-editing .ag-checkbox-input-wrapper input,
+.ag-cell-editor .ag-checkbox-input-wrapper input {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+/* Large text editor (popup) */
+.ag-large-text-input,
+.ag-text-area,
+.ag-textarea {
   padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
   font-size: 14px !important;
   line-height: 1.5 !important;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+/* Light mode: Force all input elements to have proper background */
+.ag-theme-quartz input:not([type="checkbox"]):not([type="radio"]),
+.ag-theme-quartz textarea,
+.ag-theme-quartz select {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
 }
 
 .ag-cell-invalid {
@@ -377,6 +471,71 @@
   display: block !important;
 }
 
+/* Details cell: Hover state */
+.ag-cell.details-cell:hover:not(.ag-cell-editing) {
+  background-color: hsl(var(--muted) / 0.3) !important;
+  cursor: pointer;
+  transition: background-color var(--ag-grid-transition-fast);
+}
+
+/* Details cell: Focus state - subtle outline for multi-line */
+.ag-cell.details-cell.ag-cell-focus:not(.ag-cell-editing),
+.ag-cell.details-cell:focus-within:not(.ag-cell-editing) {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: -2px !important;
+  box-shadow: inset 0 0 0 2px hsl(var(--ring) / 0.2) !important;
+  background-color: hsl(var(--accent) / 0.05) !important;
+}
+
+/* Details cell: Editing state */
+.ag-cell.details-cell.ag-cell-editing {
+  padding: 0 !important;
+  background-color: hsl(var(--background)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 120px !important;
+  outline: 2px solid hsl(var(--background)) !important;
+  outline-offset: -2px !important;
+}
+
+/* Details cell: Force all editor wrappers to fill the cell */
+.ag-cell.details-cell.ag-cell-editing .ag-cell-wrapper,
+.ag-cell.details-cell.ag-cell-editing .ag-cell-editor,
+.ag-cell.details-cell.ag-cell-editing .ag-cell-inline-editing,
+.ag-cell.details-cell.ag-cell-editing .ag-input-wrapper,
+.ag-cell.details-cell.ag-cell-editing .ag-text-field-input-wrapper {
+  width: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important;
+}
+
+/* Details cell: Textarea in editing mode */
+.ag-cell.details-cell.ag-cell-editing textarea {
+  width: 100% !important;
+  flex: 1 !important;
+  resize: vertical !important;
+  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
+  box-sizing: border-box !important;
+  border: none !important;
+  outline: none !important;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  min-height: 0 !important;
+}
+
+/* Details cell: In selected row */
+.ag-row-selected .ag-cell.details-cell:not(.ag-cell-editing) {
+  background-color: transparent !important;
+}
+
 /* =================================
    Actions Cell - Button Layout
    ================================= */
@@ -436,20 +595,58 @@
    Checkbox Selection
    ================================= */
 
+/* Checkbox cell container - ensure proper centering */
+.ag-cell-wrapper.ag-row-group {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.ag-cell .ag-selection-checkbox {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* Fix checkbox cell layout */
+.ag-cell[col-id="ag-Grid-AutoColumn"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
 .ag-checkbox-input-wrapper {
-  font-size: 16px;
-  line-height: 16px;
-  width: 18px;
-  height: 18px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  position: relative !important;
+  margin: 0 auto !important;
 }
 
 .ag-checkbox-input-wrapper input {
-  cursor: pointer;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
 }
 
 .ag-checkbox-input-wrapper.ag-checked::after {
-  color: hsl(var(--primary));
-  transition: all 0.15s ease-in-out;
+  color: hsl(var(--primary)) !important;
+  transition: all 0.15s ease-in-out !important;
+  position: absolute !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 /* =================================
@@ -487,8 +684,13 @@
   .ag-checkbox-input-wrapper {
     width: 24px;
     height: 24px;
-    font-size: 20px;
-    line-height: 20px;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .ag-checkbox-input-wrapper input {
+    width: 24px;
+    height: 24px;
   }
 
   /* Larger touch targets for buttons */
@@ -544,10 +746,15 @@
   }
 
   .ag-checkbox-input-wrapper {
-    width: 20px;
-    height: 20px;
-    font-size: 18px;
-    line-height: 18px;
+    width: 22px;
+    height: 22px;
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .ag-checkbox-input-wrapper input {
+    width: 22px;
+    height: 22px;
   }
 
   .ag-cell button {
@@ -753,19 +960,21 @@ output[aria-live] {
   background-color: hsl(var(--background));
 }
 
-/* Dark mode: Headers */
+/* Dark mode: Headers - Enhanced visibility */
 .dark .ag-header {
-  background: hsl(var(--muted) / 0.3);
-  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--card)) !important;
+  border-bottom: 2px solid hsl(var(--border)) !important;
 }
 
 .dark .ag-header-cell {
-  border-right: 1px solid hsl(var(--border) / 0.5);
-  color: hsl(var(--muted-foreground));
+  border-right: 1px solid hsl(var(--border)) !important;
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  font-weight: 600;
 }
 
 .dark .ag-header-cell:hover {
-  background-color: hsl(var(--muted) / 0.5);
+  background-color: hsl(var(--muted) / 0.7) !important;
 }
 
 /* Dark mode: Rows */
@@ -797,10 +1006,102 @@ output[aria-live] {
   color: hsl(var(--foreground));
 }
 
-/* Dark mode: Cell editing - More visible */
+/* Dark mode: Cell editing - More visible, clean UI */
 .dark .ag-cell-editing {
   background-color: hsl(var(--primary) / 0.1);
   outline-color: hsl(var(--primary));
+  padding: 0 !important;
+}
+
+/* Dark mode: Remove ALL spacing from wrapper layers */
+.dark .ag-cell-editing .ag-cell-wrapper,
+.dark .ag-cell-editing .ag-cell-editor,
+.dark .ag-cell-editing .ag-cell-inline-editing,
+.dark .ag-cell-editing .ag-input-wrapper,
+.dark .ag-cell-editing .ag-text-field-input-wrapper,
+.dark .ag-cell-editing .ag-picker-field-wrapper,
+.dark .ag-cell-editing .ag-picker-field-display,
+.dark .ag-cell-editing .ag-rich-select,
+.dark .ag-cell-editing .ag-wrapper,
+.dark .ag-cell-editor {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+/* Dark mode: Input fields - fill cell completely to border edges */
+.dark .ag-cell-editing input[type="text"],
+.dark .ag-cell-editing input[type="number"],
+.dark .ag-cell-editing input[type="date"],
+.dark .ag-cell-editing input[type="time"],
+.dark .ag-cell-editing input[type="datetime-local"],
+.dark .ag-cell-editing input:not([type="checkbox"]):not([type="radio"]),
+.dark .ag-cell-editor input[type="text"],
+.dark .ag-cell-editor input[type="number"],
+.dark .ag-cell-editor input[type="date"],
+.dark .ag-cell-editor input:not([type="checkbox"]):not([type="radio"]) {
+  /* Fill entire cell to the edges */
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  /* Add small internal text offset for readability */
+  text-indent: 8px !important;
+
+  /* Remove default styling */
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+
+  /* Box model */
+  box-sizing: border-box !important;
+
+  /* Remove browser default styles */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Dark mode: Select dropdowns - fill cell completely to border edges */
+.dark .ag-cell-editing select,
+.dark .ag-cell-editor select {
+  /* Fill entire cell to the edges */
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  /* Add small internal text offset for readability */
+  padding-left: 8px !important;
+
+  /* Remove default styling */
+  border: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+
+  /* Box model */
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+
+  /* Remove browser default styles */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Dark mode: Checkbox - centered in cell */
+.dark .ag-cell-editing input[type="checkbox"],
+.dark .ag-cell-editor input[type="checkbox"] {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 auto !important;
+  cursor: pointer !important;
 }
 
 /* Dark mode: Error states - High contrast for visibility */
@@ -870,13 +1171,13 @@ output[aria-live] {
 /* Dark mode: Focus indicators - Enhanced visibility */
 .dark .ag-cell-focus {
   outline-color: hsl(var(--ring)) !important;
-  box-shadow: inset 0 0 0 3px hsl(var(--ring)) !important;
+  box-shadow: inset 0 0 0 1px hsl(var(--ring)) !important;
 }
 
 .dark .ag-cell:focus-within,
 .dark .ag-cell:focus-visible {
   outline-color: hsl(var(--ring));
-  box-shadow: inset 0 0 0 3px hsl(var(--ring));
+  box-shadow: inset 0 0 0 1px hsl(var(--ring));
 }
 
 .dark .ag-header-cell:focus-visible {
@@ -918,4 +1219,165 @@ output[aria-live] {
 /* Dark mode: Checkbox */
 .dark .ag-checkbox-input-wrapper.ag-checked::after {
   color: hsl(var(--primary));
+}
+
+/* =================================
+   Dark Mode: Details Cell - Match Light Mode Structure
+   ================================= */
+
+/* Dark mode: Details cell normal state - Match light mode */
+.dark .ag-cell.details-cell:not(.ag-cell-editing) {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  line-height: 1.6 !important;
+  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
+  display: block !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  align-items: flex-start !important;
+}
+
+/* Dark mode: Details cell value - Match light mode */
+.dark .ag-cell.details-cell:not(.ag-cell-editing) .ag-cell-value {
+  white-space: pre-wrap !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* Dark mode: Details cell hover - Match light mode */
+.dark .ag-cell.details-cell:hover:not(.ag-cell-editing) {
+  background-color: hsl(var(--muted) / 0.3) !important;
+  cursor: pointer;
+  transition: background-color var(--ag-grid-transition-fast);
+}
+
+/* Dark mode: Details cell focus - Match light mode */
+.dark .ag-cell.details-cell.ag-cell-focus:not(.ag-cell-editing),
+.dark .ag-cell.details-cell:focus-within:not(.ag-cell-editing) {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: -2px !important;
+  box-shadow: inset 0 0 0 2px hsl(var(--ring) / 0.2) !important;
+  background-color: hsl(var(--accent) / 0.05) !important;
+}
+
+/* Dark mode: Details cell in selected row - Match light mode */
+.dark .ag-row-selected .ag-cell.details-cell:not(.ag-cell-editing) {
+  background-color: transparent !important;
+}
+
+/* =================================
+   Dark Mode: Force Grid Background Colors
+   ================================= */
+
+/* Dark mode: Force background for all grid container elements */
+.dark .ag-root-wrapper {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark .ag-root-wrapper-body {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark .ag-body-viewport,
+.dark .ag-center-cols-viewport,
+.dark .ag-center-cols-container {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Dark mode: Ensure cell backgrounds are transparent to show grid background */
+.dark
+.ag-cell:not(.ag-cell-editing):not(.ag-cell-range-selected):not(
+  .ag-row-selected .ag-cell
+) {
+  background-color: transparent !important;
+}
+
+/* Dark mode: Ensure row backgrounds use proper dark colors */
+.dark .ag-row:not(.ag-row-selected):not(.ag-row-error) {
+  background-color: transparent !important;
+}
+
+.dark .ag-row-even:not(.ag-row-selected):not(.ag-row-error) {
+  background-color: hsl(var(--muted) / 0.05) !important;
+}
+
+/* Dark mode: Input editors inside cells should match background */
+.dark .ag-cell-editor .ag-text-field-input,
+.dark .ag-cell-editor .ag-input-field-input,
+.dark .ag-cell-editor input[type="text"],
+.dark .ag-cell-editor input[type="number"],
+.dark .ag-cell-editor input[type="date"],
+.dark .ag-cell-editor select,
+.dark .ag-cell-editor textarea,
+.dark .ag-text-field-input,
+.dark .ag-large-text-input,
+.dark .ag-text-area,
+.dark .ag-textarea,
+.dark .ag-input-field input,
+.dark .ag-input-text-wrapper input {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Dark mode: Ensure editing cell background is dark */
+.dark .ag-cell-editing {
+  background-color: hsl(var(--primary) / 0.1);
+  outline-color: hsl(var(--primary));
+}
+
+/* Dark mode: Details cell editing state - Match light mode structure */
+.dark .ag-cell.details-cell.ag-cell-editing {
+  padding: 0 !important;
+  background-color: hsl(var(--background)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 120px !important;
+  outline: 2px solid hsl(var(--background)) !important;
+  outline-offset: -2px !important;
+}
+
+/* Dark mode: Details cell editor wrappers - Match light mode structure */
+.dark .ag-cell.details-cell.ag-cell-editing .ag-cell-wrapper,
+.dark .ag-cell.details-cell.ag-cell-editing .ag-cell-editor,
+.dark .ag-cell.details-cell.ag-cell-editing .ag-cell-inline-editing,
+.dark .ag-cell.details-cell.ag-cell-editing .ag-input-wrapper,
+.dark .ag-cell.details-cell.ag-cell-editing .ag-text-field-input-wrapper {
+  width: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important;
+}
+
+/* Dark mode: Details cell textarea - Match light mode structure */
+.dark .ag-cell.details-cell.ag-cell-editing textarea {
+  width: 100% !important;
+  flex: 1 !important;
+  resize: vertical !important;
+  padding: var(--ag-grid-cell-padding-y) var(--ag-grid-cell-padding-x) !important;
+  box-sizing: border-box !important;
+  border: none !important;
+  outline: none !important;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  min-height: 0 !important;
+}
+
+/* Dark mode: Force all input elements to have dark background */
+.dark .ag-theme-quartz input:not([type="checkbox"]):not([type="radio"]),
+.dark .ag-theme-quartz textarea,
+.dark .ag-theme-quartz select {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
 }

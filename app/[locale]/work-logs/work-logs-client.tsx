@@ -124,7 +124,11 @@ export function WorkLogsClient({
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] px-4 sm:px-0 space-y-6">
       {/* Scope Tabs */}
-      <Tabs value={currentScope} onValueChange={handleScopeChange}>
+      <Tabs
+        id="work-logs-scope-tabs"
+        value={currentScope}
+        onValueChange={handleScopeChange}
+      >
         <TabsList>
           <TabsTrigger value="own">My Work Logs</TabsTrigger>
           <TabsTrigger value="team">Team Work Logs</TabsTrigger>

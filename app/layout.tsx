@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     // biome-ignore lint/a11y/useHtmlLang: Language is set in [locale] layout
-    <html>
+    <html suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

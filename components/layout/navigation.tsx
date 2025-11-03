@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { logoutAction } from "@/app/logout/actions";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcherButton } from "./language-switcher";
+import { ThemeToggle } from "./theme-toggle";
 
 interface NavigationProps {
   userEmail?: string | null;

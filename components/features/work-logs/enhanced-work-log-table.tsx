@@ -12,10 +12,9 @@ import type {
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
-import { KeyboardShortcutsDialog } from "@/app/[locale]/work-logs/_components/keyboard-shortcuts-dialog";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { KeyboardShortcutsDialog } from "@/components/ui/keyboard-shortcuts-dialog";
 import { useLiveRegion } from "@/components/ui/live-region";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
@@ -118,6 +118,9 @@ export function EnhancedWorkLogTable({
 
   // Accessibility - Live region announcements
   const { announce } = useLiveRegion();
+
+  // Accessibility - Skip link target ref
+  const gridRef = useRef<HTMLElement>(null);
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
@@ -1156,8 +1159,16 @@ export function EnhancedWorkLogTable({
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      {/* Skip link for keyboard navigation */}
-      <a href="#work-log-grid" className="skip-link">
+      {/* Skip link for keyboard navigation - This is a valid WCAG 2.1 pattern using <a> tag */}
+      {/* biome-ignore lint/a11y/useValidAnchor: Skip links are a standard accessibility pattern that use anchor tags */}
+      <a
+        href="#work-log-grid"
+        className="skip-link"
+        onClick={(e) => {
+          e.preventDefault();
+          gridRef.current?.focus();
+        }}
+      >
         作業ログ一覧へスキップ
       </a>
 
@@ -1214,9 +1225,11 @@ export function EnhancedWorkLogTable({
 
       {/* Table - Takes remaining height */}
       <section
+        ref={gridRef}
         className="flex-1 min-h-0"
         id="work-log-grid"
         aria-label="作業ログ一覧"
+        tabIndex={-1}
       >
         <EnhancedAGGrid<WorkLog>
           rowData={rowData}

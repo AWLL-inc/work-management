@@ -34,6 +34,7 @@ export function LiveRegion({
 }: LiveRegionProps) {
   const [politeMessage, setPoliteMessage] = useState("");
   const [assertiveMessage, setAssertiveMessage] = useState("");
+  const [messageKey, setMessageKey] = useState(0);
 
   useEffect(() => {
     // Listen for custom live-region-announce events
@@ -41,12 +42,17 @@ export function LiveRegion({
       if (event instanceof CustomEvent) {
         const { message, priority } = event.detail as LiveRegionMessage;
 
+        // Increment message key to ensure duplicate messages are announced
+        setMessageKey((prev) => prev + 1);
+
         if (priority === "assertive") {
           setAssertiveMessage(message);
-          setTimeout(() => setAssertiveMessage(""), 100);
+          // Clear message after sufficient time for screen readers (1 second minimum)
+          setTimeout(() => setAssertiveMessage(""), 1000);
         } else {
           setPoliteMessage(message);
-          setTimeout(() => setPoliteMessage(""), 100);
+          // Clear message after sufficient time for screen readers (1 second minimum)
+          setTimeout(() => setPoliteMessage(""), 1000);
         }
       }
     };
@@ -61,12 +67,18 @@ export function LiveRegion({
   return (
     <>
       {/* Polite announcements */}
-      <output aria-live="polite" aria-atomic={ariaAtomic} className={className}>
+      <output
+        key={`polite-${messageKey}`}
+        aria-live="polite"
+        aria-atomic={ariaAtomic}
+        className={className}
+      >
         {politeMessage}
       </output>
 
       {/* Assertive announcements */}
       <output
+        key={`assertive-${messageKey}`}
         aria-live="assertive"
         aria-atomic={ariaAtomic}
         className={className}

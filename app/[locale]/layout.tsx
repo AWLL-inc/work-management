@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { SessionProvider } from "@/app/providers/session-provider";
 import { Navigation } from "@/components/layout/navigation";
+import { LiveRegion } from "@/components/ui/live-region";
 import { routing } from "@/i18n/routing";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 
@@ -47,6 +48,8 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <SessionProvider session={session as Session | null}>
+        {/* Global live region for screen reader announcements */}
+        <LiveRegion />
         <div className="min-h-screen bg-background">
           {!isLoginPage && (
             <Navigation userEmail={userEmail} userRole={userRole} />

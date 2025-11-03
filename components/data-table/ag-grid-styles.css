@@ -662,8 +662,11 @@ a:focus-visible {
   border-radius: 2px;
 }
 
-/* Screen reader only content */
-.sr-only {
+/* Screen reader only content - unified */
+.sr-only,
+[role="status"],
+[role="alert"],
+output[aria-live] {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -671,8 +674,22 @@ a:focus-visible {
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Reveal screen reader content on focus (for interactive elements like skip links) */
+.sr-only:focus,
+.sr-only:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
 }
 
 /* Ensure sufficient color contrast - WCAG 2.1 AA */
@@ -719,19 +736,4 @@ a:focus-visible {
   /* Show focus outline only when navigating with keyboard */
   outline: 3px solid hsl(var(--ring));
   outline-offset: 2px;
-}
-
-/* ARIA live region styling */
-[role="status"],
-[role="alert"] {
-  /* Visually hidden but accessible to screen readers */
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }

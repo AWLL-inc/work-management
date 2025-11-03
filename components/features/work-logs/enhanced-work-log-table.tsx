@@ -25,14 +25,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { KeyboardShortcutsDialog } from "@/components/ui/keyboard-shortcuts-dialog";
-import { LiveRegion, useLiveRegion } from "@/components/ui/live-region";
+import { useLiveRegion } from "@/components/ui/live-region";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { useMediaQuery } from "@/lib/hooks";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { CustomDateEditor } from "./custom-date-editor";
+import { KeyboardShortcutsDialog } from "./keyboard-shortcuts-dialog";
 import { SearchControls } from "./search/search-controls";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
 
@@ -1157,16 +1157,9 @@ export function EnhancedWorkLogTable({
   return (
     <div className="flex flex-col h-full space-y-4">
       {/* Skip link for keyboard navigation */}
-      <a
-        href="#work-log-grid"
-        className="skip-link"
-        aria-label="メインコンテンツへスキップ"
-      >
-        メインコンテンツへスキップ
+      <a href="#work-log-grid" className="skip-link">
+        作業ログ一覧へスキップ
       </a>
-
-      {/* Live region for screen reader announcements */}
-      <LiveRegion />
 
       {/* Search Controls */}
       <div className="flex items-center justify-between gap-2 shrink-0">

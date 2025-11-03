@@ -8,6 +8,7 @@
  * ```tsx
  * const { announce } = useLiveRegion();
  * announce("Item saved successfully");
+ * announce("Critical error occurred", "assertive");
  * ```
  */
 
@@ -15,26 +16,38 @@
 
 import { useEffect, useState } from "react";
 
+export type LiveRegionPriority = "polite" | "assertive";
+
+export interface LiveRegionMessage {
+  message: string;
+  priority: LiveRegionPriority;
+}
+
 interface LiveRegionProps {
-  "aria-live"?: "polite" | "assertive";
   "aria-atomic"?: boolean;
   className?: string;
 }
 
 export function LiveRegion({
-  "aria-live": ariaLive = "polite",
   "aria-atomic": ariaAtomic = true,
   className = "sr-only",
 }: LiveRegionProps) {
-  const [message, setMessage] = useState("");
+  const [politeMessage, setPoliteMessage] = useState("");
+  const [assertiveMessage, setAssertiveMessage] = useState("");
 
   useEffect(() => {
     // Listen for custom live-region-announce events
     const handleAnnounce = (event: Event) => {
       if (event instanceof CustomEvent) {
-        setMessage(event.detail);
-        // Clear message after announcement to allow re-announcement of same message
-        setTimeout(() => setMessage(""), 100);
+        const { message, priority } = event.detail as LiveRegionMessage;
+
+        if (priority === "assertive") {
+          setAssertiveMessage(message);
+          setTimeout(() => setAssertiveMessage(""), 100);
+        } else {
+          setPoliteMessage(message);
+          setTimeout(() => setPoliteMessage(""), 100);
+        }
       }
     };
 
@@ -46,24 +59,42 @@ export function LiveRegion({
   }, []);
 
   return (
-    <output aria-live={ariaLive} aria-atomic={ariaAtomic} className={className}>
-      {message}
-    </output>
+    <>
+      {/* Polite announcements */}
+      <output aria-live="polite" aria-atomic={ariaAtomic} className={className}>
+        {politeMessage}
+      </output>
+
+      {/* Assertive announcements */}
+      <output
+        aria-live="assertive"
+        aria-atomic={ariaAtomic}
+        className={className}
+      >
+        {assertiveMessage}
+      </output>
+    </>
   );
 }
 
 /**
  * Hook to announce messages to screen readers
  */
+export type AnnounceFunction = (
+  message: string,
+  priority?: LiveRegionPriority,
+) => void;
+
 export function useLiveRegion() {
-  const announce = (
-    message: string,
-    _priority: "polite" | "assertive" = "polite",
-  ) => {
-    const event = new CustomEvent("live-region-announce", {
-      detail: message,
-    });
-    window.dispatchEvent(event);
+  const announce: AnnounceFunction = (message, priority = "polite") => {
+    try {
+      const event = new CustomEvent<LiveRegionMessage>("live-region-announce", {
+        detail: { message, priority },
+      });
+      window.dispatchEvent(event);
+    } catch (error) {
+      console.warn("Live region announcement failed:", message, error);
+    }
   };
 
   return { announce };

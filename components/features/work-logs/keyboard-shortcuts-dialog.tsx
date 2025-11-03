@@ -9,7 +9,7 @@
 
 import { HelpCircle, Keyboard } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "./button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./dialog";
+} from "@/components/ui/dialog";
 
 interface ShortcutGroup {
   title: string;
@@ -81,16 +81,11 @@ export function KeyboardShortcutsDialog() {
           setOpen(true);
         }
       }
-
-      // Close dialog with Escape
-      if (event.key === "Escape" && open) {
-        setOpen(false);
-      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open]);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

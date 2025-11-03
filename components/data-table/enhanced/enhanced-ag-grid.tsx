@@ -565,10 +565,8 @@ export function EnhancedAGGrid<T extends { id: string }>({
   // Enhanced grid options (Community edition compatible)
   const enhancedGridOptions: GridOptions = useMemo(
     () => ({
-      ...gridOptions,
       rowSelection: "multiple",
       animateRows: true,
-      suppressRowClickSelection: false,
       suppressMenuHide: false,
       undoRedoCellEditing: enableUndoRedo,
       undoRedoCellEditingLimit: maxUndoRedoSteps,
@@ -608,9 +606,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
             hiddenByDefault: true,
           }
         : undefined,
+      // Merge parent gridOptions last to allow overrides
+      ...gridOptions,
     }),
     [
-      gridOptions,
       enableUndoRedo,
       maxUndoRedoSteps,
       getRowHeight,
@@ -619,6 +618,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
       enableFloatingFilter,
       enableFilterToolPanel,
       quickFilterText,
+      gridOptions,
     ],
   );
 

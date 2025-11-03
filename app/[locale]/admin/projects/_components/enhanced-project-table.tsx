@@ -18,23 +18,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Project } from "@/drizzle/schema";
+import type { CreateProjectInput, UpdateProjectInput } from "@/types/project";
 import { ProjectFormDialog } from "./project-form-dialog";
 
 interface EnhancedProjectTableProps {
   projects: Project[];
-  onCreateProject: (data: {
-    name: string;
-    description?: string;
-    isActive: boolean;
-  }) => Promise<void>;
-  onUpdateProject: (
-    id: string,
-    data: {
-      name?: string;
-      description?: string | null;
-      isActive?: boolean;
-    },
-  ) => Promise<void>;
+  onCreateProject: (data: CreateProjectInput) => Promise<void>;
+  onUpdateProject: (id: string, data: UpdateProjectInput) => Promise<void>;
   onDeleteProject: (id: string) => Promise<void>;
   isLoading: boolean;
 }
@@ -49,7 +39,6 @@ export function EnhancedProjectTable({
   const [formOpen, setFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Actions cell renderer
   const ActionsCellRenderer = useCallback(
@@ -176,12 +165,7 @@ export function EnhancedProjectTable({
     [],
   );
 
-  const handleFormSubmit = async (data: {
-    name: string;
-    description?: string;
-    isActive: boolean;
-  }) => {
-    setIsSubmitting(true);
+  const handleFormSubmit = async (data: CreateProjectInput) => {
     try {
       if (selectedProject) {
         await onUpdateProject(selectedProject.id, data);
@@ -203,15 +187,12 @@ export function EnhancedProjectTable({
 
       // Re-throw to let parent handle error notification
       throw error;
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleConfirmDelete = async () => {
     if (!selectedProject) return;
 
-    setIsSubmitting(true);
     try {
       await onDeleteProject(selectedProject.id);
       setDeleteDialogOpen(false);
@@ -228,8 +209,6 @@ export function EnhancedProjectTable({
 
       // Re-throw to let parent handle error notification
       throw error;
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -293,7 +272,7 @@ export function EnhancedProjectTable({
         }}
         project={selectedProject}
         onSubmit={handleFormSubmit}
-        isSubmitting={isSubmitting}
+        isSubmitting={isLoading}
       />
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -309,16 +288,16 @@ export function EnhancedProjectTable({
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
-              disabled={isSubmitting}
+              disabled={isLoading}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleConfirmDelete}
-              disabled={isSubmitting}
+              disabled={isLoading}
             >
-              {isSubmitting ? "Deleting..." : "Delete"}
+              {isLoading ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>

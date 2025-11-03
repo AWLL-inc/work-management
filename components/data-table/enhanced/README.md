@@ -377,6 +377,41 @@ export function ProjectsClient({
 }
 ```
 
+## ADR-006 Compliance
+
+This component strictly follows [ADR-006: AG Grid Standard Compliance](../../../docs/adr/006-ag-grid-standard-compliance.md) guidelines:
+
+### ✅ Standard AG Grid Patterns
+
+- **Data Management**: Uses `gridApi.applyTransaction()` for all data modifications
+- **Single Source of Truth**: AG Grid's internal data is the authoritative source
+- **Standard Events**: Leverages `onGridReady`, `onCellEditingStopped` - no custom event handling
+- **Validation Timing**: Performs validation at save time, not during cell editing
+
+### ✅ Custom Cell Renderers (Approved)
+
+Custom renderers are used for display customization only:
+- Status badges (read-only visual enhancement)
+- Action buttons (triggers standard operations)
+- Date formatting (display-only transformation)
+
+### ❌ Anti-Patterns (Avoided)
+
+- ❌ No duplicate state management (`useState` for grid data)
+- ❌ No toast notifications in `valueParser`
+- ❌ No complex custom event handling in cell editors
+- ❌ No direct DOM manipulation of grid internals
+
+### 📋 Deviation Process
+
+If you need to deviate from these patterns:
+1. Document the technical necessity
+2. Create an ADR amendment with alternatives considered
+3. Get team approval before implementation
+4. Update this README with the approved deviation
+
+For full details, see [ADR-006](../../../docs/adr/006-ag-grid-standard-compliance.md).
+
 ## Performance Considerations
 
 1. **Memoize Column Definitions**: Use `useMemo` to prevent unnecessary re-renders

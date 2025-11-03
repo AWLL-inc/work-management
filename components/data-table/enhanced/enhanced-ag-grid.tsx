@@ -21,7 +21,7 @@ import type {
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -428,6 +428,95 @@ export function EnhancedAGGrid<T extends { id: string }>({
     toast.info("操作をやり直しました");
   }, [historyStack.redoStack, gridApi]);
 
+  // Global keyboard shortcuts handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle shortcuts when batch editing is enabled
+      if (!batchEditingEnabled) return;
+
+      // Check if focus is within the grid or if no specific input is focused
+      const activeElement = document.activeElement;
+      const isInputFocused =
+        activeElement?.tagName === "INPUT" ||
+        activeElement?.tagName === "TEXTAREA" ||
+        activeElement?.getAttribute("contenteditable") === "true";
+
+      // Don't interfere with regular input fields
+      if (
+        isInputFocused &&
+        !activeElement?.closest(".ag-theme-quartz") &&
+        !activeElement?.classList.contains("ag-cell-editor")
+      ) {
+        return;
+      }
+
+      const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+
+      // Ctrl+Z: Undo
+      if (isCtrlOrCmd && event.key.toLowerCase() === "z" && !event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleUndo();
+        return;
+      }
+
+      // Ctrl+Y or Ctrl+Shift+Z: Redo
+      if (
+        (isCtrlOrCmd && event.key.toLowerCase() === "y") ||
+        (isCtrlOrCmd && event.shiftKey && event.key.toLowerCase() === "z")
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        handleRedo();
+        return;
+      }
+
+      // Ctrl+N: Add new row
+      if (isCtrlOrCmd && event.key.toLowerCase() === "n") {
+        event.preventDefault();
+        event.stopPropagation();
+        handleAddRow();
+        return;
+      }
+
+      // Ctrl+D: Duplicate rows
+      if (isCtrlOrCmd && event.key.toLowerCase() === "d") {
+        event.preventDefault();
+        event.stopPropagation();
+        handleDuplicateRows();
+        return;
+      }
+
+      // Delete: Delete selected rows
+      if (event.key === "Delete" && !isInputFocused) {
+        // Only handle if not actively editing a cell
+        const editingCells = gridApi?.getEditingCells();
+        if (!editingCells || editingCells.length === 0) {
+          event.preventDefault();
+          event.stopPropagation();
+          handleDeleteRows();
+          return;
+        }
+      }
+    };
+
+    // Add event listener
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [
+    batchEditingEnabled,
+    handleUndo,
+    handleRedo,
+    handleAddRow,
+    handleDuplicateRows,
+    handleDeleteRows,
+    gridApi,
+  ]);
+
   // Fallback copy function for older browsers
   const fallbackCopyTextToClipboard = useCallback((text: string) => {
     const textArea = document.createElement("textarea");
@@ -568,7 +657,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
       rowSelection: "multiple",
       animateRows: true,
       suppressMenuHide: false,
-      undoRedoCellEditing: enableUndoRedo,
+      undoRedoCellEditing: false, // Disable AG Grid's default undo/redo to use custom implementation
       undoRedoCellEditingLimit: maxUndoRedoSteps,
       getRowHeight: getRowHeight,
       // Custom keyboard handling for clipboard

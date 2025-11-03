@@ -434,6 +434,13 @@ export function EnhancedAGGrid<T extends { id: string }>({
       // Only handle shortcuts when batch editing is enabled
       if (!batchEditingEnabled) return;
 
+      // CRITICAL: Don't handle any shortcuts while editing a cell
+      // This allows date pickers, text inputs, etc. to work normally
+      const editingCells = gridApi?.getEditingCells();
+      if (editingCells && editingCells.length > 0) {
+        return; // Cell is being edited - skip all shortcuts
+      }
+
       // Check if focus is within the grid or if no specific input is focused
       const activeElement = document.activeElement;
       const isInputFocused =
@@ -441,7 +448,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
         activeElement?.tagName === "TEXTAREA" ||
         activeElement?.getAttribute("contenteditable") === "true";
 
-      // Don't interfere with regular input fields
+      // Don't interfere with regular input fields (outside the grid)
       if (
         isInputFocused &&
         !activeElement?.closest(".ag-theme-quartz") &&
@@ -489,14 +496,10 @@ export function EnhancedAGGrid<T extends { id: string }>({
 
       // Delete: Delete selected rows
       if (event.key === "Delete" && !isInputFocused) {
-        // Only handle if not actively editing a cell
-        const editingCells = gridApi?.getEditingCells();
-        if (!editingCells || editingCells.length === 0) {
-          event.preventDefault();
-          event.stopPropagation();
-          handleDeleteRows();
-          return;
-        }
+        event.preventDefault();
+        event.stopPropagation();
+        handleDeleteRows();
+        return;
       }
     };
 

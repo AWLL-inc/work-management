@@ -87,6 +87,7 @@ export function AGGridWorkLogTable({
   isLoading,
 }: AGGridWorkLogTableProps) {
   const t = useTranslations("workLogs");
+  const tCommon = useTranslations("common");
   const [formOpen, setFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
@@ -127,10 +128,10 @@ export function AGGridWorkLogTable({
   const rowData: WorkLogGridRow[] = useMemo(() => {
     return workLogs.map((workLog) => ({
       ...workLog,
-      projectName: projectsMap.get(workLog.projectId) || "Unknown",
-      categoryName: categoriesMap.get(workLog.categoryId) || "Unknown",
+      projectName: projectsMap.get(workLog.projectId) || tCommon("unknown"),
+      categoryName: categoriesMap.get(workLog.categoryId) || tCommon("unknown"),
     }));
-  }, [workLogs, projectsMap, categoriesMap]);
+  }, [workLogs, projectsMap, categoriesMap, tCommon]);
 
   // Actions cell renderer
   const ActionsCellRenderer = useCallback((params: { data: WorkLog }) => {
@@ -170,7 +171,7 @@ export function AGGridWorkLogTable({
   const columnDefs: ColDef[] = useMemo(() => {
     const columns: ColDef[] = [
       {
-        headerName: "Date",
+        headerName: t("table.date"),
         field: "date",
         width: COLUMN_WIDTHS.DATE,
         editable: batchEditingEnabled,
@@ -187,15 +188,15 @@ export function AGGridWorkLogTable({
             return oldValue;
           }
 
-          // JST対応のparseDateユーティリティを使用
-          // YYYY-MM-DD形式の文字列をJSTとして解釈
+          // Use JST-aware parseDate utility
+          // Interpret string in YYYY-MM-DD format as JST
           const date = parseDate(newValue);
           if (!date) {
-            toast.error("有効な日付をYYYY-MM-DD形式で入力してください");
+            toast.error(t("validation.invalidDate"));
             return oldValue;
           }
 
-          // ISO 8601形式の文字列として保存（データベースとの互換性維持）
+          // Save as ISO 8601 format string (maintain database compatibility)
           return newValue;
         },
         sort: "desc",
@@ -211,7 +212,7 @@ export function AGGridWorkLogTable({
         },
       },
       {
-        headerName: "Hours",
+        headerName: t("table.hours"),
         field: "hours",
         width: COLUMN_WIDTHS.HOURS,
         editable: batchEditingEnabled,
@@ -223,23 +224,23 @@ export function AGGridWorkLogTable({
           const value = params.newValue;
 
           if (!value) {
-            toast.error("時間を入力してください");
+            toast.error(t("validation.hoursRequired"));
             return params.oldValue;
           }
 
           if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
-            toast.error("時間は数値で入力してください（例: 8 または 8.5）");
+            toast.error(t("validation.hoursNumeric"));
             return params.oldValue;
           }
 
           const hours = parseFloat(value);
           if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
-            toast.error("時間は0より大きい値を入力してください");
+            toast.error(t("validation.hoursMin"));
             return params.oldValue;
           }
 
           if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
-            toast.error("時間は168以下で入力してください");
+            toast.error(t("validation.hoursMax"));
             return params.oldValue;
           }
 
@@ -257,7 +258,7 @@ export function AGGridWorkLogTable({
         },
       },
       {
-        headerName: "Project",
+        headerName: t("table.project"),
         field: batchEditingEnabled ? "projectId" : "projectName",
         width: COLUMN_WIDTHS.PROJECT,
         editable: batchEditingEnabled,
@@ -269,14 +270,14 @@ export function AGGridWorkLogTable({
           : undefined,
         valueFormatter: (params) => {
           if (batchEditingEnabled) {
-            return projectsMap.get(params.value) || "Unknown";
+            return projectsMap.get(params.value) || tCommon("unknown");
           }
           return params.value;
         },
         filter: true,
       },
       {
-        headerName: "Category",
+        headerName: t("table.category"),
         field: batchEditingEnabled ? "categoryId" : "categoryName",
         width: COLUMN_WIDTHS.CATEGORY,
         editable: batchEditingEnabled,
@@ -288,14 +289,14 @@ export function AGGridWorkLogTable({
           : undefined,
         valueFormatter: (params) => {
           if (batchEditingEnabled) {
-            return categoriesMap.get(params.value) || "Unknown";
+            return categoriesMap.get(params.value) || tCommon("unknown");
           }
           return params.value;
         },
         filter: true,
       },
       {
-        headerName: "Details",
+        headerName: t("table.details"),
         field: "details",
         flex: 1,
         editable: batchEditingEnabled,
@@ -320,7 +321,7 @@ export function AGGridWorkLogTable({
     // Add Actions column only when batch editing is disabled
     if (!batchEditingEnabled) {
       columns.push({
-        headerName: "Actions",
+        headerName: t("table.actions"),
         cellRenderer: ActionsCellRenderer,
         width: COLUMN_WIDTHS.ACTIONS,
         sortable: false,
@@ -337,6 +338,8 @@ export function AGGridWorkLogTable({
     projectsMap,
     categoriesMap,
     ActionsCellRenderer,
+    t,
+    tCommon,
   ]);
 
   // Default column properties
@@ -433,7 +436,7 @@ export function AGGridWorkLogTable({
     setIsSubmitting(true);
 
     try {
-      // バッチAPIエンドポイントを使用してトランザクション内で一括更新
+      // Use batch API endpoint for bulk update within transaction
       const updates = Array.from(pendingChanges.entries()).map(
         ([id, data]) => ({
           id,
@@ -458,7 +461,7 @@ export function AGGridWorkLogTable({
         setPendingChanges(new Map());
         setFailedWorkLogIds(new Set());
         setBatchEditingEnabled(false);
-        // データ再取得
+        // Refetch data
         onRefresh?.();
       } else {
         throw new Error(result.error?.message || "Batch update failed");

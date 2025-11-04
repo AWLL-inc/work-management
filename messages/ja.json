@@ -27,7 +27,8 @@
     "createdAt": "作成日",
     "updatedAt": "更新日",
     "active": "有効",
-    "inactive": "無効"
+    "inactive": "無効",
+    "unknown": "不明"
   },
   "nav": {
     "appTitle": "工数管理",
@@ -168,12 +169,14 @@
     },
     "validation": {
       "dateRequired": "日付は必須です",
+      "invalidDate": "有効な日付をYYYY-MM-DD形式で入力してください",
       "projectRequired": "プロジェクトは必須です",
       "categoryRequired": "カテゴリは必須です",
-      "hoursRequired": "時間は必須です",
+      "hoursRequired": "時間を入力してください",
       "hoursInvalid": "有効な時間を入力してください",
+      "hoursNumeric": "時間は数値で入力してください（例: 8 または 8.5）",
       "hoursMin": "時間は0より大きい値を入力してください",
-      "hoursMax": "時間は24時間以下で入力してください"
+      "hoursMax": "時間は168以下で入力してください"
     },
     "search": {
       "placeholder": "検索...",
@@ -189,6 +192,7 @@
       "category": "カテゴリ",
       "hours": "時間",
       "description": "説明",
+      "details": "詳細",
       "user": "ユーザー",
       "actions": "アクション",
       "noResults": "結果がありません"

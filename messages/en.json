@@ -27,7 +27,8 @@
     "createdAt": "Created At",
     "updatedAt": "Updated At",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "unknown": "Unknown"
   },
   "nav": {
     "appTitle": "Work Management",
@@ -168,12 +169,14 @@
     },
     "validation": {
       "dateRequired": "Date is required",
+      "invalidDate": "Please enter a valid date in YYYY-MM-DD format",
       "projectRequired": "Project is required",
       "categoryRequired": "Category is required",
-      "hoursRequired": "Hours is required",
+      "hoursRequired": "Please enter hours",
       "hoursInvalid": "Please enter valid hours",
+      "hoursNumeric": "Hours must be numeric (e.g., 8 or 8.5)",
       "hoursMin": "Hours must be greater than 0",
-      "hoursMax": "Hours must be 24 or less"
+      "hoursMax": "Hours must be 168 or less"
     },
     "search": {
       "placeholder": "Search...",
@@ -189,6 +192,7 @@
       "category": "Category",
       "hours": "Hours",
       "description": "Description",
+      "details": "Details",
       "user": "User",
       "actions": "Actions",
       "noResults": "No results found"

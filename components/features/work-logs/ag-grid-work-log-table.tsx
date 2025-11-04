@@ -495,7 +495,7 @@ export function AGGridWorkLogTable({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-primary mb-2">
-              Work Logs Management
+              工数管理
             </h2>
             <p className="text-muted-foreground">
               Enhanced spreadsheet-like interface for work log management
@@ -519,7 +519,7 @@ export function AGGridWorkLogTable({
                     setFormOpen(true);
                   }}
                 >
-                  Add Work Log
+                  工数を追加
                 </Button>
               </>
             ) : (
@@ -593,7 +593,7 @@ export function AGGridWorkLogTable({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Work Log</DialogTitle>
+            <DialogTitle>工数を削除</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete this work log? This action cannot
               be undone.

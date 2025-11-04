@@ -23,7 +23,7 @@ const navigationItems = [
     roles: ["user", "manager", "admin"],
   },
   {
-    name: "Work Logs",
+    name: "工数入力",
     href: "/work-logs",
     icon: ClipboardList,
     roles: ["user", "manager", "admin"],

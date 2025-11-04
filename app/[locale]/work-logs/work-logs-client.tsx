@@ -130,10 +130,10 @@ export function WorkLogsClient({
         onValueChange={handleScopeChange}
       >
         <TabsList>
-          <TabsTrigger value="own">My Work Logs</TabsTrigger>
-          <TabsTrigger value="team">Team Work Logs</TabsTrigger>
+          <TabsTrigger value="own">自分の工数</TabsTrigger>
+          <TabsTrigger value="team">チームの工数</TabsTrigger>
           {userRole === "admin" && (
-            <TabsTrigger value="all">All Work Logs</TabsTrigger>
+            <TabsTrigger value="all">全ての工数</TabsTrigger>
           )}
         </TabsList>
       </Tabs>

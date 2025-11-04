@@ -56,7 +56,9 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
   field<K extends keyof TData>(
     fieldName: K,
   ): ColumnDefBuilder<TData, TData[K]> {
+    // AG Grid's field type expects string, cast needed for type compatibility
     this.colDef.field = String(fieldName) as never;
+    // Type cast required to update TValue generic parameter while maintaining builder chain
     return this as never as ColumnDefBuilder<TData, TData[K]>;
   }
 
@@ -130,6 +132,7 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
   editable(
     enabled: boolean | ((params: { data: TData }) => boolean) = true,
   ): this {
+    // AG Grid expects generic params type, cast needed for type compatibility
     this.colDef.editable = enabled as boolean | ((params: unknown) => boolean);
     return this;
   }
@@ -161,6 +164,7 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
       params: ICellRendererParams<TData, TValue>,
     ) => string | React.JSX.Element | null,
   ): this {
+    // AG Grid's cellRenderer type is generic, cast needed for type compatibility
     this.colDef.cellRenderer = renderer as unknown;
     return this;
   }
@@ -172,6 +176,7 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
   formatter(
     formatter: (params: ValueFormatterParams<TData, TValue>) => string,
   ): this {
+    // AG Grid's valueFormatter has complex internal types, cast needed for compatibility
     this.colDef.valueFormatter = formatter as never;
     return this;
   }
@@ -181,6 +186,7 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
    * @param getter - The getter function
    */
   getter(getter: (params: ValueGetterParams<TData>) => TValue): this {
+    // AG Grid's valueGetter has complex internal types, cast needed for compatibility
     this.colDef.valueGetter = getter as never;
     return this;
   }
@@ -190,6 +196,7 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
    * @param setter - The setter function
    */
   setter(setter: (params: ValueSetterParams<TData, TValue>) => boolean): this {
+    // AG Grid's valueSetter has complex internal types, cast needed for compatibility
     this.colDef.valueSetter = setter as never;
     return this;
   }
@@ -199,6 +206,7 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
    * @param parser - The parser function
    */
   parser(parser: (params: ValueParserParams<TData, TValue>) => TValue): this {
+    // AG Grid's valueParser has complex internal types, cast needed for compatibility
     this.colDef.valueParser = parser as never;
     return this;
   }
@@ -270,6 +278,7 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
   cellClass(
     cellClass: string | ((params: { data: TData; value: TValue }) => string),
   ): this {
+    // AG Grid's cellClass accepts string or function, cast needed for union type compatibility
     this.colDef.cellClass = cellClass as string;
     return this;
   }
@@ -283,6 +292,7 @@ export class ColumnDefBuilder<TData, TValue = unknown> {
       | Record<string, string>
       | ((params: { data: TData; value: TValue }) => Record<string, string>),
   ): this {
+    // AG Grid's cellStyle accepts object or function, cast needed for union type compatibility
     this.colDef.cellStyle = cellStyle as Record<string, string>;
     return this;
   }

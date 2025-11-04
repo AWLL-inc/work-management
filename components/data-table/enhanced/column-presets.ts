@@ -176,6 +176,7 @@ export interface SelectColumnOptions<TData> {
   idField?: string;
   nameField?: string;
   hide?: boolean;
+  placeholder?: string;
 }
 
 /**
@@ -203,6 +204,7 @@ export function createSelectColumn<TData>(
     sortable = true,
     options: selectOptions,
     hide = false,
+    placeholder = "Select...",
   } = options;
 
   const optionsMap = new Map(selectOptions.map((opt) => [opt.id, opt.name]));
@@ -229,7 +231,7 @@ export function createSelectColumn<TData>(
 
   // Display name but store ID
   builder.formatter((params) => {
-    if (!params.value) return editable ? "選択してください" : "";
+    if (!params.value) return editable ? placeholder : "";
     return (
       optionsMap.get(params.value as string) || params.value?.toString() || ""
     );

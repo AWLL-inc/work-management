@@ -1,7 +1,6 @@
 "use client";
 
 import { Globe } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useState } from "react";
 import { setLocale } from "@/actions/set-locale";
@@ -16,7 +15,6 @@ import {
 
 export function LanguageSwitcher() {
   const locale = useLocale();
-  const router = useRouter();
   const [isChanging, setIsChanging] = useState(false);
 
   const handleLocaleChange = async (newLocale: string) => {
@@ -27,8 +25,8 @@ export function LanguageSwitcher() {
       // Set the locale cookie using server action
       await setLocale(newLocale);
 
-      // Refresh the page to apply the new locale
-      router.refresh();
+      // Force a full page reload to apply the new locale
+      window.location.reload();
     } catch (error) {
       console.error("Failed to change locale:", error);
       // Show error to user (you can add toast notification here if available)
@@ -37,7 +35,6 @@ export function LanguageSwitcher() {
           ? "言語の変更に失敗しました"
           : "Failed to change language",
       );
-    } finally {
       setIsChanging(false);
     }
   };
@@ -63,7 +60,6 @@ export function LanguageSwitcher() {
 
 export function LanguageSwitcherButton() {
   const locale = useLocale();
-  const router = useRouter();
   const [isChanging, setIsChanging] = useState(false);
 
   const toggleLocale = async () => {
@@ -76,8 +72,8 @@ export function LanguageSwitcherButton() {
       // Set the locale cookie using server action
       await setLocale(newLocale);
 
-      // Refresh the page to apply the new locale
-      router.refresh();
+      // Force a full page reload to apply the new locale
+      window.location.reload();
     } catch (error) {
       console.error("Failed to change locale:", error);
       // Show error to user
@@ -86,7 +82,6 @@ export function LanguageSwitcherButton() {
           ? "言語の変更に失敗しました"
           : "Failed to change language",
       );
-    } finally {
       setIsChanging(false);
     }
   };

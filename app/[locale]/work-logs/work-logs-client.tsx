@@ -7,13 +7,16 @@ import { toast } from "sonner";
 import { EnhancedWorkLogTable } from "@/components/features/work-logs/enhanced-work-log-table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import type { SanitizedUser } from "@/lib/api/users";
 
 interface WorkLogsClientProps {
   initialWorkLogs: WorkLog[];
   projects: Project[];
   categories: WorkCategory[];
+  users: SanitizedUser[];
   currentScope: "own" | "team" | "all";
   userRole: string;
+  currentUserId: string;
   onCreateWorkLog: (data: {
     date: string;
     hours: string;
@@ -39,8 +42,10 @@ export function WorkLogsClient({
   initialWorkLogs,
   projects,
   categories,
+  users,
   currentScope,
   userRole,
+  currentUserId,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -146,6 +151,9 @@ export function WorkLogsClient({
           workLogs={initialWorkLogs}
           projects={projects}
           categories={categories}
+          users={users}
+          currentUserId={currentUserId}
+          userRole={userRole}
           onCreateWorkLog={handleCreateWorkLog}
           onUpdateWorkLog={handleUpdateWorkLog}
           onDeleteWorkLog={handleDeleteWorkLog}

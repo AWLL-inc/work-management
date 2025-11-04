@@ -28,6 +28,7 @@ import {
 import { KeyboardShortcutsDialog } from "@/components/ui/keyboard-shortcuts-dialog";
 import { useLiveRegion } from "@/components/ui/live-region";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import type { SanitizedUser } from "@/lib/api/users";
 import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { useMediaQuery } from "@/lib/hooks";
 import { parseDate } from "@/lib/utils";
@@ -57,6 +58,7 @@ import {
 // Column width constants
 const COLUMN_WIDTHS = {
   DATE: 120,
+  USER: 150,
   HOURS: 100,
   PROJECT: 200,
   CATEGORY: 180,
@@ -67,6 +69,9 @@ interface EnhancedWorkLogTableProps {
   workLogs: WorkLog[];
   projects: Project[];
   categories: WorkCategory[];
+  users: SanitizedUser[];
+  currentUserId: string;
+  userRole: string;
   onCreateWorkLog: (data: {
     date: string;
     hours: string;
@@ -99,12 +104,16 @@ interface EnhancedWorkLogTableProps {
 interface WorkLogGridRow extends WorkLog {
   projectName?: string;
   categoryName?: string;
+  userName?: string;
 }
 
 export function EnhancedWorkLogTable({
   workLogs,
   projects,
   categories,
+  users,
+  currentUserId,
+  userRole,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -229,7 +238,7 @@ export function EnhancedWorkLogTable({
     [updateUrlWithFilters, debouncedFilterChange],
   );
 
-  // Create project and category lookup maps
+  // Create project, category, and user lookup maps
   const projectsMap = useMemo(() => {
     return new Map(projects.map((p) => [p.id, p.name]));
   }, [projects]);
@@ -238,7 +247,11 @@ export function EnhancedWorkLogTable({
     return new Map(categories.map((c) => [c.id, c.name]));
   }, [categories]);
 
-  // Prepare data with project and category names (deep copy to prevent mutation)
+  const usersMap = useMemo(() => {
+    return new Map(users.map((u) => [u.id, u.name || u.email]));
+  }, [users]);
+
+  // Prepare data with project, category, and user names (deep copy to prevent mutation)
   const rowData: WorkLogGridRow[] = useMemo(() => {
     return workLogs.map((workLog) => {
       // Create a deep copy to prevent external mutations affecting the grid
@@ -257,9 +270,11 @@ export function EnhancedWorkLogTable({
         projectName: projectsMap.get(workLogCopy.projectId) || "Unknown",
         categoryId: workLogCopy.categoryId || "",
         categoryName: categoriesMap.get(workLogCopy.categoryId) || "Unknown",
+        userId: workLogCopy.userId || "",
+        userName: usersMap.get(workLogCopy.userId) || "Unknown",
       };
     });
-  }, [workLogs, projectsMap, categoriesMap]);
+  }, [workLogs, projectsMap, categoriesMap, usersMap]);
 
   // AG Grid handles data management internally - no manual sync needed
 
@@ -287,6 +302,7 @@ export function EnhancedWorkLogTable({
   // Column definitions
   const columnDefs: ColDef[] = useMemo(() => {
     const columns: ColDef[] = [];
+    const isAdmin = userRole === "admin";
 
     // Add checkbox column for selection (always available)
     columns.push({
@@ -408,6 +424,58 @@ export function EnhancedWorkLogTable({
         const validation = validateDate(params.value);
         return validation.message || "";
       },
+    });
+
+    // User column - editable only for admins
+    columns.push({
+      headerName: "User",
+      field: "userId",
+      width: COLUMN_WIDTHS.USER,
+      editable: isAdmin && batchEditingEnabled,
+      cellEditor:
+        isAdmin && batchEditingEnabled ? "agSelectCellEditor" : undefined,
+      cellEditorParams:
+        isAdmin && batchEditingEnabled
+          ? {
+              values: users.map((u) => u.id),
+              formatValue: (value: string) => {
+                return usersMap.get(value) || value;
+              },
+              valueListGap: 0,
+              valueListMaxHeight: 200,
+            }
+          : undefined,
+      valueFormatter: (params) => {
+        if (isAdmin && batchEditingEnabled) {
+          // In edit mode, ensure we show the name but maintain the ID value
+          const userName = usersMap.get(params.value);
+          return userName || "ユーザーを選択してください";
+        } else {
+          // In view mode, show user name
+          return usersMap.get(params.value) || "Unknown";
+        }
+      },
+      valueGetter: (params) => {
+        // Ensure we always return the userId for editing
+        return params.data.userId;
+      },
+      valueSetter: (params) => {
+        // Ensure the userId is stored correctly
+        const { newValue } = params;
+        params.data.userId = newValue;
+        // Also update userName for consistency
+        params.data.userName = usersMap.get(newValue) || "Unknown";
+        return true;
+      },
+      cellRenderer:
+        isAdmin && batchEditingEnabled
+          ? undefined
+          : (params: ICellRendererParams) => {
+              // In view mode, show user name
+              return usersMap.get(params.value) || "Unknown";
+            },
+      cellClass: !isAdmin ? "cell-readonly" : "",
+      tooltipValueGetter: !isAdmin ? () => "管理者のみ編集可能" : undefined,
     });
 
     columns.push({
@@ -587,8 +655,11 @@ export function EnhancedWorkLogTable({
     batchEditingEnabled,
     projects,
     categories,
+    users,
     projectsMap,
     categoriesMap,
+    usersMap,
+    userRole,
     ActionsCellRenderer,
     isMobile,
     isTablet,
@@ -662,7 +733,8 @@ export function EnhancedWorkLogTable({
         details: "",
         createdAt: new Date(),
         updatedAt: new Date(),
-        userId: "", // Will be set by backend
+        userId: currentUserId, // Default to logged-in user
+        userName: usersMap.get(currentUserId) || "Unknown",
       };
 
       // AG Grid standard: Add row using applyTransaction
@@ -684,7 +756,7 @@ export function EnhancedWorkLogTable({
         }, 100);
       }
     },
-    [batchEditingEnabled, gridApi, announce],
+    [batchEditingEnabled, gridApi, announce, currentUserId, usersMap],
   );
 
   // Handle row updates
@@ -801,16 +873,18 @@ export function EnhancedWorkLogTable({
 
       if (!field) return;
 
-      // Update related fields for consistency (project/category names)
+      // Update related fields for consistency (project/category/user names)
       if (field === "projectId") {
         data.projectName = projectsMap.get(newValue) || "Unknown";
       } else if (field === "categoryId") {
         data.categoryName = categoriesMap.get(newValue) || "Unknown";
+      } else if (field === "userId") {
+        data.userName = usersMap.get(newValue) || "Unknown";
       }
 
       // AG Grid handles the data internally - no manual state sync needed
     },
-    [projectsMap, categoriesMap],
+    [projectsMap, categoriesMap, usersMap],
   );
 
   // AG Grid standard: Minimal cell editing start handler
@@ -862,6 +936,18 @@ export function EnhancedWorkLogTable({
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidPattern.test(data.categoryId)) {
         errors.push("有効なカテゴリを選択してください");
+      }
+    }
+
+    // Validate userId (required)
+    if (!data.userId || data.userId.trim() === "") {
+      errors.push("ユーザーを選択してください");
+    } else {
+      // Check if it's a valid UUID format (basic check)
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidPattern.test(data.userId)) {
+        errors.push("有効なユーザーを選択してください");
       }
     }
 
@@ -1179,8 +1265,8 @@ export function EnhancedWorkLogTable({
           onFiltersChange={handleFiltersChange}
           projects={projects}
           categories={categories}
-          // users={users} // Will be added when user API is available
-          showUserFilter={false} // Will be true when user role checking is implemented
+          users={users}
+          showUserFilter={userRole === "admin"}
           onApplyFilters={() => {
             if (onFilterChange) {
               const apiFilters: GetWorkLogsOptions = {

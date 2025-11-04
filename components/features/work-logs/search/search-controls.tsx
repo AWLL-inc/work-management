@@ -13,7 +13,8 @@ import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Project, User, WorkCategory } from "@/drizzle/schema";
+import type { Project, WorkCategory } from "@/drizzle/schema";
+import type { SanitizedUser } from "@/lib/api/users";
 import { CategoryIncrementalSearch } from "./category-incremental-search";
 import { DateRangePicker } from "./date-range-picker";
 import { ProjectIncrementalSearch } from "./project-incremental-search";
@@ -36,7 +37,7 @@ interface SearchControlsProps {
   onFiltersChange: (filters: SearchFilters) => void;
   projects: Project[];
   categories: WorkCategory[];
-  users?: User[];
+  users?: SanitizedUser[];
   showUserFilter?: boolean;
   onApplyFilters?: () => void;
   onClearFilters?: () => void;

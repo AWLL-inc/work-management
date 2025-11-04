@@ -4,6 +4,7 @@ import { teamMembers } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
 import { getAllProjects } from "@/lib/db/repositories/project-repository";
+import { getAllUsers } from "@/lib/db/repositories/user-repository";
 import { getAllWorkCategories } from "@/lib/db/repositories/work-category-repository";
 import {
   createWorkLog as createWorkLogRepo,
@@ -71,13 +72,26 @@ export default async function WorkLogsPage({
   }
 
   // Server-side data fetching
-  const [workLogsResult, projects, categories] = await Promise.all([
+  const [workLogsResult, projects, categories, users] = await Promise.all([
     getWorkLogsRepo(options),
     getAllProjects({ activeOnly: true }),
     getAllWorkCategories({ activeOnly: true }),
+    getAllUsers(),
   ]);
 
   const workLogs = workLogsResult.data;
+
+  // Sanitize users data (remove password hashes)
+  const sanitizedUsers = users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    emailVerified: user.emailVerified,
+    image: user.image,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  }));
 
   // Server Actions wrapped in async functions
   const handleCreateWorkLog = async (data: {
@@ -136,8 +150,10 @@ export default async function WorkLogsPage({
       initialWorkLogs={workLogs}
       projects={projects}
       categories={categories}
+      users={sanitizedUsers}
       currentScope={scope as "own" | "team" | "all"}
       userRole={session.user.role}
+      currentUserId={session.user.id}
       onCreateWorkLog={handleCreateWorkLog}
       onUpdateWorkLog={handleUpdateWorkLog}
       onDeleteWorkLog={handleDeleteWorkLog}

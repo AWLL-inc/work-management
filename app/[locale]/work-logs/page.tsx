@@ -100,13 +100,25 @@ export default async function WorkLogsPage({
     projectId: string;
     categoryId: string;
     details?: string;
+    userId?: string;
   }) => {
     "use server";
     const session = await getAuthenticatedSession();
     if (!session) throw new Error("Unauthorized");
 
+    // Only admins can create work logs for other users
+    let targetUserId = session.user.id;
+    if (data.userId && data.userId !== session.user.id) {
+      if (session.user.role !== "admin") {
+        throw new Error(
+          "Forbidden: Only admins can create work logs for other users",
+        );
+      }
+      targetUserId = data.userId;
+    }
+
     await createWorkLogRepo({
-      userId: session.user.id,
+      userId: targetUserId,
       date: new Date(data.date),
       hours: data.hours,
       projectId: data.projectId,
@@ -124,9 +136,20 @@ export default async function WorkLogsPage({
       projectId?: string;
       categoryId?: string;
       details?: string | null;
+      userId?: string;
     },
   ) => {
     "use server";
+    const session = await getAuthenticatedSession();
+    if (!session) throw new Error("Unauthorized");
+
+    // Only admins can change the user of a work log
+    if (data.userId && data.userId !== session.user.id) {
+      if (session.user.role !== "admin") {
+        throw new Error("Forbidden: Only admins can change work log user");
+      }
+    }
+
     await updateWorkLogRepo(id, {
       ...data,
       date: data.date ? new Date(data.date) : undefined,

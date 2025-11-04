@@ -1,10 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { ZodError } from "zod";
+import { ZodError, z } from "zod";
 import { auth } from "@/lib/auth";
 import { getAllUsers } from "@/lib/db/repositories/user-repository";
 
-// Use Node.js runtime for database operations
+// Use Node.js runtime for database operations with Drizzle ORM
+// Edge runtime does not support all Drizzle ORM features required for database operations
 export const runtime = "nodejs";
+
+/**
+ * Query parameters schema for GET /api/users
+ */
+const getUsersQuerySchema = z.object({
+  activeOnly: z.enum(["true", "false"]).optional(),
+});
 
 /**
  * List all users
@@ -14,8 +22,29 @@ export const runtime = "nodejs";
  * @auth bearer
  * @openapi
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
+    // Validate query parameters
+    const { searchParams } = new URL(request.url);
+    const queryParams = {
+      activeOnly: searchParams.get("activeOnly"),
+    };
+
+    const validatedParams = getUsersQuerySchema.safeParse(queryParams);
+    if (!validatedParams.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid query parameters",
+            details: validatedParams.error.issues,
+          },
+        },
+        { status: 400 },
+      );
+    }
+
     // Check if authentication is disabled for development
     const isDevelopmentMode = process.env.NODE_ENV === "development";
     const isAuthDisabled = process.env.DISABLE_AUTH === "true";
@@ -41,8 +70,11 @@ export async function GET(_request: NextRequest) {
       }
     }
 
-    // Get all users from repository
-    const usersList = await getAllUsers();
+    // Parse activeOnly parameter
+    const activeOnly = validatedParams.data.activeOnly === "true";
+
+    // Get users from repository
+    const usersList = await getAllUsers({ activeOnly });
 
     // Remove sensitive information (password hashes) before sending response
     const sanitizedUsers = usersList.map((user) => ({

@@ -33,6 +33,7 @@ import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { useMediaQuery } from "@/lib/hooks";
 import { parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
+import { validateUUID } from "@/lib/validations/common";
 import { CustomDateEditor } from "./custom-date-editor";
 import { SearchControls } from "./search/search-controls";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
@@ -917,38 +918,20 @@ export function EnhancedWorkLogTable({
       }
     }
 
-    if (!data.projectId || data.projectId.trim() === "") {
-      errors.push("プロジェクトを選択してください");
-    } else {
-      // Check if it's a valid UUID format (basic check)
-      const uuidPattern =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidPattern.test(data.projectId)) {
-        errors.push("有効なプロジェクトを選択してください");
-      }
+    // Validate UUIDs using common validation function
+    const projectValidation = validateUUID(data.projectId, "プロジェクト");
+    if (!projectValidation.valid) {
+      errors.push(projectValidation.message);
     }
 
-    if (!data.categoryId || data.categoryId.trim() === "") {
-      errors.push("カテゴリを選択してください");
-    } else {
-      // Check if it's a valid UUID format (basic check)
-      const uuidPattern =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidPattern.test(data.categoryId)) {
-        errors.push("有効なカテゴリを選択してください");
-      }
+    const categoryValidation = validateUUID(data.categoryId, "カテゴリ");
+    if (!categoryValidation.valid) {
+      errors.push(categoryValidation.message);
     }
 
-    // Validate userId (required)
-    if (!data.userId || data.userId.trim() === "") {
-      errors.push("ユーザーを選択してください");
-    } else {
-      // Check if it's a valid UUID format (basic check)
-      const uuidPattern =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidPattern.test(data.userId)) {
-        errors.push("有効なユーザーを選択してください");
-      }
+    const userValidation = validateUUID(data.userId, "ユーザー");
+    if (!userValidation.valid) {
+      errors.push(userValidation.message);
     }
 
     // Check details length if provided

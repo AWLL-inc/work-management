@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useOptimistic, useTransition } from "react";
 import { toast } from "sonner";
 import { EnhancedWorkLogTable } from "@/components/features/work-logs/enhanced-work-log-table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,7 +53,32 @@ export function WorkLogsClient({
 }: WorkLogsClientProps) {
   const t = useTranslations("workLogs");
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  // Optimistic state for work logs
+  const [optimisticWorkLogs, updateOptimisticWorkLogs] = useOptimistic(
+    initialWorkLogs,
+    (
+      state,
+      action:
+        | { type: "create"; log: WorkLog }
+        | { type: "update"; id: string; data: Partial<WorkLog> }
+        | { type: "delete"; id: string },
+    ) => {
+      switch (action.type) {
+        case "create":
+          return [...state, action.log];
+        case "update":
+          return state.map((log) =>
+            log.id === action.id ? { ...log, ...action.data } : log,
+          );
+        case "delete":
+          return state.filter((log) => log.id !== action.id);
+        default:
+          return state;
+      }
+    },
+  );
 
   const handleScopeChange = (newScope: string) => {
     router.push(`/work-logs?scope=${newScope}`);
@@ -66,18 +91,31 @@ export function WorkLogsClient({
     categoryId: string;
     details?: string;
   }) => {
-    try {
-      setIsLoading(true);
-      await onCreateWorkLog(data);
-      toast.success(t("messages.created"));
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("messages.createError"),
-      );
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    // Create optimistic work log
+    const optimisticLog: WorkLog = {
+      id: `temp-${Date.now()}`,
+      userId: currentUserId,
+      date: new Date(data.date),
+      hours: data.hours,
+      projectId: data.projectId,
+      categoryId: data.categoryId,
+      details: data.details || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    startTransition(async () => {
+      try {
+        updateOptimisticWorkLogs({ type: "create", log: optimisticLog });
+        await onCreateWorkLog(data);
+        toast.success(t("messages.created"));
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : t("messages.createError"),
+        );
+        throw error;
+      }
+    });
   };
 
   const handleUpdateWorkLog = async (
@@ -90,43 +128,47 @@ export function WorkLogsClient({
       details?: string | null;
     },
   ) => {
-    try {
-      setIsLoading(true);
-      await onUpdateWorkLog(id, data);
-      toast.success(t("messages.updated"));
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("messages.updateError"),
-      );
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    const optimisticData: Partial<WorkLog> = {
+      ...data,
+      date: data.date ? new Date(data.date) : undefined,
+      updatedAt: new Date(),
+    };
+
+    startTransition(async () => {
+      try {
+        updateOptimisticWorkLogs({ type: "update", id, data: optimisticData });
+        await onUpdateWorkLog(id, data);
+        toast.success(t("messages.updated"));
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : t("messages.updateError"),
+        );
+        throw error;
+      }
+    });
   };
 
   const handleDeleteWorkLog = async (id: string) => {
-    try {
-      setIsLoading(true);
-      await onDeleteWorkLog(id);
-      toast.success(t("messages.deleted"));
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : t("messages.deleteError"),
-      );
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+    startTransition(async () => {
+      try {
+        updateOptimisticWorkLogs({ type: "delete", id });
+        await onDeleteWorkLog(id);
+        toast.success(t("messages.deleted"));
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : t("messages.deleteError"),
+        );
+        throw error;
+      }
+    });
   };
 
-  const handleRefresh = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  // React Compiler will automatically memoize this function
+  const handleRefresh = async () => {
+    startTransition(async () => {
       await onRefresh();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onRefresh]);
+    });
+  };
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] px-4 sm:px-0 space-y-6">
@@ -148,7 +190,7 @@ export function WorkLogsClient({
       {/* Work Log Table - Takes remaining height */}
       <div className="flex-1 min-h-0">
         <EnhancedWorkLogTable
-          workLogs={initialWorkLogs}
+          workLogs={optimisticWorkLogs}
           projects={projects}
           categories={categories}
           users={users}
@@ -159,7 +201,7 @@ export function WorkLogsClient({
           onDeleteWorkLog={handleDeleteWorkLog}
           onRefresh={handleRefresh}
           onFilterChange={() => {}}
-          isLoading={isLoading}
+          isLoading={isPending}
         />
       </div>
     </div>

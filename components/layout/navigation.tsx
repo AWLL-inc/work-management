@@ -83,7 +83,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
                   <ClipboardList className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <span className="text-xl font-bold text-foreground">
-                  Work Management
+                  工数管理
                 </span>
               </Link>
             </div>

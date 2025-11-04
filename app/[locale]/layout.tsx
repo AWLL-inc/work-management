@@ -21,7 +21,7 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
-  title: "Work Management",
+  title: "工数管理",
   description: "Modern work management application with Next.js",
 };
 

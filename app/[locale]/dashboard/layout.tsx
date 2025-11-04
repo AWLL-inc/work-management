@@ -11,7 +11,7 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside className="w-64 border-r bg-card min-h-screen">
         <div className="p-6">
-          <h2 className="text-lg font-semibold">Work Management</h2>
+          <h2 className="text-lg font-semibold">工数管理</h2>
         </div>
         <nav className="px-4 space-y-2">
           <Link href="/dashboard">

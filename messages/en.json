@@ -27,16 +27,19 @@
     "createdAt": "Created At",
     "updatedAt": "Updated At",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "unknown": "Unknown"
   },
   "nav": {
+    "appTitle": "Work Management",
     "dashboard": "Dashboard",
     "workLogs": "Work Logs",
     "admin": "Admin",
     "projects": "Projects",
-    "workCategories": "Work Categories",
+    "categories": "Categories",
     "signOut": "Sign Out",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "logout": "Logout"
   },
   "home": {
     "title": "Work Management",
@@ -85,6 +88,11 @@
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "View work time trends and analysis",
+    "personalSubtitle": "Visualize work hours consumption",
+    "loading": "Loading...",
+    "unknownError": "Unknown error",
+    "lastUpdated": "Last updated",
+    "autoRefreshInterval": "(Auto-refresh every 30 seconds)",
     "workHoursChart": "Work Hours Chart",
     "userView": "By User",
     "projectView": "By Project",
@@ -127,10 +135,67 @@
     }
   },
   "workLogs": {
-    "title": "Work Logs",
-    "addNew": "Add New Work Log",
+    "title": "Work Logs Management",
+    "subtitle": "Enhanced spreadsheet-like interface for work log management",
+    "addNew": "Add Work Log",
     "editTitle": "Edit Work Log",
     "createTitle": "Create Work Log",
+    "deleteTitle": "Delete Work Log",
+    "deleteConfirmation": "Are you sure you want to delete this work log? This action cannot be undone.",
+    "tabs": {
+      "own": "My Work Logs",
+      "team": "Team Work Logs",
+      "all": "All Work Logs"
+    },
+    "batchEdit": "Batch Edit",
+    "batchSave": "Save ({count})",
+    "saving": "Saving...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirmCancel": "Discard unsaved changes?",
+    "unsavedChanges": "You have {count} unsaved changes. Canceling will discard these changes.",
+    "continueEditing": "Continue Editing",
+    "discardChanges": "Discard Changes",
+    "noChanges": "No changes to save",
+    "loading": "Loading work logs...",
+    "toolbar": {
+      "addRow": "Add Row",
+      "addRowTooltip": "Add a new row at the top",
+      "duplicateRow": "Duplicate Row",
+      "duplicateRowTooltip": "Duplicate selected rows",
+      "deleteRow": "Delete Row",
+      "deleteRowTooltip": "Delete selected rows",
+      "selectRowsToDelete": "Please select rows",
+      "undo": "Undo",
+      "undoTooltip": "Undo the last edit",
+      "redo": "Redo",
+      "redoTooltip": "Redo the undone edit",
+      "searchPlaceholder": "Search...",
+      "filter": "Filter",
+      "filterTooltip": "Open/close filter panel",
+      "keyboardShortcuts": "Keyboard Shortcuts",
+      "keyboardShortcutsLabel": "Show keyboard shortcuts",
+      "batchEditModeRequired": "Available in batch edit mode",
+      "shortcut": "Shortcut",
+      "rowsSelected": "{count} rows selected",
+      "enableBatchEdit": "Enable batch edit mode",
+      "addWorkLog": "Add",
+      "addWorkLogTooltip": "Add a new work log",
+      "saveChanges": "Save changes",
+      "cancelEditing": "Cancel editing",
+      "shortcuts": {
+        "copy": "Copy cell",
+        "paste": "Paste to cell",
+        "addRow": "Add new row",
+        "duplicateRow": "Duplicate row",
+        "deleteRow": "Delete selected rows",
+        "undo": "Undo",
+        "redo": "Redo",
+        "doubleClick": "Double click",
+        "editCell": "Edit cell",
+        "confirmEdit": "Confirm edit"
+      }
+    },
     "fields": {
       "date": "Date",
       "project": "Project",
@@ -148,12 +213,14 @@
     },
     "validation": {
       "dateRequired": "Date is required",
+      "invalidDate": "Please enter a valid date in YYYY-MM-DD format",
       "projectRequired": "Project is required",
       "categoryRequired": "Category is required",
-      "hoursRequired": "Hours is required",
+      "hoursRequired": "Please enter hours",
       "hoursInvalid": "Please enter valid hours",
+      "hoursNumeric": "Hours must be numeric (e.g., 8 or 8.5)",
       "hoursMin": "Hours must be greater than 0",
-      "hoursMax": "Hours must be 24 or less"
+      "hoursMax": "Hours must be 168 or less"
     },
     "search": {
       "placeholder": "Search...",
@@ -161,7 +228,29 @@
       "users": "Users",
       "dateRange": "Date Range",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "selectedFilters": "Selected Filters:",
+      "clearAll": "Clear All",
+      "apply": "Apply",
+      "clear": "Clear",
+      "clearDate": "Clear Date",
+      "searchProjects": "Search projects",
+      "searchCategories": "Search categories",
+      "searchUser": "Search by username or email...",
+      "noProjectsFound": "No projects found",
+      "noCategoriesFound": "No categories found",
+      "noUsersFound": "No users found",
+      "loadingProjects": "Loading projects...",
+      "loadingCategories": "Loading categories...",
+      "noneSelected": "None selected",
+      "projectSelection": "Project Selection",
+      "categorySelection": "Category Selection",
+      "closeProjectSelection": "Close project selection",
+      "closeCategorySelection": "Close category selection",
+      "dateRangeError": {
+        "startAfterEnd": "Start date must be before or equal to end date",
+        "endBeforeStart": "End date must be after or equal to start date"
+      }
     },
     "table": {
       "date": "Date",
@@ -169,6 +258,7 @@
       "category": "Category",
       "hours": "Hours",
       "description": "Description",
+      "details": "Details",
       "user": "User",
       "actions": "Actions",
       "noResults": "No results found"
@@ -179,7 +269,14 @@
       "deleted": "Work log deleted successfully",
       "createError": "Failed to create work log",
       "updateError": "Failed to update work log",
-      "deleteError": "Failed to delete work log"
+      "deleteError": "Failed to delete work log",
+      "batchSaved": "Saved {count} changes successfully",
+      "batchSaveError": "Failed to save changes"
+    },
+    "buttons": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting..."
     }
   },
   "admin": {

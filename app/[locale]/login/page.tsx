@@ -57,7 +57,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 p-8 bg-card rounded-lg border border-border shadow-md">
         <div>
           <h2 className="text-center text-3xl font-bold text-foreground">
-            Work Management
+            工数管理
           </h2>
           <p className="mt-2 text-center text-sm text-muted-foreground">
             Sign in to your account

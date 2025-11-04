@@ -129,7 +129,8 @@
       "WebFetch(domain:github.com)",
       "Bash(DISABLE_AUTH=false pnpm run:*)",
       "Bash(pnpm run test:coverage:*)",
-      "Bash(pnpm biome:*)"
+      "Bash(pnpm biome:*)",
+      "Bash(pnpm type-check)"
     ],
     "deny": [],
     "ask": []

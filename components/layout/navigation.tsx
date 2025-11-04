@@ -2,6 +2,7 @@
 
 import { ClipboardList, FolderKanban, LogOut, Tags } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { logoutAction } from "@/app/logout/actions";
 import { Button } from "@/components/ui/button";
@@ -15,38 +16,39 @@ interface NavigationProps {
   userRole?: string;
 }
 
-const navigationItems = [
-  {
-    name: "Dashboard",
-    href: "/dashboard",
-    icon: ClipboardList,
-    roles: ["user", "manager", "admin"],
-  },
-  {
-    name: "Work Logs",
-    href: "/work-logs",
-    icon: ClipboardList,
-    roles: ["user", "manager", "admin"],
-  },
-];
-
-const adminItems = [
-  {
-    name: "Projects",
-    href: "/admin/projects",
-    icon: FolderKanban,
-  },
-  {
-    name: "Categories",
-    href: "/admin/work-categories",
-    icon: Tags,
-  },
-];
-
 export function Navigation({ userEmail, userRole }: NavigationProps) {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const isAdmin = userRole === "admin";
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const navigationItems = [
+    {
+      name: t("dashboard"),
+      href: "/dashboard",
+      icon: ClipboardList,
+      roles: ["user", "manager", "admin"],
+    },
+    {
+      name: t("workLogs"),
+      href: "/work-logs",
+      icon: ClipboardList,
+      roles: ["user", "manager", "admin"],
+    },
+  ];
+
+  const adminItems = [
+    {
+      name: t("projects"),
+      href: "/admin/projects",
+      icon: FolderKanban,
+    },
+    {
+      name: t("categories"),
+      href: "/admin/work-categories",
+      icon: Tags,
+    },
+  ];
 
   async function handleLogout() {
     try {
@@ -83,7 +85,7 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
                   <ClipboardList className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <span className="text-xl font-bold text-foreground">
-                  Work Management
+                  {t("appTitle")}
                 </span>
               </Link>
             </div>
@@ -156,10 +158,10 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
               size="sm"
               onClick={handleLogout}
               disabled={isLoggingOut}
-              aria-label="Logout"
+              aria-label={t("logout")}
             >
               <LogOut className="w-4 h-4 mr-2" />
-              {isLoggingOut ? "Logging out..." : "Logout"}
+              {isLoggingOut ? `${t("logout")}...` : t("logout")}
             </Button>
           </div>
         </div>

@@ -226,9 +226,6 @@ export function EnhancedProjectTable({
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Projects</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage project master data with enhanced AG Grid
-            </p>
           </div>
           <Button
             variant="outline"
@@ -254,7 +251,7 @@ export function EnhancedProjectTable({
           batchEditingEnabled={false}
           enableQuickFilter={true}
           enableFloatingFilter={true}
-          enableFilterToolPanel={true}
+          enableFilterToolPanel={false}
           gridOptions={{
             rowSelection: "single",
             suppressRowClickSelection: true,

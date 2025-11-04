@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import type { Project } from "@/drizzle/schema";
@@ -19,8 +20,9 @@ export function ProjectIncrementalSearch({
   selectedProjectIds,
   onSelectionChange,
   className,
-  placeholder = "プロジェクトを検索",
+  placeholder,
 }: ProjectIncrementalSearchProps) {
+  const t = useTranslations("workLogs");
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -81,7 +83,7 @@ export function ProjectIncrementalSearch({
       {/* Search Input */}
       <div className="relative">
         <Input
-          placeholder={placeholder}
+          placeholder={placeholder || t("search.searchProjects")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={handleInputFocus}
@@ -154,8 +156,8 @@ export function ProjectIncrementalSearch({
             ) : (
               <div className="p-4 text-center text-sm text-muted-foreground">
                 {searchQuery
-                  ? "該当するプロジェクトが見つかりません"
-                  : "プロジェクトを読み込み中..."}
+                  ? t("search.noProjectsFound")
+                  : t("search.loadingProjects")}
               </div>
             )}
           </div>

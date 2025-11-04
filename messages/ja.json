@@ -27,16 +27,19 @@
     "createdAt": "作成日",
     "updatedAt": "更新日",
     "active": "有効",
-    "inactive": "無効"
+    "inactive": "無効",
+    "unknown": "不明"
   },
   "nav": {
+    "appTitle": "工数管理",
     "dashboard": "ダッシュボード",
-    "workLogs": "作業ログ",
+    "workLogs": "工数入力",
     "admin": "管理",
     "projects": "プロジェクト",
-    "workCategories": "作業カテゴリ",
-    "signOut": "サインアウト",
-    "signIn": "サインイン"
+    "categories": "カテゴリ",
+    "signOut": "ログアウト",
+    "signIn": "ログイン",
+    "logout": "ログアウト"
   },
   "home": {
     "title": "Work Management",
@@ -85,6 +88,11 @@
   "dashboard": {
     "title": "ダッシュボード",
     "subtitle": "作業時間の傾向と分析を確認できます",
+    "personalSubtitle": "工数消化状況の可視化",
+    "loading": "読み込み中...",
+    "unknownError": "不明なエラー",
+    "lastUpdated": "最終更新",
+    "autoRefreshInterval": "(30秒ごとに自動更新)",
     "workHoursChart": "作業時間チャート",
     "userView": "ユーザー別",
     "projectView": "プロジェクト別",
@@ -127,10 +135,67 @@
     }
   },
   "workLogs": {
-    "title": "作業ログ",
-    "addNew": "新しい作業ログを追加",
+    "title": "工数管理",
+    "subtitle": "Enhanced spreadsheet-like interface for work log management",
+    "addNew": "工数を追加",
     "editTitle": "作業ログを編集",
     "createTitle": "作業ログを作成",
+    "deleteTitle": "工数を削除",
+    "deleteConfirmation": "Are you sure you want to delete this work log? This action cannot be undone.",
+    "tabs": {
+      "own": "自分の工数",
+      "team": "チームの工数",
+      "all": "全ての工数"
+    },
+    "batchEdit": "一括編集",
+    "batchSave": "保存 ({count}件)",
+    "saving": "保存中...",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "confirmCancel": "未保存の変更を破棄しますか？",
+    "unsavedChanges": "{count}件の未保存の変更があります。キャンセルすると、これらの変更は失われます。",
+    "continueEditing": "編集を継続",
+    "discardChanges": "変更を破棄",
+    "noChanges": "変更がありません",
+    "loading": "Loading work logs...",
+    "toolbar": {
+      "addRow": "行追加",
+      "addRowTooltip": "新しい行を先頭に追加します",
+      "duplicateRow": "行複製",
+      "duplicateRowTooltip": "選択された行を複製します",
+      "deleteRow": "行削除",
+      "deleteRowTooltip": "選択された行を削除します",
+      "selectRowsToDelete": "行を選択してください",
+      "undo": "元に戻す",
+      "undoTooltip": "直前の編集を元に戻します",
+      "redo": "やり直し",
+      "redoTooltip": "元に戻した編集を再実行します",
+      "searchPlaceholder": "検索...",
+      "filter": "フィルター",
+      "filterTooltip": "詳細フィルターパネルを開く/閉じる",
+      "keyboardShortcuts": "キーボードショートカット",
+      "keyboardShortcutsLabel": "キーボードショートカットを表示",
+      "batchEditModeRequired": "一括編集モードで利用可能",
+      "shortcut": "ショートカット",
+      "rowsSelected": "{count}行選択中",
+      "enableBatchEdit": "一括編集モードを有効にします",
+      "addWorkLog": "追加",
+      "addWorkLogTooltip": "新しい作業ログを追加します",
+      "saveChanges": "編集内容を保存します",
+      "cancelEditing": "編集をキャンセルします",
+      "shortcuts": {
+        "copy": "セルをコピー",
+        "paste": "セルにペースト",
+        "addRow": "新しい行を追加",
+        "duplicateRow": "行を複製",
+        "deleteRow": "選択行を削除",
+        "undo": "元に戻す",
+        "redo": "やり直し",
+        "doubleClick": "ダブルクリック",
+        "editCell": "セルを編集",
+        "confirmEdit": "編集を確定"
+      }
+    },
     "fields": {
       "date": "日付",
       "project": "プロジェクト",
@@ -148,12 +213,14 @@
     },
     "validation": {
       "dateRequired": "日付は必須です",
+      "invalidDate": "有効な日付をYYYY-MM-DD形式で入力してください",
       "projectRequired": "プロジェクトは必須です",
       "categoryRequired": "カテゴリは必須です",
-      "hoursRequired": "時間は必須です",
+      "hoursRequired": "時間を入力してください",
       "hoursInvalid": "有効な時間を入力してください",
+      "hoursNumeric": "時間は数値で入力してください（例: 8 または 8.5）",
       "hoursMin": "時間は0より大きい値を入力してください",
-      "hoursMax": "時間は24時間以下で入力してください"
+      "hoursMax": "時間は168以下で入力してください"
     },
     "search": {
       "placeholder": "検索...",
@@ -161,7 +228,29 @@
       "users": "ユーザー",
       "dateRange": "期間",
       "from": "開始日",
-      "to": "終了日"
+      "to": "終了日",
+      "selectedFilters": "選択中の条件:",
+      "clearAll": "すべて解除",
+      "apply": "適用",
+      "clear": "クリア",
+      "clearDate": "日付をクリア",
+      "searchProjects": "プロジェクトを検索",
+      "searchCategories": "カテゴリを検索",
+      "searchUser": "ユーザー名またはメールアドレスで検索...",
+      "noProjectsFound": "該当するプロジェクトが見つかりません",
+      "noCategoriesFound": "該当するカテゴリが見つかりません",
+      "noUsersFound": "ユーザーが見つかりませんでした",
+      "loadingProjects": "プロジェクトを読み込み中...",
+      "loadingCategories": "カテゴリを読み込み中...",
+      "noneSelected": "選択なし",
+      "projectSelection": "プロジェクト選択",
+      "categorySelection": "カテゴリ選択",
+      "closeProjectSelection": "プロジェクト選択を閉じる",
+      "closeCategorySelection": "カテゴリ選択を閉じる",
+      "dateRangeError": {
+        "startAfterEnd": "開始日は終了日以前を選択してください",
+        "endBeforeStart": "終了日は開始日以降を選択してください"
+      }
     },
     "table": {
       "date": "日付",
@@ -169,17 +258,25 @@
       "category": "カテゴリ",
       "hours": "時間",
       "description": "説明",
+      "details": "詳細",
       "user": "ユーザー",
       "actions": "アクション",
       "noResults": "結果がありません"
     },
     "messages": {
-      "created": "作業ログが作成されました",
-      "updated": "作業ログが更新されました",
-      "deleted": "作業ログが削除されました",
-      "createError": "作業ログの作成に失敗しました",
-      "updateError": "作業ログの更新に失敗しました",
-      "deleteError": "作業ログの削除に失敗しました"
+      "created": "Work log created successfully",
+      "updated": "Work log updated successfully",
+      "deleted": "Work log deleted successfully",
+      "createError": "Failed to create work log",
+      "updateError": "Failed to update work log",
+      "deleteError": "Failed to delete work log",
+      "batchSaved": "{count}件の変更を保存しました",
+      "batchSaveError": "保存に失敗しました"
+    },
+    "buttons": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting..."
     }
   },
   "admin": {

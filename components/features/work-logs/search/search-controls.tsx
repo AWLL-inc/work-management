@@ -8,6 +8,7 @@ import {
   User as UserIcon,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,8 @@ export const SearchControls = memo(
     isLoading = false,
     className,
   }: SearchControlsProps) {
+    const t = useTranslations("workLogs");
+
     const hasActiveFilters =
       filters.dateRange.from ||
       filters.dateRange.to ||
@@ -128,7 +131,9 @@ export const SearchControls = memo(
           {/* Selected Items Display */}
           {hasActiveFilters && (
             <div className="mb-4 p-3 bg-muted/50 rounded-md">
-              <div className="text-sm font-medium mb-2">選択中の条件:</div>
+              <div className="text-sm font-medium mb-2">
+                {t("search.selectedFilters")}
+              </div>
               <div className="flex flex-wrap gap-1">
                 {/* Date Range */}
                 {filters.dateRange.from && (
@@ -198,7 +203,7 @@ export const SearchControls = memo(
                   className="text-xs text-destructive h-6 px-2"
                 >
                   <X className="h-3 w-3 mr-1" />
-                  すべて解除
+                  {t("search.clearAll")}
                 </Button>
               </div>
             </div>
@@ -260,7 +265,7 @@ export const SearchControls = memo(
                   {isLoading && (
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  適用
+                  {t("search.apply")}
                 </Button>
               )}
 
@@ -272,7 +277,7 @@ export const SearchControls = memo(
                   className="min-w-[80px]"
                 >
                   <X className="mr-2 h-4 w-4" />
-                  クリア
+                  {t("search.clear")}
                 </Button>
               )}
             </div>
@@ -282,7 +287,7 @@ export const SearchControls = memo(
     );
   },
   (prevProps, nextProps) => {
-    // カスタム等価性チェック
+    // Custom equality check
     return (
       JSON.stringify(prevProps.filters) === JSON.stringify(nextProps.filters) &&
       prevProps.isLoading === nextProps.isLoading &&

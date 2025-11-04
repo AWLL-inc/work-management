@@ -15,6 +15,7 @@ import type {
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,8 @@ export function AGGridWorkLogTable({
   onRefresh,
   isLoading,
 }: AGGridWorkLogTableProps) {
+  const t = useTranslations("workLogs");
+  const tCommon = useTranslations("common");
   const [formOpen, setFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
@@ -125,50 +128,53 @@ export function AGGridWorkLogTable({
   const rowData: WorkLogGridRow[] = useMemo(() => {
     return workLogs.map((workLog) => ({
       ...workLog,
-      projectName: projectsMap.get(workLog.projectId) || "Unknown",
-      categoryName: categoriesMap.get(workLog.categoryId) || "Unknown",
+      projectName: projectsMap.get(workLog.projectId) || tCommon("unknown"),
+      categoryName: categoriesMap.get(workLog.categoryId) || tCommon("unknown"),
     }));
-  }, [workLogs, projectsMap, categoriesMap]);
+  }, [workLogs, projectsMap, categoriesMap, tCommon]);
 
   // Actions cell renderer
-  const ActionsCellRenderer = useCallback((params: { data: WorkLog }) => {
-    const onEdit = () => {
-      setSelectedWorkLog(params.data);
-      setFormOpen(true);
-    };
+  const ActionsCellRenderer = useCallback(
+    (params: { data: WorkLog }) => {
+      const onEdit = () => {
+        setSelectedWorkLog(params.data);
+        setFormOpen(true);
+      };
 
-    const onDelete = () => {
-      setSelectedWorkLog(params.data);
-      setDeleteDialogOpen(true);
-    };
+      const onDelete = () => {
+        setSelectedWorkLog(params.data);
+        setDeleteDialogOpen(true);
+      };
 
-    return (
-      <div className="flex gap-2 h-full items-center">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEdit}
-          className="h-7 px-2"
-        >
-          Edit
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={onDelete}
-          className="h-7 px-2"
-        >
-          Delete
-        </Button>
-      </div>
-    );
-  }, []);
+      return (
+        <div className="flex gap-2 h-full items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onEdit}
+            className="h-7 px-2"
+          >
+            {t("buttons.edit")}
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={onDelete}
+            className="h-7 px-2"
+          >
+            {t("buttons.delete")}
+          </Button>
+        </div>
+      );
+    },
+    [t],
+  );
 
   // Column definitions
   const columnDefs: ColDef[] = useMemo(() => {
     const columns: ColDef[] = [
       {
-        headerName: "Date",
+        headerName: t("table.date"),
         field: "date",
         width: COLUMN_WIDTHS.DATE,
         editable: batchEditingEnabled,
@@ -185,15 +191,15 @@ export function AGGridWorkLogTable({
             return oldValue;
           }
 
-          // JST対応のparseDateユーティリティを使用
-          // YYYY-MM-DD形式の文字列をJSTとして解釈
+          // Use JST-aware parseDate utility
+          // Interpret string in YYYY-MM-DD format as JST
           const date = parseDate(newValue);
           if (!date) {
-            toast.error("有効な日付をYYYY-MM-DD形式で入力してください");
+            toast.error(t("validation.invalidDate"));
             return oldValue;
           }
 
-          // ISO 8601形式の文字列として保存（データベースとの互換性維持）
+          // Save as ISO 8601 format string (maintain database compatibility)
           return newValue;
         },
         sort: "desc",
@@ -209,7 +215,7 @@ export function AGGridWorkLogTable({
         },
       },
       {
-        headerName: "Hours",
+        headerName: t("table.hours"),
         field: "hours",
         width: COLUMN_WIDTHS.HOURS,
         editable: batchEditingEnabled,
@@ -221,23 +227,23 @@ export function AGGridWorkLogTable({
           const value = params.newValue;
 
           if (!value) {
-            toast.error("時間を入力してください");
+            toast.error(t("validation.hoursRequired"));
             return params.oldValue;
           }
 
           if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(value)) {
-            toast.error("時間は数値で入力してください（例: 8 または 8.5）");
+            toast.error(t("validation.hoursNumeric"));
             return params.oldValue;
           }
 
           const hours = parseFloat(value);
           if (hours <= WORK_LOG_CONSTRAINTS.HOURS.MIN) {
-            toast.error("時間は0より大きい値を入力してください");
+            toast.error(t("validation.hoursMin"));
             return params.oldValue;
           }
 
           if (hours > WORK_LOG_CONSTRAINTS.HOURS.MAX) {
-            toast.error("時間は168以下で入力してください");
+            toast.error(t("validation.hoursMax"));
             return params.oldValue;
           }
 
@@ -255,7 +261,7 @@ export function AGGridWorkLogTable({
         },
       },
       {
-        headerName: "Project",
+        headerName: t("table.project"),
         field: batchEditingEnabled ? "projectId" : "projectName",
         width: COLUMN_WIDTHS.PROJECT,
         editable: batchEditingEnabled,
@@ -267,14 +273,14 @@ export function AGGridWorkLogTable({
           : undefined,
         valueFormatter: (params) => {
           if (batchEditingEnabled) {
-            return projectsMap.get(params.value) || "Unknown";
+            return projectsMap.get(params.value) || tCommon("unknown");
           }
           return params.value;
         },
         filter: true,
       },
       {
-        headerName: "Category",
+        headerName: t("table.category"),
         field: batchEditingEnabled ? "categoryId" : "categoryName",
         width: COLUMN_WIDTHS.CATEGORY,
         editable: batchEditingEnabled,
@@ -286,14 +292,14 @@ export function AGGridWorkLogTable({
           : undefined,
         valueFormatter: (params) => {
           if (batchEditingEnabled) {
-            return categoriesMap.get(params.value) || "Unknown";
+            return categoriesMap.get(params.value) || tCommon("unknown");
           }
           return params.value;
         },
         filter: true,
       },
       {
-        headerName: "Details",
+        headerName: t("table.details"),
         field: "details",
         flex: 1,
         editable: batchEditingEnabled,
@@ -318,7 +324,7 @@ export function AGGridWorkLogTable({
     // Add Actions column only when batch editing is disabled
     if (!batchEditingEnabled) {
       columns.push({
-        headerName: "Actions",
+        headerName: t("table.actions"),
         cellRenderer: ActionsCellRenderer,
         width: COLUMN_WIDTHS.ACTIONS,
         sortable: false,
@@ -335,6 +341,8 @@ export function AGGridWorkLogTable({
     projectsMap,
     categoriesMap,
     ActionsCellRenderer,
+    t,
+    tCommon,
   ]);
 
   // Default column properties
@@ -424,14 +432,14 @@ export function AGGridWorkLogTable({
   // Handle batch save
   const handleBatchSave = useCallback(async () => {
     if (pendingChanges.size === 0) {
-      toast.info("変更がありません");
+      toast.info(t("noChanges"));
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // バッチAPIエンドポイントを使用してトランザクション内で一括更新
+      // Use batch API endpoint for bulk update within transaction
       const updates = Array.from(pendingChanges.entries()).map(
         ([id, data]) => ({
           id,
@@ -452,22 +460,22 @@ export function AGGridWorkLogTable({
       const result = await response.json();
 
       if (result.success) {
-        toast.success(`${pendingChanges.size}件の変更を保存しました`);
+        toast.success(t("messages.batchSaved", { count: pendingChanges.size }));
         setPendingChanges(new Map());
         setFailedWorkLogIds(new Set());
         setBatchEditingEnabled(false);
-        // データ再取得
+        // Refetch data
         onRefresh?.();
       } else {
         throw new Error(result.error?.message || "Batch update failed");
       }
     } catch (error) {
-      toast.error("保存に失敗しました");
+      toast.error(t("messages.batchSaveError"));
       console.error("Batch save error:", error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [pendingChanges, onRefresh]);
+  }, [pendingChanges, onRefresh, t]);
 
   // Handle cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {
@@ -495,11 +503,9 @@ export function AGGridWorkLogTable({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-primary mb-2">
-              Work Logs Management
+              {t("title")}
             </h2>
-            <p className="text-muted-foreground">
-              Enhanced spreadsheet-like interface for work log management
-            </p>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           <div className="flex gap-2">
             {!batchEditingEnabled ? (
@@ -509,7 +515,7 @@ export function AGGridWorkLogTable({
                   size="lg"
                   onClick={() => setBatchEditingEnabled(true)}
                 >
-                  一括編集
+                  {t("batchEdit")}
                 </Button>
                 <Button
                   variant="outline"
@@ -519,7 +525,7 @@ export function AGGridWorkLogTable({
                     setFormOpen(true);
                   }}
                 >
-                  Add Work Log
+                  {t("addNew")}
                 </Button>
               </>
             ) : (
@@ -531,8 +537,8 @@ export function AGGridWorkLogTable({
                   disabled={isSubmitting || pendingChanges.size === 0}
                 >
                   {isSubmitting
-                    ? "保存中..."
-                    : `保存 (${pendingChanges.size}件)`}
+                    ? t("saving")
+                    : t("batchSave", { count: pendingChanges.size })}
                 </Button>
                 <Button
                   variant="outline"
@@ -540,7 +546,7 @@ export function AGGridWorkLogTable({
                   onClick={handleCancelBatchEditing}
                   disabled={isSubmitting}
                 >
-                  キャンセル
+                  {t("cancel")}
                 </Button>
               </>
             )}
@@ -549,7 +555,7 @@ export function AGGridWorkLogTable({
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8">Loading work logs...</div>
+        <div className="text-center py-8">{t("loading")}</div>
       ) : (
         <div
           className={`ag-theme-quartz ag-work-log-table h-[600px] w-full border rounded-lg${batchEditingEnabled ? " batch-editing" : ""}`}
@@ -593,25 +599,22 @@ export function AGGridWorkLogTable({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Work Log</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this work log? This action cannot
-              be undone.
-            </DialogDescription>
+            <DialogTitle>{t("deleteTitle")}</DialogTitle>
+            <DialogDescription>{t("deleteConfirmation")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Deleting..." : "Delete"}
+              {isSubmitting ? t("buttons.deleting") : t("buttons.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -620,10 +623,9 @@ export function AGGridWorkLogTable({
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>未保存の変更を破棄しますか？</DialogTitle>
+            <DialogTitle>{t("confirmCancel")}</DialogTitle>
             <DialogDescription>
-              {pendingChanges.size}件の未保存の変更があります。
-              キャンセルすると、これらの変更は失われます。
+              {t("unsavedChanges", { count: pendingChanges.size })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -631,10 +633,10 @@ export function AGGridWorkLogTable({
               variant="outline"
               onClick={() => setCancelDialogOpen(false)}
             >
-              編集を継続
+              {t("continueEditing")}
             </Button>
             <Button variant="destructive" onClick={handleConfirmCancel}>
-              変更を破棄
+              {t("discardChanges")}
             </Button>
           </DialogFooter>
         </DialogContent>

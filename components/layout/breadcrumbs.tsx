@@ -3,21 +3,23 @@
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface BreadcrumbItem {
   label: string;
   href: string;
 }
 
-const routeLabels: Record<string, string> = {
-  "work-logs": "Work Logs",
-  admin: "Admin",
-  projects: "Projects",
-  "work-categories": "Categories",
-};
-
 export function Breadcrumbs() {
+  const t = useTranslations("nav");
   const pathname = usePathname();
+
+  const routeLabels: Record<string, string> = {
+    "work-logs": t("workLogs"),
+    admin: t("admin"),
+    projects: t("projects"),
+    "work-categories": t("categories"),
+  };
 
   if (!pathname || pathname === "/") {
     return null;

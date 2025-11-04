@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedWorkLogTable } from "@/components/features/work-logs/enhanced-work-log-table";
@@ -45,6 +46,7 @@ export function WorkLogsClient({
   onDeleteWorkLog,
   onRefresh,
 }: WorkLogsClientProps) {
+  const t = useTranslations("workLogs");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,10 +64,10 @@ export function WorkLogsClient({
     try {
       setIsLoading(true);
       await onCreateWorkLog(data);
-      toast.success("Work log created successfully");
+      toast.success(t("messages.created"));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create work log",
+        error instanceof Error ? error.message : t("messages.createError"),
       );
       throw error;
     } finally {
@@ -86,10 +88,10 @@ export function WorkLogsClient({
     try {
       setIsLoading(true);
       await onUpdateWorkLog(id, data);
-      toast.success("Work log updated successfully");
+      toast.success(t("messages.updated"));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update work log",
+        error instanceof Error ? error.message : t("messages.updateError"),
       );
       throw error;
     } finally {
@@ -101,10 +103,10 @@ export function WorkLogsClient({
     try {
       setIsLoading(true);
       await onDeleteWorkLog(id);
-      toast.success("Work log deleted successfully");
+      toast.success(t("messages.deleted"));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete work log",
+        error instanceof Error ? error.message : t("messages.deleteError"),
       );
       throw error;
     } finally {
@@ -130,10 +132,10 @@ export function WorkLogsClient({
         onValueChange={handleScopeChange}
       >
         <TabsList>
-          <TabsTrigger value="own">My Work Logs</TabsTrigger>
-          <TabsTrigger value="team">Team Work Logs</TabsTrigger>
+          <TabsTrigger value="own">{t("tabs.own")}</TabsTrigger>
+          <TabsTrigger value="team">{t("tabs.team")}</TabsTrigger>
           {userRole === "admin" && (
-            <TabsTrigger value="all">All Work Logs</TabsTrigger>
+            <TabsTrigger value="all">{t("tabs.all")}</TabsTrigger>
           )}
         </TabsList>
       </Tabs>

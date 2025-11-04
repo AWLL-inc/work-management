@@ -153,9 +153,6 @@ export function CategoryTable({
             <h1 className="text-3xl font-bold text-foreground">
               Work Categories
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage work category master data with custom ordering
-            </p>
           </div>
           <Button
             variant="outline"

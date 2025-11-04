@@ -13,6 +13,7 @@ import {
   Undo,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ export function GridToolbar({
   onCancelBatchEdit,
   isSavingBatch = false,
 }: ToolbarProps) {
+  const t = useTranslations("workLogs");
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   return (
@@ -70,18 +72,18 @@ export function GridToolbar({
                   data-testid="add-row-button"
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  行追加
+                  {t("toolbar.addRow")}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>新しい行を先頭に追加します</p>
+                <p>{t("toolbar.addRowTooltip")}</p>
                 {!batchEditingEnabled && (
                   <p className="text-xs text-orange-500">
-                    一括編集モードで利用可能
+                    {t("toolbar.batchEditModeRequired")}
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  ショートカット: Ctrl+N
+                  {t("toolbar.shortcut")}: Ctrl+N
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -97,7 +99,7 @@ export function GridToolbar({
                   data-testid="duplicate-row-button"
                 >
                   <Copy className="w-4 h-4 mr-1" />
-                  行複製
+                  {t("toolbar.duplicateRow")}
                   {selectedRowCount > 0 && (
                     <span className="ml-1 text-xs bg-primary text-primary-foreground rounded px-1">
                       {selectedRowCount}
@@ -106,14 +108,14 @@ export function GridToolbar({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>選択された行を複製します</p>
+                <p>{t("toolbar.duplicateRowTooltip")}</p>
                 {!batchEditingEnabled && (
                   <p className="text-xs text-orange-500">
-                    一括編集モードで利用可能
+                    {t("toolbar.batchEditModeRequired")}
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  ショートカット: Ctrl+D
+                  {t("toolbar.shortcut")}: Ctrl+D
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -129,7 +131,7 @@ export function GridToolbar({
                   data-testid="delete-row-button"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
-                  行削除
+                  {t("toolbar.deleteRow")}
                   {selectedRowCount > 0 && (
                     <span className="ml-1 text-xs bg-destructive text-destructive-foreground rounded px-1">
                       {selectedRowCount}
@@ -138,14 +140,14 @@ export function GridToolbar({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>選択された行を削除します</p>
+                <p>{t("toolbar.deleteRowTooltip")}</p>
                 {selectedRowCount === 0 && (
                   <p className="text-xs text-orange-500">
-                    行を選択してください
+                    {t("toolbar.selectRowsToDelete")}
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  ショートカット: Delete
+                  {t("toolbar.shortcut")}: Delete
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -164,18 +166,18 @@ export function GridToolbar({
                   data-testid="undo-button"
                 >
                   <Undo className="w-4 h-4 mr-1" />
-                  元に戻す
+                  {t("toolbar.undo")}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>直前の編集を元に戻します</p>
+                <p>{t("toolbar.undoTooltip")}</p>
                 {!batchEditingEnabled && (
                   <p className="text-xs text-orange-500">
-                    一括編集モードで利用可能
+                    {t("toolbar.batchEditModeRequired")}
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  ショートカット: Ctrl+Z
+                  {t("toolbar.shortcut")}: Ctrl+Z
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -191,18 +193,18 @@ export function GridToolbar({
                   data-testid="redo-button"
                 >
                   <Redo className="w-4 h-4 mr-1" />
-                  やり直し
+                  {t("toolbar.redo")}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>元に戻した編集を再実行します</p>
+                <p>{t("toolbar.redoTooltip")}</p>
                 {!batchEditingEnabled && (
                   <p className="text-xs text-orange-500">
-                    一括編集モードで利用可能
+                    {t("toolbar.batchEditModeRequired")}
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  ショートカット: Ctrl+Y
+                  {t("toolbar.shortcut")}: Ctrl+Y
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -215,7 +217,7 @@ export function GridToolbar({
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="検索..."
+                  placeholder={t("toolbar.searchPlaceholder")}
                   value={quickFilterText}
                   onChange={(e) => onQuickFilterChange?.(e.target.value)}
                   className="pl-8 pr-8 w-48 h-8"
@@ -256,11 +258,11 @@ export function GridToolbar({
                     data-testid="filter-panel-button"
                   >
                     <Filter className="w-4 h-4 mr-1" />
-                    フィルター
+                    {t("toolbar.filter")}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>詳細フィルターパネルを開く/閉じる</p>
+                  <p>{t("toolbar.filterTooltip")}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -274,7 +276,7 @@ export function GridToolbar({
                   variant="ghost"
                   size="sm"
                   className="h-8 px-2 text-muted-foreground hover:text-foreground"
-                  aria-label="キーボードショートカットを表示"
+                  aria-label={t("toolbar.keyboardShortcutsLabel")}
                 >
                   <Info className="w-4 h-4" />
                 </Button>
@@ -283,7 +285,7 @@ export function GridToolbar({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-sm">
-                      キーボードショートカット
+                      {t("toolbar.keyboardShortcuts")}
                     </h4>
                     <Button
                       variant="ghost"
@@ -297,41 +299,41 @@ export function GridToolbar({
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Ctrl+C</span>
-                      <span>セルをコピー</span>
+                      <span>{t("toolbar.shortcuts.copy")}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Ctrl+V</span>
-                      <span>セルにペースト</span>
+                      <span>{t("toolbar.shortcuts.paste")}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Ctrl+N</span>
-                      <span>新しい行を追加</span>
+                      <span>{t("toolbar.shortcuts.addRow")}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Ctrl+D</span>
-                      <span>行を複製</span>
+                      <span>{t("toolbar.shortcuts.duplicateRow")}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Delete</span>
-                      <span>選択行を削除</span>
+                      <span>{t("toolbar.shortcuts.deleteRow")}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Ctrl+Z</span>
-                      <span>元に戻す</span>
+                      <span>{t("toolbar.shortcuts.undo")}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Ctrl+Y</span>
-                      <span>やり直し</span>
+                      <span>{t("toolbar.shortcuts.redo")}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">
-                        ダブルクリック
+                        {t("toolbar.shortcuts.doubleClick")}
                       </span>
-                      <span>セルを編集</span>
+                      <span>{t("toolbar.shortcuts.editCell")}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Enter</span>
-                      <span>編集を確定</span>
+                      <span>{t("toolbar.shortcuts.confirmEdit")}</span>
                     </div>
                   </div>
                 </div>
@@ -344,7 +346,7 @@ export function GridToolbar({
 
           {selectedRowCount > 0 && (
             <div className="text-xs sm:text-sm text-muted-foreground">
-              {selectedRowCount}行選択中
+              {t("toolbar.rowsSelected", { count: selectedRowCount })}
             </div>
           )}
         </div>
@@ -367,11 +369,11 @@ export function GridToolbar({
                         className="h-8 px-3"
                       >
                         <Edit className="w-4 h-4 mr-1" />
-                        一括編集
+                        {t("batchEdit")}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>一括編集モードを有効にします</p>
+                      <p>{t("toolbar.enableBatchEdit")}</p>
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -384,11 +386,11 @@ export function GridToolbar({
                         className="h-8 px-3"
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        追加
+                        {t("toolbar.addWorkLog")}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>新しい作業ログを追加します</p>
+                      <p>{t("toolbar.addWorkLogTooltip")}</p>
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -408,11 +410,11 @@ export function GridToolbar({
                         {isSavingBatch && (
                           <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
                         )}
-                        {isSavingBatch ? "保存中..." : "保存"}
+                        {isSavingBatch ? t("saving") : t("save")}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>編集内容を保存します</p>
+                      <p>{t("toolbar.saveChanges")}</p>
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -427,11 +429,11 @@ export function GridToolbar({
                         className="h-8 px-3"
                       >
                         <X className="w-4 h-4 mr-1" />
-                        キャンセル
+                        {t("cancel")}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>編集をキャンセルします</p>
+                      <p>{t("toolbar.cancelEditing")}</p>
                     </TooltipContent>
                   </Tooltip>
                 )}

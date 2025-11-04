@@ -75,9 +75,6 @@ describe("EnhancedProjectTable", () => {
 
     expect(screen.getByText("Projects")).toBeInTheDocument();
     expect(screen.getByText("Add Project")).toBeInTheDocument();
-    expect(
-      screen.getByText("Manage project master data with enhanced AG Grid"),
-    ).toBeInTheDocument();
   });
 
   it("should close create dialog when Cancel is clicked", async () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import useSWR from "swr";
 import { CategoryBreakdownChart } from "./category-breakdown-chart";
@@ -13,6 +14,7 @@ import { WorkTrendChart } from "./work-trend-chart";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function DashboardContent() {
+  const t = useTranslations("dashboard");
   const [period, setPeriod] = useState<PeriodType>("week");
 
   const { data, error, isLoading } = useSWR<PersonalStatsResponse>(
@@ -29,10 +31,10 @@ export function DashboardContent() {
       <div className="flex h-[400px] items-center justify-center">
         <div className="text-center">
           <p className="text-lg font-semibold text-destructive">
-            エラーが発生しました
+            {t("error.title")}
           </p>
           <p className="text-sm text-muted-foreground">
-            データの取得に失敗しました
+            {t("error.fetchFailed", { message: "" })}
           </p>
         </div>
       </div>
@@ -44,7 +46,7 @@ export function DashboardContent() {
       <div className="flex h-[400px] items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="mt-2 text-sm text-muted-foreground">読み込み中...</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t("loading")}</p>
         </div>
       </div>
     );
@@ -55,10 +57,10 @@ export function DashboardContent() {
       <div className="flex h-[400px] items-center justify-center">
         <div className="text-center">
           <p className="text-lg font-semibold text-destructive">
-            データの取得に失敗しました
+            {t("error.fetchFailed", { message: "" })}
           </p>
           <p className="text-sm text-muted-foreground">
-            {data.error?.message || "不明なエラー"}
+            {data.error?.message || t("unknownError")}
           </p>
         </div>
       </div>
@@ -72,8 +74,8 @@ export function DashboardContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">ダッシュボード</h1>
-          <p className="text-muted-foreground">工数消化状況の可視化</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("personalSubtitle")}</p>
         </div>
         <PeriodSelector period={period} onPeriodChange={setPeriod} />
       </div>
@@ -95,7 +97,8 @@ export function DashboardContent() {
 
       {/* Last Updated */}
       <div className="text-center text-xs text-muted-foreground">
-        最終更新: {new Date().toLocaleTimeString("ja-JP")} (30秒ごとに自動更新)
+        {t("lastUpdated")}: {new Date().toLocaleTimeString()}{" "}
+        {t("autoRefreshInterval")}
       </div>
     </div>
   );

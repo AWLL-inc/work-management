@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   createProject,
   getAllProjects,
@@ -25,29 +25,19 @@ export const runtime = "nodejs";
  */
 export async function GET(request: NextRequest) {
   try {
-    // Check if authentication is disabled for development
-    const isDevelopmentMode = process.env.NODE_ENV === "development";
-    const isAuthDisabled = process.env.DISABLE_AUTH === "true";
-
-    let session = null;
-    if (isDevelopmentMode && isAuthDisabled) {
-      // Skip authentication in development mode when DISABLE_AUTH=true
-      session = { user: { id: "dev-user", role: "admin" } };
-    } else {
-      // Check authentication
-      session = await auth();
-      if (!session?.user) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: "UNAUTHORIZED",
-              message: "Authentication required",
-            },
+    // Check authentication
+    const session = await getAuthenticatedSession();
+    if (!session?.user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
           },
-          { status: 401 },
-        );
-      }
+        },
+        { status: 401 },
+      );
     }
 
     // Parse query parameters
@@ -111,7 +101,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await auth();
+    const session = await getAuthenticatedSession();
     if (!session?.user) {
       return NextResponse.json(
         {

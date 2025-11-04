@@ -17,9 +17,9 @@ vi.mock("@/lib/env", () => ({
 
 import { GET, POST } from "../route";
 
-// Mock the auth module
-vi.mock("@/lib/auth", () => ({
-  auth: vi.fn(),
+// Mock the auth-helpers module
+vi.mock("@/lib/auth-helpers", () => ({
+  getAuthenticatedSession: vi.fn(),
 }));
 
 // Mock the repository
@@ -40,7 +40,7 @@ vi.mock("@/lib/validations", async () => {
   };
 });
 
-import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   createProject,
   getAllProjects,
@@ -79,7 +79,7 @@ describe("GET /api/projects", () => {
   });
 
   it("should return 401 when user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null as any);
+    vi.mocked(getAuthenticatedSession).mockResolvedValue(null);
 
     const request = new NextRequest("http://localhost:3000/api/projects");
     const response = await GET(request);
@@ -91,7 +91,7 @@ describe("GET /api/projects", () => {
   });
 
   it("should return all projects when authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -115,7 +115,7 @@ describe("GET /api/projects", () => {
 
   it("should filter active projects when active=true", async () => {
     const activeProjects = mockProjects.filter((p) => p.isActive);
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -137,7 +137,7 @@ describe("GET /api/projects", () => {
   });
 
   it("should return 400 for validation error in query parameters", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -173,7 +173,7 @@ describe("GET /api/projects", () => {
   });
 
   it("should return 500 when repository throws error", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -214,7 +214,7 @@ describe("POST /api/projects", () => {
   });
 
   it("should return 401 when user is not authenticated", async () => {
-    vi.mocked(auth).mockResolvedValue(null as any);
+    vi.mocked(getAuthenticatedSession).mockResolvedValue(null as any);
 
     const request = new NextRequest("http://localhost:3000/api/projects", {
       method: "POST",
@@ -232,7 +232,7 @@ describe("POST /api/projects", () => {
   });
 
   it("should return 403 when user is not admin", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "user-id",
         email: "user@example.com",
@@ -257,7 +257,7 @@ describe("POST /api/projects", () => {
   });
 
   it("should create project when admin with valid data", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "admin-id",
         email: "admin@example.com",
@@ -293,7 +293,7 @@ describe("POST /api/projects", () => {
   });
 
   it("should return 400 when validation fails", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "admin-id",
         email: "admin@example.com",
@@ -317,7 +317,7 @@ describe("POST /api/projects", () => {
   });
 
   it("should return 400 when project name already exists", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "admin-id",
         email: "admin@example.com",
@@ -343,7 +343,7 @@ describe("POST /api/projects", () => {
   });
 
   it("should return 500 when repository throws error", async () => {
-    vi.mocked(auth).mockResolvedValue({
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: {
         id: "admin-id",
         email: "admin@example.com",

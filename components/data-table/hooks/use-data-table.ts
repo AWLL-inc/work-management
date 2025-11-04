@@ -111,7 +111,14 @@ export function useDataTable<TData>(
     }
 
     return mergedProps;
-  }, [data, columns, features, gridOptions]);
+  }, [
+    data,
+    columns,
+    features.sorting,
+    features.filtering,
+    features.pagination,
+    gridOptions,
+  ]);
 
   /**
    * Merge all feature toolbarProps into a single object
@@ -133,7 +140,7 @@ export function useDataTable<TData>(
     }
 
     return mergedProps;
-  }, [features]);
+  }, [features.sorting, features.filtering, features.pagination]);
 
   /**
    * Provide access to individual features

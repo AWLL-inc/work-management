@@ -34,7 +34,9 @@ export async function getAllUsers(options?: {
   // Return all users (including inactive if activeOnly is false)
   if (activeOnly) {
     // Filter out users with 'inactive' role
-    return await baseQuery.where(ne(users.role, "inactive")).orderBy(users.name);
+    return await baseQuery
+      .where(ne(users.role, "inactive"))
+      .orderBy(users.name);
   }
 
   return await baseQuery.orderBy(users.name);

@@ -1,6 +1,4 @@
-import { eq, ne } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { users } from "@/drizzle/schema";
 import { db } from "@/lib/db/connection";
 import { getAllUsers, getUserByEmail, getUserById } from "../user-repository";
 

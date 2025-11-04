@@ -54,9 +54,9 @@ function mergeLocaleCookie(
   if (!intlResponse) return authResponse;
 
   const localeCookie = intlResponse.headers.get("set-cookie");
-  if (localeCookie?.includes("locale=")) {
+  if (localeCookie?.includes("NEXT_LOCALE=")) {
     const existingCookies = authResponse.headers.get("set-cookie");
-    if (!existingCookies?.includes("locale=")) {
+    if (!existingCookies?.includes("NEXT_LOCALE=")) {
       authResponse.headers.append("set-cookie", localeCookie);
     }
   }

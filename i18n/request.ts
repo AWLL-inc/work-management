@@ -5,7 +5,7 @@ import { routing } from "./routing";
 export default getRequestConfig(async () => {
   // Get locale from cookie or use default
   const cookieStore = await cookies();
-  let locale = cookieStore.get("locale")?.value || routing.defaultLocale;
+  let locale = cookieStore.get("NEXT_LOCALE")?.value || routing.defaultLocale;
 
   // Validate that the locale is valid
   if (!routing.locales.includes(locale as "ja" | "en")) {

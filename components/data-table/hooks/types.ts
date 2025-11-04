@@ -251,16 +251,285 @@ export type PaginationFeature = TableFeatureHook<
 >;
 
 /**
+ * Selection mode
+ */
+export type SelectionMode = "single" | "multiple";
+
+/**
+ * Configuration for selection feature
+ */
+export interface SelectionConfig {
+  /** Selection mode */
+  mode?: SelectionMode;
+
+  /** Enable select all functionality */
+  enableSelectAll?: boolean;
+
+  /** Enable row click for selection */
+  selectOnRowClick?: boolean;
+}
+
+/**
+ * State for selection feature
+ */
+export interface SelectionState<TData = unknown> {
+  /** Currently selected rows */
+  selectedRows: TData[];
+
+  /** IDs of selected rows */
+  selectedRowIds: Set<string>;
+
+  /** Whether all rows are selected */
+  isAllSelected: boolean;
+}
+
+/**
+ * Actions for selection feature
+ */
+export interface SelectionActions<TData = unknown> {
+  /** Select a row */
+  selectRow: (row: TData) => void;
+
+  /** Deselect a row */
+  deselectRow: (row: TData) => void;
+
+  /** Toggle row selection */
+  toggleRowSelection: (row: TData) => void;
+
+  /** Select all rows */
+  selectAll: (rows: TData[]) => void;
+
+  /** Deselect all rows */
+  deselectAll: () => void;
+
+  /** Set selected rows */
+  setSelectedRows: (rows: TData[]) => void;
+}
+
+/**
+ * Selection feature hook type
+ */
+export type SelectionFeature<TData = unknown> = TableFeatureHook<
+  SelectionConfig,
+  SelectionState<TData>,
+  SelectionActions<TData>
+>;
+
+/**
+ * Editing mode
+ */
+export type EditingMode = "inline" | "batch";
+
+/**
+ * Configuration for editing feature
+ */
+export interface EditingConfig {
+  /** Editing mode */
+  mode?: EditingMode;
+
+  /** Enable auto-save on cell value change */
+  enableAutoSave?: boolean;
+
+  /** Validate on change */
+  validateOnChange?: boolean;
+}
+
+/**
+ * State for editing feature
+ */
+export interface EditingState<TData = unknown> {
+  /** Rows being edited */
+  editingRows: Map<string, TData>;
+
+  /** Rows with unsaved changes */
+  dirtyRows: Set<string>;
+
+  /** Whether any row is being edited */
+  isEditing: boolean;
+
+  /** Whether there are unsaved changes */
+  hasChanges: boolean;
+}
+
+/**
+ * Actions for editing feature
+ */
+export interface EditingActions<TData = unknown> {
+  /** Start editing a row */
+  startEdit: (rowId: string, row: TData) => void;
+
+  /** Stop editing a row */
+  stopEdit: (rowId: string) => void;
+
+  /** Update a cell value */
+  updateCell: (rowId: string, field: string, value: unknown) => void;
+
+  /** Save changes */
+  saveChanges: () => Promise<void>;
+
+  /** Discard changes */
+  discardChanges: () => void;
+
+  /** Reset editing state */
+  reset: () => void;
+}
+
+/**
+ * Editing feature hook type
+ */
+export type EditingFeature<TData = unknown> = TableFeatureHook<
+  EditingConfig,
+  EditingState<TData>,
+  EditingActions<TData>
+>;
+
+/**
+ * Action type for undo/redo
+ */
+export type ActionType = "UPDATE" | "ADD" | "DELETE";
+
+/**
+ * History action for undo/redo
+ */
+export interface HistoryAction<TData = unknown> {
+  /** Action type */
+  type: ActionType;
+
+  /** Data before the action */
+  before?: TData;
+
+  /** Data after the action */
+  after?: TData;
+
+  /** Timestamp */
+  timestamp: number;
+}
+
+/**
+ * Configuration for undo/redo feature
+ */
+export interface UndoRedoConfig {
+  /** Maximum number of undo steps */
+  maxSteps?: number;
+
+  /** Action types to track */
+  trackingTypes?: ActionType[];
+
+  /** Enable keyboard shortcuts */
+  enableKeyboardShortcuts?: boolean;
+}
+
+/**
+ * State for undo/redo feature
+ */
+export interface UndoRedoState<TData = unknown> {
+  /** Undo stack */
+  undoStack: HistoryAction<TData>[];
+
+  /** Redo stack */
+  redoStack: HistoryAction<TData>[];
+
+  /** Whether undo is available */
+  canUndo: boolean;
+
+  /** Whether redo is available */
+  canRedo: boolean;
+}
+
+/**
+ * Actions for undo/redo feature
+ */
+export interface UndoRedoActions<TData = unknown> {
+  /** Undo last action */
+  undo: () => void;
+
+  /** Redo last undone action */
+  redo: () => void;
+
+  /** Add action to history */
+  pushAction: (action: HistoryAction<TData>) => void;
+
+  /** Clear history */
+  clearHistory: () => void;
+}
+
+/**
+ * Undo/Redo feature hook type
+ */
+export type UndoRedoFeature<TData = unknown> = TableFeatureHook<
+  UndoRedoConfig,
+  UndoRedoState<TData>,
+  UndoRedoActions<TData>
+>;
+
+/**
+ * Configuration for row actions feature
+ */
+export interface RowActionsConfig {
+  /** Enable add row functionality */
+  enableAdd?: boolean;
+
+  /** Enable delete row functionality */
+  enableDelete?: boolean;
+
+  /** Enable duplicate row functionality */
+  enableDuplicate?: boolean;
+
+  /** Show confirmation dialog before delete */
+  confirmDelete?: boolean;
+}
+
+/**
+ * State for row actions feature
+ */
+export interface RowActionsState {
+  /** Whether add action is available */
+  canAdd: boolean;
+
+  /** Whether delete action is available */
+  canDelete: boolean;
+
+  /** Whether duplicate action is available */
+  canDuplicate: boolean;
+}
+
+/**
+ * Actions for row actions feature
+ */
+export interface RowActionsActions<TData = unknown> {
+  /** Add a new row */
+  addRow: (row: TData) => void;
+
+  /** Delete a row */
+  deleteRow: (rowId: string) => void;
+
+  /** Duplicate a row */
+  duplicateRow: (row: TData) => void;
+
+  /** Delete multiple rows */
+  deleteRows: (rowIds: string[]) => void;
+}
+
+/**
+ * Row actions feature hook type
+ */
+export type RowActionsFeature<TData = unknown> = TableFeatureHook<
+  RowActionsConfig,
+  RowActionsState,
+  RowActionsActions<TData>
+>;
+
+/**
  * Collection of enabled features
  */
 export interface TableFeatures {
   sorting?: SortingFeature;
   filtering?: FilteringFeature;
   pagination?: PaginationFeature;
-  // Future features will be added here
-  // selection?: SelectionFeature;
-  // editing?: EditingFeature;
-  // undoRedo?: UndoRedoFeature;
+  selection?: SelectionFeature;
+  editing?: EditingFeature;
+  undoRedo?: UndoRedoFeature;
+  rowActions?: RowActionsFeature;
 }
 
 /**

@@ -37,13 +37,15 @@ import type {
 /**
  * Default selection configuration
  */
-const DEFAULT_CONFIG: Required<SelectionConfig> = {
+const DEFAULT_CONFIG: SelectionConfig = {
   /** Multiple selection by default */
   mode: "multiple",
   /** Select all enabled by default */
   enableSelectAll: true,
   /** Row click for selection disabled by default (use checkbox instead) */
   selectOnRowClick: false,
+  /** No callback by default */
+  onSelectionChange: undefined,
 };
 
 /**
@@ -69,7 +71,7 @@ export function useSelectionFeature<TData = unknown>(
   config: SelectionConfig = {},
 ): SelectionFeature<TData> {
   // Merge config with defaults
-  const mergedConfig: Required<SelectionConfig> = {
+  const mergedConfig = {
     ...DEFAULT_CONFIG,
     ...config,
   };
@@ -95,20 +97,26 @@ export function useSelectionFeature<TData = unknown>(
 
       if (mergedConfig.mode === "single") {
         // Single mode: Replace selection
-        setSelectedRows([row]);
+        const newSelection = [row];
+        setSelectedRows(newSelection);
         setSelectedRowIds(new Set([rowId]));
+        // Notify parent of selection change
+        mergedConfig.onSelectionChange?.(newSelection);
       } else {
         // Multiple mode: Add to selection
         setSelectedRows((prev) => {
           if (prev.some((r) => getRowId(r) === rowId)) {
             return prev; // Already selected
           }
-          return [...prev, row];
+          const newSelection = [...prev, row];
+          // Notify parent of selection change
+          mergedConfig.onSelectionChange?.(newSelection);
+          return newSelection;
         });
         setSelectedRowIds((prev) => new Set([...prev, rowId]));
       }
     },
-    [mergedConfig.mode, getRowId],
+    [mergedConfig, getRowId],
   );
 
   /**
@@ -118,14 +126,19 @@ export function useSelectionFeature<TData = unknown>(
     (row: TData) => {
       const rowId = getRowId(row);
 
-      setSelectedRows((prev) => prev.filter((r) => getRowId(r) !== rowId));
+      setSelectedRows((prev) => {
+        const newSelection = prev.filter((r) => getRowId(r) !== rowId);
+        // Notify parent of selection change
+        mergedConfig.onSelectionChange?.(newSelection);
+        return newSelection;
+      });
       setSelectedRowIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(rowId);
         return newSet;
       });
     },
-    [getRowId],
+    [getRowId, mergedConfig],
   );
 
   /**
@@ -156,8 +169,10 @@ export function useSelectionFeature<TData = unknown>(
 
       setSelectedRows(rows);
       setSelectedRowIds(new Set(rows.map((row) => getRowId(row))));
+      // Notify parent of selection change
+      mergedConfig.onSelectionChange?.(rows);
     },
-    [mergedConfig.mode, getRowId],
+    [mergedConfig, getRowId],
   );
 
   /**
@@ -166,26 +181,37 @@ export function useSelectionFeature<TData = unknown>(
   const deselectAll = useCallback(() => {
     setSelectedRows([]);
     setSelectedRowIds(new Set());
-  }, []);
+    // Notify parent of selection change
+    mergedConfig.onSelectionChange?.([]);
+  }, [mergedConfig]);
 
   /**
    * Set selected rows directly
    */
   const setSelectedRowsAction = useCallback(
     (rows: TData[]) => {
+      let newSelection: TData[];
+
       if (mergedConfig.mode === "single" && rows.length > 1) {
         // Single mode: Take first row only
         const firstRow = rows[0];
         if (firstRow) {
-          setSelectedRows([firstRow]);
+          newSelection = [firstRow];
+          setSelectedRows(newSelection);
           setSelectedRowIds(new Set([getRowId(firstRow)]));
+        } else {
+          newSelection = [];
         }
       } else {
+        newSelection = rows;
         setSelectedRows(rows);
         setSelectedRowIds(new Set(rows.map((row) => getRowId(row))));
       }
+
+      // Notify parent of selection change
+      mergedConfig.onSelectionChange?.(newSelection);
     },
-    [mergedConfig.mode, getRowId],
+    [mergedConfig, getRowId],
   );
 
   // Prepare state

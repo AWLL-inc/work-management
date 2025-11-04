@@ -267,6 +267,9 @@ export interface SelectionConfig {
 
   /** Enable row click for selection */
   selectOnRowClick?: boolean;
+
+  /** Callback when selection changes */
+  onSelectionChange?: <TData>(selectedRows: TData[]) => void;
 }
 
 /**
@@ -332,6 +335,9 @@ export interface EditingConfig {
 
   /** Validate on change */
   validateOnChange?: boolean;
+
+  /** Callback to save changes (receives edited rows) */
+  onSave?: <TData>(editedRows: Map<string, TData>) => Promise<void>;
 }
 
 /**
@@ -417,6 +423,12 @@ export interface UndoRedoConfig {
 
   /** Enable keyboard shortcuts */
   enableKeyboardShortcuts?: boolean;
+
+  /** Callback to apply undo operation */
+  onUndo?: <TData>(action: HistoryAction<TData>) => void;
+
+  /** Callback to apply redo operation */
+  onRedo?: <TData>(action: HistoryAction<TData>) => void;
 }
 
 /**
@@ -477,6 +489,18 @@ export interface RowActionsConfig {
 
   /** Show confirmation dialog before delete */
   confirmDelete?: boolean;
+
+  /** Callback to add a new row */
+  onAdd?: <TData>(row: TData) => void | Promise<void>;
+
+  /** Callback to delete a row */
+  onDelete?: (rowId: string) => void | Promise<void>;
+
+  /** Callback to delete multiple rows */
+  onDeleteBatch?: (rowIds: string[]) => void | Promise<void>;
+
+  /** Callback to duplicate a row */
+  onDuplicate?: <TData>(row: TData) => void | Promise<void>;
 }
 
 /**

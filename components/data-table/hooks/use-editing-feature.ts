@@ -37,13 +37,15 @@ import type {
 /**
  * Default editing configuration
  */
-const DEFAULT_CONFIG: Required<EditingConfig> = {
+const DEFAULT_CONFIG: EditingConfig = {
   /** Batch editing mode by default (changes saved manually) */
   mode: "batch",
   /** Auto-save disabled by default */
   enableAutoSave: false,
   /** Validate on change enabled by default */
   validateOnChange: true,
+  /** No callback by default */
+  onSave: undefined,
 };
 
 /**
@@ -69,7 +71,7 @@ export function useEditingFeature<TData = unknown>(
   config: EditingConfig = {},
 ): EditingFeature<TData> {
   // Merge config with defaults
-  const mergedConfig: Required<EditingConfig> = {
+  const mergedConfig = {
     ...DEFAULT_CONFIG,
     ...config,
   };
@@ -129,17 +131,24 @@ export function useEditingFeature<TData = unknown>(
 
   /**
    * Save changes
-   * In a real implementation, this would call an API to persist changes
+   * Calls the onSave callback with edited rows, then clears state on success
    */
   const saveChanges = useCallback(async () => {
-    // TODO: Implement actual save logic
-    // For now, just clear dirty rows and editing state
+    if (editingRows.size === 0) {
+      return; // Nothing to save
+    }
+    // Call parent's save handler if provided
+    if (mergedConfig.onSave) {
+      await mergedConfig.onSave(editingRows);
+    }
+
+    // Clear state after successful save
     setDirtyRows(new Set());
 
     if (mergedConfig.mode === "batch") {
       setEditingRows(new Map());
     }
-  }, [mergedConfig.mode]);
+  }, [mergedConfig, editingRows]);
 
   /**
    * Discard changes

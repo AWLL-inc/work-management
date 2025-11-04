@@ -37,13 +37,16 @@ import type {
 /**
  * Default undo/redo configuration
  */
-const DEFAULT_CONFIG: Required<UndoRedoConfig> = {
+const DEFAULT_CONFIG: UndoRedoConfig = {
   /** Maximum 20 undo steps by default */
   maxSteps: 20,
   /** Track all action types by default */
   trackingTypes: ["UPDATE", "ADD", "DELETE"],
   /** Enable keyboard shortcuts by default */
   enableKeyboardShortcuts: true,
+  /** No callbacks by default */
+  onUndo: undefined,
+  onRedo: undefined,
 };
 
 /**
@@ -69,7 +72,7 @@ export function useUndoRedoFeature<TData = unknown>(
   config: UndoRedoConfig = {},
 ): UndoRedoFeature<TData> {
   // Merge config with defaults
-  const mergedConfig: Required<UndoRedoConfig> = {
+  const mergedConfig = {
     ...DEFAULT_CONFIG,
     ...config,
   };
@@ -99,9 +102,11 @@ export function useUndoRedoFeature<TData = unknown>(
     setUndoStack((prev) => prev.slice(0, -1));
     setRedoStack((prev) => [...prev, action]);
 
-    // TODO: Apply the undo operation to the data
-    // This would typically involve calling a callback provided by the parent
-  }, [undoStack]);
+    // Call parent's undo handler if provided
+    if (mergedConfig.onUndo) {
+      mergedConfig.onUndo(action);
+    }
+  }, [undoStack, mergedConfig]);
 
   /**
    * Redo last undone action
@@ -120,17 +125,26 @@ export function useUndoRedoFeature<TData = unknown>(
     setRedoStack((prev) => prev.slice(0, -1));
     setUndoStack((prev) => [...prev, action]);
 
-    // TODO: Apply the redo operation to the data
-    // This would typically involve calling a callback provided by the parent
-  }, [redoStack]);
+    // Call parent's redo handler if provided
+    if (mergedConfig.onRedo) {
+      mergedConfig.onRedo(action);
+    }
+  }, [redoStack, mergedConfig]);
 
   /**
    * Push a new action to the undo stack
    */
   const pushAction = useCallback(
     (action: HistoryAction<TData>) => {
+      const trackingTypes = mergedConfig.trackingTypes ?? [
+        "UPDATE",
+        "ADD",
+        "DELETE",
+      ];
+      const maxSteps = mergedConfig.maxSteps ?? 20;
+
       // Check if this action type should be tracked
-      if (!mergedConfig.trackingTypes.includes(action.type)) {
+      if (!trackingTypes.includes(action.type)) {
         return;
       }
 
@@ -138,8 +152,8 @@ export function useUndoRedoFeature<TData = unknown>(
       setUndoStack((prev) => {
         const newStack = [...prev, action];
         // Limit stack size
-        if (newStack.length > mergedConfig.maxSteps) {
-          return newStack.slice(-mergedConfig.maxSteps);
+        if (newStack.length > maxSteps) {
+          return newStack.slice(-maxSteps);
         }
         return newStack;
       });

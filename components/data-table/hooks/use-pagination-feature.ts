@@ -89,13 +89,6 @@ export function usePaginationFeature(
   const totalPages = Math.ceil(totalRows / pageSize);
 
   /**
-   * Reset to first page when page size changes
-   */
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [pageSize]);
-
-  /**
    * Ensure current page is within valid range when totalRows changes
    */
   useEffect(() => {
@@ -121,7 +114,7 @@ export function usePaginationFeature(
    * Go to next page
    */
   const nextPage = useCallback(() => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1));
+    setCurrentPage((prev) => Math.max(0, Math.min(prev + 1, totalPages - 1)));
   }, [totalPages]);
 
   /**
@@ -146,12 +139,13 @@ export function usePaginationFeature(
   }, [totalPages]);
 
   /**
-   * Change page size
+   * Change page size and reset to first page
    *
    * @param size - New page size
    */
   const setPageSize = useCallback((size: number) => {
     setPageSizeState(size);
+    setCurrentPage(0);
   }, []);
 
   // Prepare state

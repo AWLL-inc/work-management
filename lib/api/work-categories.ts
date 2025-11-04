@@ -24,10 +24,32 @@ export interface UpdateWorkCategoryData {
   isActive?: boolean;
 }
 
+/**
+ * Get the base URL for API calls
+ * Needed for server-side fetching where relative URLs don't work
+ */
+function getBaseUrl(): string {
+  // Browser environment
+  if (typeof window !== "undefined") {
+    return "";
+  }
+
+  // Server environment
+  // Use NEXT_PUBLIC_APP_URL if available, otherwise construct from host
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+
+  // Default to localhost for development
+  const port = process.env.PORT || 3000;
+  return `http://localhost:${port}`;
+}
+
 export async function getWorkCategories(
   activeOnly = false,
 ): Promise<WorkCategory[]> {
-  const url = `/api/work-categories${activeOnly ? "?active=true" : ""}`;
+  const baseUrl = getBaseUrl();
+  const url = `${baseUrl}/api/work-categories${activeOnly ? "?active=true" : ""}`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -46,7 +68,8 @@ export async function getWorkCategories(
 export async function createWorkCategory(
   data: CreateWorkCategoryData,
 ): Promise<WorkCategory> {
-  const response = await fetch("/api/work-categories", {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/work-categories`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -72,7 +95,8 @@ export async function updateWorkCategory(
   id: string,
   data: UpdateWorkCategoryData,
 ): Promise<WorkCategory> {
-  const response = await fetch(`/api/work-categories/${id}`, {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/work-categories/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -95,7 +119,8 @@ export async function updateWorkCategory(
 }
 
 export async function deleteWorkCategory(id: string): Promise<void> {
-  const response = await fetch(`/api/work-categories/${id}`, {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/work-categories/${id}`, {
     method: "DELETE",
   });
 

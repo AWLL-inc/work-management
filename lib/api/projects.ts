@@ -22,8 +22,30 @@ export interface UpdateProjectData {
   isActive?: boolean;
 }
 
+/**
+ * Get the base URL for API calls
+ * Needed for server-side fetching where relative URLs don't work
+ */
+function getBaseUrl(): string {
+  // Browser environment
+  if (typeof window !== "undefined") {
+    return "";
+  }
+
+  // Server environment
+  // Use NEXT_PUBLIC_APP_URL if available, otherwise construct from host
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+
+  // Default to localhost for development
+  const port = process.env.PORT || 3000;
+  return `http://localhost:${port}`;
+}
+
 export async function getProjects(activeOnly = false): Promise<Project[]> {
-  const url = `/api/projects${activeOnly ? "?active=true" : ""}`;
+  const baseUrl = getBaseUrl();
+  const url = `${baseUrl}/api/projects${activeOnly ? "?active=true" : ""}`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -40,7 +62,8 @@ export async function getProjects(activeOnly = false): Promise<Project[]> {
 }
 
 export async function createProject(data: CreateProjectData): Promise<Project> {
-  const response = await fetch("/api/projects", {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/projects`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -66,7 +89,8 @@ export async function updateProject(
   id: string,
   data: UpdateProjectData,
 ): Promise<Project> {
-  const response = await fetch(`/api/projects/${id}`, {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/projects/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -89,7 +113,8 @@ export async function updateProject(
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  const response = await fetch(`/api/projects/${id}`, {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/projects/${id}`, {
     method: "DELETE",
   });
 

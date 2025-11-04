@@ -203,16 +203,15 @@ tr:hover {
   }
 }
 
-/* AG Grid cell input styling - make inputs fill the entire cell */
-/* Using higher specificity selectors with AG Grid theme to avoid !important */
-.ag-theme-quartz .ag-cell-editing .ag-cell-edit-input,
-.ag-theme-quartz .ag-cell-editing .ag-cell-editor input,
-.ag-theme-quartz .ag-cell-editing .ag-cell-editor select,
-.ag-theme-quartz .ag-cell-editing .ag-cell-editor textarea,
-.ag-theme-quartz-dark .ag-cell-editing .ag-cell-edit-input,
-.ag-theme-quartz-dark .ag-cell-editing .ag-cell-editor input,
-.ag-theme-quartz-dark .ag-cell-editing .ag-cell-editor select,
-.ag-theme-quartz-dark .ag-cell-editing .ag-cell-editor textarea {
+/* AG Grid cell input styling - use higher specificity instead of !important */
+.ag-theme-quartz .ag-cell-editing .ag-cell-wrapper .ag-cell-edit-input,
+.ag-theme-quartz .ag-cell-editing .ag-cell-wrapper input,
+.ag-theme-quartz .ag-cell-editing .ag-cell-wrapper select,
+.ag-theme-quartz .ag-cell-editing .ag-cell-wrapper textarea,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-wrapper .ag-cell-edit-input,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-wrapper input,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-wrapper select,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-wrapper textarea {
   width: 100%;
   height: 100%;
   padding: 8px;
@@ -220,27 +219,7 @@ tr:hover {
   box-sizing: border-box;
 }
 
-/* AG Grid text input specific styling */
-.ag-theme-quartz .ag-text-field-input,
-.ag-theme-quartz-dark .ag-text-field-input {
-  width: 100%;
-  height: 100%;
-  padding: 8px;
-  border: none;
-  box-sizing: border-box;
-}
-
-/* AG Grid select cell editor styling */
-.ag-theme-quartz .ag-select-cell-editor select,
-.ag-theme-quartz-dark .ag-select-cell-editor select {
-  width: 100%;
-  height: 100%;
-  padding: 8px;
-  border: none;
-  box-sizing: border-box;
-}
-
-/* AG Grid large text editor (textarea) styling */
+/* Specific overrides for textarea */
 .ag-theme-quartz .ag-large-text-input,
 .ag-theme-quartz-dark .ag-large-text-input {
   width: 100%;

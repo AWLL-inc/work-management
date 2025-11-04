@@ -17,40 +17,27 @@ export async function getAllUsers(options?: {
 }): Promise<User[]> {
   const { activeOnly = false } = options || {};
 
+  const selectFields = {
+    id: users.id,
+    name: users.name,
+    email: users.email,
+    emailVerified: users.emailVerified,
+    image: users.image,
+    passwordHash: users.passwordHash,
+    role: users.role,
+    createdAt: users.createdAt,
+    updatedAt: users.updatedAt,
+  };
+
+  const baseQuery = db.select(selectFields).from(users);
+
+  // Return all users (including inactive if activeOnly is false)
   if (activeOnly) {
     // Filter out users with 'inactive' role
-    return await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        emailVerified: users.emailVerified,
-        image: users.image,
-        passwordHash: users.passwordHash,
-        role: users.role,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt,
-      })
-      .from(users)
-      .where(ne(users.role, "inactive"))
-      .orderBy(users.name);
+    return await baseQuery.where(ne(users.role, "inactive")).orderBy(users.name);
   }
 
-  // Return all users except those with 'inactive' role
-  return await db
-    .select({
-      id: users.id,
-      name: users.name,
-      email: users.email,
-      emailVerified: users.emailVerified,
-      image: users.image,
-      passwordHash: users.passwordHash,
-      role: users.role,
-      createdAt: users.createdAt,
-      updatedAt: users.updatedAt,
-    })
-    .from(users)
-    .orderBy(users.name);
+  return await baseQuery.orderBy(users.name);
 }
 
 /**

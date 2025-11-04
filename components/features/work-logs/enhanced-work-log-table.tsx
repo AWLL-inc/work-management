@@ -900,54 +900,63 @@ export function EnhancedWorkLogTable({
   );
 
   // Validate work log data
-  const validateWorkLogData = useCallback((data: Partial<WorkLog>) => {
-    const errors: string[] = [];
+  const validateWorkLogData = useCallback(
+    (data: Partial<WorkLog>) => {
+      const errors: string[] = [];
 
-    if (!data.date) {
-      errors.push("日付は必須です");
-    }
-
-    if (!data.hours || data.hours.trim() === "") {
-      errors.push("時間は必須です");
-    } else {
-      const hours = parseFloat(data.hours);
-      if (Number.isNaN(hours) || hours <= 0 || hours > 168) {
-        errors.push("時間は0〜168の範囲で入力してください");
+      if (!data.date) {
+        errors.push("日付は必須です");
       }
-      // Check pattern
-      if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(data.hours)) {
-        errors.push("時間は数値で入力してください（例: 8 または 8.5）");
+
+      if (!data.hours || data.hours.trim() === "") {
+        errors.push("時間は必須です");
+      } else {
+        const hours = parseFloat(data.hours);
+        if (Number.isNaN(hours) || hours <= 0 || hours > 168) {
+          errors.push("時間は0〜168の範囲で入力してください");
+        }
+        // Check pattern
+        if (!WORK_LOG_CONSTRAINTS.HOURS.PATTERN.test(data.hours)) {
+          errors.push("時間は数値で入力してください（例: 8 または 8.5）");
+        }
       }
-    }
 
-    // Validate UUIDs using common validation function
-    const projectValidation = validateUUID(data.projectId, "プロジェクト");
-    if (!projectValidation.valid) {
-      errors.push(projectValidation.message);
-    }
+      // Validate UUIDs using common validation function
+      const projectValidation = validateUUID(data.projectId, "プロジェクト");
+      if (!projectValidation.valid) {
+        errors.push(projectValidation.message);
+      }
 
-    const categoryValidation = validateUUID(data.categoryId, "カテゴリ");
-    if (!categoryValidation.valid) {
-      errors.push(categoryValidation.message);
-    }
+      const categoryValidation = validateUUID(data.categoryId, "カテゴリ");
+      if (!categoryValidation.valid) {
+        errors.push(categoryValidation.message);
+      }
 
-    const userValidation = validateUUID(data.userId, "ユーザー");
-    if (!userValidation.valid) {
-      errors.push(userValidation.message);
-    }
+      const userValidation = validateUUID(data.userId, "ユーザー");
+      if (!userValidation.valid) {
+        errors.push(userValidation.message);
+      } else {
+        // Check if user exists
+        const userExists = users.some((u) => u.id === data.userId);
+        if (!userExists) {
+          errors.push("選択されたユーザーが存在しません");
+        }
+      }
 
-    // Check details length if provided
-    if (
-      data.details &&
-      data.details.length > WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH
-    ) {
-      errors.push(
-        `詳細は${WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH}文字以下で入力してください`,
-      );
-    }
+      // Check details length if provided
+      if (
+        data.details &&
+        data.details.length > WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH
+      ) {
+        errors.push(
+          `詳細は${WORK_LOG_CONSTRAINTS.DETAILS.MAX_LENGTH}文字以下で入力してください`,
+        );
+      }
 
-    return errors;
-  }, []);
+      return errors;
+    },
+    [users],
+  );
 
   // AG Grid standard: Simplified batch save with validation
   const handleBatchSave = useCallback(async () => {

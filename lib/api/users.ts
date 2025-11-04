@@ -44,20 +44,73 @@ function getBaseUrl(): string {
   return `http://localhost:${port}`;
 }
 
+/**
+ * Fetch with timeout
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeout = 10000,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Request timeout");
+    }
+    throw error;
+  }
+}
+
+/**
+ * Retry function with exponential backoff
+ */
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delay = 1000,
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries === 0) {
+      throw error;
+    }
+
+    // Wait with exponential backoff
+    await new Promise((resolve) => setTimeout(resolve, delay));
+
+    // Retry with increased delay
+    return retryWithBackoff(fn, retries - 1, delay * 2);
+  }
+}
+
 export async function getUsers(): Promise<SanitizedUser[]> {
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/api/users`;
-  const response = await fetch(url);
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch users");
-  }
+  return retryWithBackoff(async () => {
+    const response = await fetchWithTimeout(url, {}, 10000);
 
-  const result: ApiResponse<SanitizedUser[]> = await response.json();
+    if (!response.ok) {
+      throw new Error(`Failed to fetch users: ${response.status}`);
+    }
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message || "Failed to fetch users");
-  }
+    const result: ApiResponse<SanitizedUser[]> = await response.json();
 
-  return result.data;
+    if (!result.success || !result.data) {
+      throw new Error(result.error?.message || "Failed to fetch users");
+    }
+
+    return result.data;
+  });
 }

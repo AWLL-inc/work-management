@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Validate query parameters
     const { searchParams } = new URL(request.url);
     const queryParams = {
-      activeOnly: searchParams.get("activeOnly"),
+      activeOnly: searchParams.get("activeOnly") || undefined,
     };
 
     const validatedParams = getUsersQuerySchema.safeParse(queryParams);

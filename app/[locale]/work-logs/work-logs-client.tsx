@@ -93,7 +93,7 @@ export function WorkLogsClient({
   }) => {
     // Create optimistic work log
     const optimisticLog: WorkLog = {
-      id: `temp-${Date.now()}`,
+      id: `temp-${crypto.randomUUID()}`,
       userId: currentUserId,
       date: new Date(data.date),
       hours: data.hours,
@@ -114,8 +114,8 @@ export function WorkLogsClient({
         toast.error(
           error instanceof Error ? error.message : t("messages.createError"),
         );
-        // エラーを再スローして useOptimistic の自動ロールバックをトリガー
-        throw error;
+        // Note: useOptimistic will automatically revert on component re-render
+        // when the server state doesn't include the optimistic update
       }
     });
   };
@@ -146,8 +146,8 @@ export function WorkLogsClient({
         toast.error(
           error instanceof Error ? error.message : t("messages.updateError"),
         );
-        // エラーを再スローして useOptimistic の自動ロールバックをトリガー
-        throw error;
+        // Note: useOptimistic will automatically revert on component re-render
+        // when the server state doesn't include the optimistic update
       }
     });
   };
@@ -163,8 +163,8 @@ export function WorkLogsClient({
         toast.error(
           error instanceof Error ? error.message : t("messages.deleteError"),
         );
-        // エラーを再スローして useOptimistic の自動ロールバックをトリガー
-        throw error;
+        // Note: useOptimistic will automatically revert on component re-render
+        // when the server state doesn't include the optimistic update
       }
     });
   };

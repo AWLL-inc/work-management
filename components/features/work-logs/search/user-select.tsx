@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import type { User } from "@/drizzle/schema";
@@ -20,9 +21,11 @@ export function UserSelect({
   selectedUserId,
   onSelectionChange,
   className,
-  placeholder = "ユーザーを選択",
+  placeholder,
   showAdminOnly = false,
 }: UserSelectProps) {
+  const t = useTranslations("workLogs");
+
   const filteredUsers = React.useMemo(() => {
     return showAdminOnly
       ? users.filter((user) => user.role === "admin" || user.role === "manager")
@@ -44,8 +47,8 @@ export function UserSelect({
     }));
 
     // Add "none" option at the beginning
-    return [{ value: "none", label: "選択なし" }, ...userOptions];
-  }, [paginatedItems]);
+    return [{ value: "none", label: t("search.noneSelected") }, ...userOptions];
+  }, [paginatedItems, t]);
 
   const handleValueChange = (value: string) => {
     if (value === "none" || value === "") {
@@ -62,9 +65,9 @@ export function UserSelect({
       onValueChange={handleValueChange}
       onSearch={handleSearch}
       onLoadMore={loadMore}
-      placeholder={placeholder}
-      searchPlaceholder="ユーザー名またはメールアドレスで検索..."
-      emptyText="ユーザーが見つかりませんでした"
+      placeholder={placeholder || t("placeholders.selectUser")}
+      searchPlaceholder={t("search.searchUser")}
+      emptyText={t("search.noUsersFound")}
       className={cn("w-full", className)}
       hasMore={hasMore}
     />

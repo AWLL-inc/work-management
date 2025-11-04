@@ -184,7 +184,29 @@
       "users": "Users",
       "dateRange": "Date Range",
       "from": "From",
-      "to": "To"
+      "to": "To",
+      "selectedFilters": "Selected Filters:",
+      "clearAll": "Clear All",
+      "apply": "Apply",
+      "clear": "Clear",
+      "clearDate": "Clear Date",
+      "searchProjects": "Search projects",
+      "searchCategories": "Search categories",
+      "searchUser": "Search by username or email...",
+      "noProjectsFound": "No projects found",
+      "noCategoriesFound": "No categories found",
+      "noUsersFound": "No users found",
+      "loadingProjects": "Loading projects...",
+      "loadingCategories": "Loading categories...",
+      "noneSelected": "None selected",
+      "projectSelection": "Project Selection",
+      "categorySelection": "Category Selection",
+      "closeProjectSelection": "Close project selection",
+      "closeCategorySelection": "Close category selection",
+      "dateRangeError": {
+        "startAfterEnd": "Start date must be before or equal to end date",
+        "endBeforeStart": "End date must be after or equal to start date"
+      }
     },
     "table": {
       "date": "Date",

@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ export function DateRangePicker({
   onChange,
   className,
 }: DateRangePickerProps) {
+  const t = useTranslations("workLogs");
   const [error, setError] = useState<string | null>(null);
 
   const formatDate = (date: Date | undefined) => {
@@ -35,9 +37,9 @@ export function DateRangePicker({
   const handleFromChange = (dateString: string) => {
     const fromDate = parseDate(dateString);
 
-    // バリデーション: 開始日が終了日より後の場合
+    // Validation: check if start date is after end date
     if (value.to && fromDate && fromDate > value.to) {
-      setError("開始日は終了日以前を選択してください");
+      setError(t("search.dateRangeError.startAfterEnd"));
       return;
     }
 
@@ -51,9 +53,9 @@ export function DateRangePicker({
   const handleToChange = (dateString: string) => {
     const toDate = parseDate(dateString);
 
-    // バリデーション: 終了日が開始日より前の場合
+    // Validation: check if end date is before start date
     if (value.from && toDate && toDate < value.from) {
-      setError("終了日は開始日以降を選択してください");
+      setError(t("search.dateRangeError.endBeforeStart"));
       return;
     }
 
@@ -80,7 +82,7 @@ export function DateRangePicker({
             htmlFor="from-date"
             className="text-xs text-muted-foreground mb-1 block"
           >
-            開始日
+            {t("search.from")}
           </label>
           <Input
             id="from-date"
@@ -95,7 +97,7 @@ export function DateRangePicker({
             htmlFor="to-date"
             className="text-xs text-muted-foreground mb-1 block"
           >
-            終了日
+            {t("search.to")}
           </label>
           <Input
             id="to-date"
@@ -115,7 +117,7 @@ export function DateRangePicker({
           className="text-xs text-destructive"
         >
           <X className="h-3 w-3 mr-1" />
-          日付をクリア
+          {t("search.clearDate")}
         </Button>
       )}
 

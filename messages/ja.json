@@ -184,7 +184,29 @@
       "users": "ユーザー",
       "dateRange": "期間",
       "from": "開始日",
-      "to": "終了日"
+      "to": "終了日",
+      "selectedFilters": "選択中の条件:",
+      "clearAll": "すべて解除",
+      "apply": "適用",
+      "clear": "クリア",
+      "clearDate": "日付をクリア",
+      "searchProjects": "プロジェクトを検索",
+      "searchCategories": "カテゴリを検索",
+      "searchUser": "ユーザー名またはメールアドレスで検索...",
+      "noProjectsFound": "該当するプロジェクトが見つかりません",
+      "noCategoriesFound": "該当するカテゴリが見つかりません",
+      "noUsersFound": "ユーザーが見つかりませんでした",
+      "loadingProjects": "プロジェクトを読み込み中...",
+      "loadingCategories": "カテゴリを読み込み中...",
+      "noneSelected": "選択なし",
+      "projectSelection": "プロジェクト選択",
+      "categorySelection": "カテゴリ選択",
+      "closeProjectSelection": "プロジェクト選択を閉じる",
+      "closeCategorySelection": "カテゴリ選択を閉じる",
+      "dateRangeError": {
+        "startAfterEnd": "開始日は終了日以前を選択してください",
+        "endBeforeStart": "終了日は開始日以降を選択してください"
+      }
     },
     "table": {
       "date": "日付",

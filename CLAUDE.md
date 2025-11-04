@@ -25,8 +25,15 @@ docs/
 
 ### Language Guidelines
 - **English**: Code, comments, commit messages, API documentation
+  - All TypeScript/JavaScript code comments use English
+  - JSDoc comments, inline comments, and function descriptions in English
+  - Example: `/** Creates a type-safe column definition */`
 - **Japanese**: ADR documentation (as per project requirements)
+  - Architecture Decision Records written in Japanese
+  - Technical specifications and design documents in Japanese
 - **Consistency**: Maintain language consistency within document types
+  - Code files: 100% English comments
+  - Documentation files: Language as specified (ADR = Japanese, API docs = English)
 
 ## Architecture Decision Records (ADR)
 

@@ -24,11 +24,11 @@
 
 import { useCallback, useState } from "react";
 import type {
+  SortDirection,
   SortingActions,
   SortingConfig,
   SortingFeature,
   SortingState,
-  SortDirection,
   SortModel,
 } from "./types";
 
@@ -60,9 +60,7 @@ const DEFAULT_CONFIG: Required<SortingConfig> = {
  * });
  * ```
  */
-export function useSortingFeature(
-  config: SortingConfig = {},
-): SortingFeature {
+export function useSortingFeature(config: SortingConfig = {}): SortingFeature {
   // Merge config with defaults
   const mergedConfig: Required<SortingConfig> = {
     ...DEFAULT_CONFIG,

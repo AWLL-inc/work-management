@@ -2,6 +2,13 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SearchControls } from "../search-controls";
 
+// Mock next-intl
+vi.mock("next-intl", () => ({
+  useTranslations: vi.fn(),
+}));
+
+import { useTranslations } from "next-intl";
+
 interface DateRange {
   from: Date | undefined;
   to: Date | undefined;
@@ -67,6 +74,29 @@ describe("SearchControls", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    const mockT = vi.fn((key: string) => {
+      const translations: Record<string, string> = {
+        "search.from": "開始日",
+        "search.to": "終了日",
+        "search.clearDate": "日付をクリア",
+        "search.dateRangeError.startAfterEnd":
+          "開始日は終了日以前を選択してください",
+        "search.dateRangeError.endBeforeStart":
+          "終了日は開始日以降を選択してください",
+        "search.selectedFilters": "選択中の条件:",
+        "search.clearAll": "すべてクリア",
+        "search.apply": "適用",
+        "search.clear": "クリア",
+        "search.searchProjects": "プロジェクトを検索",
+        "search.noProjectsFound": "プロジェクトが見つかりません",
+        "search.loadingProjects": "プロジェクトを読み込み中...",
+        "search.searchCategories": "カテゴリを検索",
+        "search.noCategoriesFound": "カテゴリが見つかりません",
+        "search.loadingCategories": "カテゴリを読み込み中...",
+      };
+      return translations[key] || key;
+    });
+    vi.mocked(useTranslations).mockReturnValue(mockT as any);
   });
 
   it("should render all filter components", () => {

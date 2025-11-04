@@ -1,7 +1,14 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { User } from "@/drizzle/schema";
 import { UserSelect } from "../user-select";
+
+// Mock next-intl
+vi.mock("next-intl", () => ({
+  useTranslations: vi.fn(),
+}));
+
+import { useTranslations } from "next-intl";
 
 // Mock users data
 const mockUsers: User[] = [
@@ -41,6 +48,19 @@ const mockUsers: User[] = [
 ];
 
 describe("UserSelect", () => {
+  beforeEach(() => {
+    const mockT = vi.fn((key: string) => {
+      const translations: Record<string, string> = {
+        "search.noneSelected": "選択なし",
+        "placeholders.selectUser": "ユーザーを選択",
+        "search.searchUser": "ユーザー名またはメールアドレスで検索...",
+        "search.noUsersFound": "ユーザーが見つかりません",
+      };
+      return translations[key] || key;
+    });
+    vi.mocked(useTranslations).mockReturnValue(mockT as any);
+  });
+
   it("should render combobox with default none option", () => {
     const onSelectionChange = vi.fn();
     render(

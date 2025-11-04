@@ -2,24 +2,14 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { ProjectTable } from "@/components/features/admin/projects/project-table";
 import type { Project } from "@/drizzle/schema";
+import type { CreateProjectInput, UpdateProjectInput } from "@/types/project";
+import { EnhancedProjectTable } from "./_components/enhanced-project-table";
 
 interface ProjectsClientProps {
   initialProjects: Project[];
-  onCreateProject: (data: {
-    name: string;
-    description?: string;
-    isActive: boolean;
-  }) => Promise<void>;
-  onUpdateProject: (
-    id: string,
-    data: {
-      name?: string;
-      description?: string | null;
-      isActive?: boolean;
-    },
-  ) => Promise<void>;
+  onCreateProject: (data: CreateProjectInput) => Promise<void>;
+  onUpdateProject: (id: string, data: UpdateProjectInput) => Promise<void>;
   onDeleteProject: (id: string) => Promise<void>;
 }
 
@@ -31,11 +21,7 @@ export function ProjectsClient({
 }: ProjectsClientProps) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleCreateProject = async (data: {
-    name: string;
-    description?: string;
-    isActive: boolean;
-  }) => {
+  const handleCreateProject = async (data: CreateProjectInput) => {
     try {
       setIsLoading(true);
       await onCreateProject(data);
@@ -50,14 +36,7 @@ export function ProjectsClient({
     }
   };
 
-  const handleUpdateProject = async (
-    id: string,
-    data: {
-      name?: string;
-      description?: string | null;
-      isActive?: boolean;
-    },
-  ) => {
+  const handleUpdateProject = async (id: string, data: UpdateProjectInput) => {
     try {
       setIsLoading(true);
       await onUpdateProject(id, data);
@@ -89,7 +68,7 @@ export function ProjectsClient({
 
   return (
     <div className="px-4 sm:px-0">
-      <ProjectTable
+      <EnhancedProjectTable
         projects={initialProjects}
         onCreateProject={handleCreateProject}
         onUpdateProject={handleUpdateProject}

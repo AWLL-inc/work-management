@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ProjectFormDialog } from "@/app/[locale]/admin/projects/_components/project-form-dialog";
 import { DataTable } from "@/components/data-table/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import type { Project } from "@/drizzle/schema";
 import { createProjectColumns } from "./project-columns";
-import { ProjectFormDialog } from "./project-form-dialog";
 
 interface ProjectTableProps {
   projects: Project[];

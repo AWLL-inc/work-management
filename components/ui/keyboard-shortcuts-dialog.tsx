@@ -8,7 +8,7 @@
 "use client";
 
 import { HelpCircle, Keyboard } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

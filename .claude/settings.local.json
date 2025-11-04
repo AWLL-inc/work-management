@@ -126,7 +126,10 @@
       "WebFetch(domain:www.ag-grid.com)",
       "WebFetch(domain:stackoverflow.com)",
       "WebFetch(domain:blog.ag-grid.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(DISABLE_AUTH=false pnpm run:*)",
+      "Bash(pnpm run test:coverage:*)",
+      "Bash(pnpm biome:*)"
     ],
     "deny": [],
     "ask": []

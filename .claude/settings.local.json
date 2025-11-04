@@ -130,7 +130,8 @@
       "Bash(DISABLE_AUTH=false pnpm run:*)",
       "Bash(pnpm run test:coverage:*)",
       "Bash(pnpm biome:*)",
-      "Bash(pnpm type-check)"
+      "Bash(pnpm type-check)",
+      "Bash(pnpm lint)"
     ],
     "deny": [],
     "ask": []

@@ -220,12 +220,22 @@ tr:hover {
 }
 
 /* Specific overrides for textarea */
-.ag-theme-quartz .ag-large-text-input,
-.ag-theme-quartz-dark .ag-large-text-input {
+/* Light mode */
+.ag-theme-quartz .ag-large-text-input {
   width: 100%;
   min-height: 100px;
   padding: 8px;
   border: 1px solid hsl(var(--border));
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+/* Dark mode - より明るいボーダー */
+.ag-theme-quartz-dark .ag-large-text-input {
+  width: 100%;
+  min-height: 100px;
+  padding: 8px;
+  border: 1px solid hsl(217 33% 40%); /* より明るい色 */
   box-sizing: border-box;
   resize: vertical;
 }

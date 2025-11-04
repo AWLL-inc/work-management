@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError, z } from "zod";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { getAllUsers } from "@/lib/db/repositories/user-repository";
 
 // Use Node.js runtime for database operations with Drizzle ORM
@@ -45,29 +45,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if authentication is disabled for development
-    const isDevelopmentMode = process.env.NODE_ENV === "development";
-    const isAuthDisabled = process.env.DISABLE_AUTH === "true";
-
-    let session = null;
-    if (isDevelopmentMode && isAuthDisabled) {
-      // Skip authentication in development mode when DISABLE_AUTH=true
-      session = { user: { id: "dev-user", role: "admin" } };
-    } else {
-      // Check authentication
-      session = await auth();
-      if (!session?.user) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: "UNAUTHORIZED",
-              message: "Authentication required",
-            },
+    // Check authentication using helper
+    const session = await getAuthenticatedSession();
+    if (!session) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Authentication required",
           },
-          { status: 401 },
-        );
-      }
+        },
+        { status: 401 },
+      );
     }
 
     // Parse activeOnly parameter

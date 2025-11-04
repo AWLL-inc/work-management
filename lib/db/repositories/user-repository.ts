@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, ne } from "drizzle-orm";
 import { type User, users } from "@/drizzle/schema";
 import { db } from "@/lib/db/connection";
 
@@ -32,7 +32,7 @@ export async function getAllUsers(options?: {
         updatedAt: users.updatedAt,
       })
       .from(users)
-      .where(eq(users.role, "user"))
+      .where(ne(users.role, "inactive"))
       .orderBy(users.name);
   }
 

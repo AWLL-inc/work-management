@@ -79,6 +79,7 @@ interface EnhancedWorkLogTableProps {
     projectId: string;
     categoryId: string;
     details?: string;
+    userId?: string;
   }) => Promise<void>;
   onUpdateWorkLog: (
     id: string,
@@ -88,6 +89,7 @@ interface EnhancedWorkLogTableProps {
       projectId?: string;
       categoryId?: string;
       details?: string | null;
+      userId?: string;
     },
   ) => Promise<void>;
   onDeleteWorkLog: (id: string) => Promise<void>;
@@ -1037,6 +1039,7 @@ export function EnhancedWorkLogTable({
             projectId: row.projectId,
             categoryId: row.categoryId,
             details: row.details || "",
+            userId: row.userId,
           };
           return onCreateWorkLog(createData);
         });
@@ -1055,6 +1058,7 @@ export function EnhancedWorkLogTable({
             projectId: row.projectId,
             categoryId: row.categoryId,
             details: row.details || "",
+            userId: row.userId,
           };
           return onUpdateWorkLog(row.id, updateData);
         });

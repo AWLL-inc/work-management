@@ -17,6 +17,7 @@ import { ApproverCombobox } from "./approver-combobox";
 
 interface UserRequestFormProps {
   availableApprovers: User[];
+  currentUser: User;
   onSubmit?: (data: UserRequestData) => void;
   isSubmitting?: boolean;
 }
@@ -32,6 +33,7 @@ export interface UserRequestData {
 
 export function UserRequestForm({
   availableApprovers,
+  currentUser,
   onSubmit,
   isSubmitting = false,
 }: UserRequestFormProps) {
@@ -40,7 +42,7 @@ export function UserRequestForm({
     userName: "",
     userEmail: "",
     userRole: "",
-    approverId: "",
+    approverId: currentUser.id, // Set default to current user
     reason: "",
   });
 
@@ -122,10 +124,12 @@ export function UserRequestForm({
             approvers={availableApprovers}
             value={formData.approverId}
             onValueChange={handleInputChange("approverId")}
+            disabled
           />
           <p className="text-sm text-muted-foreground mt-1">
-            承認者を検索して選択してください。未入力の場合は最初の20件が表示され、
-            入力すると検索結果が表示されます。スクロールで追加読み込みが可能です。
+            承認者はログインユーザー（
+            {currentUser.name} - {currentUser.email}
+            ）に自動設定されています。
           </p>
         </div>
 

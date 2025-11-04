@@ -3,12 +3,12 @@
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
-import type { User } from "@/drizzle/schema";
+import type { SanitizedUser } from "@/lib/api/users";
 import { useIncrementalSearch } from "@/lib/hooks/use-incremental-search";
 import { cn } from "@/lib/utils";
 
 interface UserSelectProps {
-  users: User[];
+  users: SanitizedUser[];
   selectedUserId: string | null;
   onSelectionChange: (userId: string | null) => void;
   className?: string;

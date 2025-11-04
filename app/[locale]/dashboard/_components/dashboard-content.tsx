@@ -97,7 +97,8 @@ export function DashboardContent() {
 
       {/* Last Updated */}
       <div className="text-center text-xs text-muted-foreground">
-        {t("lastUpdated")}: {new Date().toLocaleTimeString()} {t("autoRefreshInterval")}
+        {t("lastUpdated")}: {new Date().toLocaleTimeString()}{" "}
+        {t("autoRefreshInterval")}
       </div>
     </div>
   );

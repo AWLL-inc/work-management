@@ -134,38 +134,41 @@ export function AGGridWorkLogTable({
   }, [workLogs, projectsMap, categoriesMap, tCommon]);
 
   // Actions cell renderer
-  const ActionsCellRenderer = useCallback((params: { data: WorkLog }) => {
-    const onEdit = () => {
-      setSelectedWorkLog(params.data);
-      setFormOpen(true);
-    };
+  const ActionsCellRenderer = useCallback(
+    (params: { data: WorkLog }) => {
+      const onEdit = () => {
+        setSelectedWorkLog(params.data);
+        setFormOpen(true);
+      };
 
-    const onDelete = () => {
-      setSelectedWorkLog(params.data);
-      setDeleteDialogOpen(true);
-    };
+      const onDelete = () => {
+        setSelectedWorkLog(params.data);
+        setDeleteDialogOpen(true);
+      };
 
-    return (
-      <div className="flex gap-2 h-full items-center">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEdit}
-          className="h-7 px-2"
-        >
-          {t("buttons.edit")}
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={onDelete}
-          className="h-7 px-2"
-        >
-          {t("buttons.delete")}
-        </Button>
-      </div>
-    );
-  }, [t]);
+      return (
+        <div className="flex gap-2 h-full items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onEdit}
+            className="h-7 px-2"
+          >
+            {t("buttons.edit")}
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={onDelete}
+            className="h-7 px-2"
+          >
+            {t("buttons.delete")}
+          </Button>
+        </div>
+      );
+    },
+    [t],
+  );
 
   // Column definitions
   const columnDefs: ColDef[] = useMemo(() => {
@@ -502,9 +505,7 @@ export function AGGridWorkLogTable({
             <h2 className="text-2xl font-bold text-primary mb-2">
               {t("title")}
             </h2>
-            <p className="text-muted-foreground">
-              {t("subtitle")}
-            </p>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           <div className="flex gap-2">
             {!batchEditingEnabled ? (
@@ -599,9 +600,7 @@ export function AGGridWorkLogTable({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("deleteTitle")}</DialogTitle>
-            <DialogDescription>
-              {t("deleteConfirmation")}
-            </DialogDescription>
+            <DialogDescription>{t("deleteConfirmation")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button

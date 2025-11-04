@@ -1,8 +1,31 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DateRangePicker } from "../date-range-picker";
 
+// Mock next-intl
+vi.mock("next-intl", () => ({
+  useTranslations: vi.fn(),
+}));
+
+import { useTranslations } from "next-intl";
+
 describe("DateRangePicker", () => {
+  beforeEach(() => {
+    const mockT = vi.fn((key: string) => {
+      const translations: Record<string, string> = {
+        "search.from": "開始日",
+        "search.to": "終了日",
+        "search.clearDate": "日付をクリア",
+        "search.dateRangeError.startAfterEnd":
+          "開始日は終了日以前を選択してください",
+        "search.dateRangeError.endBeforeStart":
+          "終了日は開始日以降を選択してください",
+      };
+      return translations[key] || key;
+    });
+    vi.mocked(useTranslations).mockReturnValue(mockT as any);
+  });
+
   const defaultValue = { from: undefined, to: undefined };
 
   it("should render date inputs with proper labels", () => {

@@ -1,8 +1,8 @@
 "use client";
 
 import { ClipboardList, FolderKanban, LogOut, Tags } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { logoutAction } from "@/app/logout/actions";
 import { Button } from "@/components/ui/button";

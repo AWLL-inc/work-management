@@ -23,5 +23,8 @@ export async function setLocale(locale: string) {
     maxAge: 31536000, // 1 year
   });
 
-  console.log("[setLocale] Cookie NEXT_LOCALE set successfully for locale:", locale);
+  console.log(
+    "[setLocale] Cookie NEXT_LOCALE set successfully for locale:",
+    locale,
+  );
 }

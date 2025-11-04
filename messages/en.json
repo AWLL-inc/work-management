@@ -30,13 +30,15 @@
     "inactive": "Inactive"
   },
   "nav": {
+    "appTitle": "Work Management",
     "dashboard": "Dashboard",
     "workLogs": "Work Logs",
     "admin": "Admin",
     "projects": "Projects",
-    "workCategories": "Work Categories",
+    "categories": "Categories",
     "signOut": "Sign Out",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "logout": "Logout"
   },
   "home": {
     "title": "Work Management",
@@ -127,10 +129,28 @@
     }
   },
   "workLogs": {
-    "title": "Work Logs",
-    "addNew": "Add New Work Log",
+    "title": "Work Logs Management",
+    "subtitle": "Enhanced spreadsheet-like interface for work log management",
+    "addNew": "Add Work Log",
     "editTitle": "Edit Work Log",
     "createTitle": "Create Work Log",
+    "deleteTitle": "Delete Work Log",
+    "deleteConfirmation": "Are you sure you want to delete this work log? This action cannot be undone.",
+    "tabs": {
+      "own": "My Work Logs",
+      "team": "Team Work Logs",
+      "all": "All Work Logs"
+    },
+    "batchEdit": "Batch Edit",
+    "batchSave": "Save ({count})",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "confirmCancel": "Discard unsaved changes?",
+    "unsavedChanges": "You have {count} unsaved changes. Canceling will discard these changes.",
+    "continueEditing": "Continue Editing",
+    "discardChanges": "Discard Changes",
+    "noChanges": "No changes to save",
+    "loading": "Loading work logs...",
     "fields": {
       "date": "Date",
       "project": "Project",
@@ -179,7 +199,14 @@
       "deleted": "Work log deleted successfully",
       "createError": "Failed to create work log",
       "updateError": "Failed to update work log",
-      "deleteError": "Failed to delete work log"
+      "deleteError": "Failed to delete work log",
+      "batchSaved": "Saved {count} changes successfully",
+      "batchSaveError": "Failed to save changes"
+    },
+    "buttons": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting..."
     }
   },
   "admin": {

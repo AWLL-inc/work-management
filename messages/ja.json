@@ -30,13 +30,15 @@
     "inactive": "無効"
   },
   "nav": {
+    "appTitle": "工数管理",
     "dashboard": "ダッシュボード",
-    "workLogs": "作業ログ",
+    "workLogs": "工数入力",
     "admin": "管理",
     "projects": "プロジェクト",
-    "workCategories": "作業カテゴリ",
-    "signOut": "サインアウト",
-    "signIn": "サインイン"
+    "categories": "カテゴリ",
+    "signOut": "ログアウト",
+    "signIn": "ログイン",
+    "logout": "ログアウト"
   },
   "home": {
     "title": "Work Management",
@@ -127,10 +129,28 @@
     }
   },
   "workLogs": {
-    "title": "作業ログ",
-    "addNew": "新しい作業ログを追加",
+    "title": "工数管理",
+    "subtitle": "Enhanced spreadsheet-like interface for work log management",
+    "addNew": "工数を追加",
     "editTitle": "作業ログを編集",
     "createTitle": "作業ログを作成",
+    "deleteTitle": "工数を削除",
+    "deleteConfirmation": "Are you sure you want to delete this work log? This action cannot be undone.",
+    "tabs": {
+      "own": "自分の工数",
+      "team": "チームの工数",
+      "all": "全ての工数"
+    },
+    "batchEdit": "一括編集",
+    "batchSave": "保存 ({count}件)",
+    "saving": "保存中...",
+    "cancel": "キャンセル",
+    "confirmCancel": "未保存の変更を破棄しますか？",
+    "unsavedChanges": "{count}件の未保存の変更があります。キャンセルすると、これらの変更は失われます。",
+    "continueEditing": "編集を継続",
+    "discardChanges": "変更を破棄",
+    "noChanges": "変更がありません",
+    "loading": "Loading work logs...",
     "fields": {
       "date": "日付",
       "project": "プロジェクト",
@@ -174,12 +194,19 @@
       "noResults": "結果がありません"
     },
     "messages": {
-      "created": "作業ログが作成されました",
-      "updated": "作業ログが更新されました",
-      "deleted": "作業ログが削除されました",
-      "createError": "作業ログの作成に失敗しました",
-      "updateError": "作業ログの更新に失敗しました",
-      "deleteError": "作業ログの削除に失敗しました"
+      "created": "Work log created successfully",
+      "updated": "Work log updated successfully",
+      "deleted": "Work log deleted successfully",
+      "createError": "Failed to create work log",
+      "updateError": "Failed to update work log",
+      "deleteError": "Failed to delete work log",
+      "batchSaved": "{count}件の変更を保存しました",
+      "batchSaveError": "保存に失敗しました"
+    },
+    "buttons": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting..."
     }
   },
   "admin": {

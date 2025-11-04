@@ -15,6 +15,7 @@ import type {
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,7 @@ export function AGGridWorkLogTable({
   onRefresh,
   isLoading,
 }: AGGridWorkLogTableProps) {
+  const t = useTranslations("workLogs");
   const [formOpen, setFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
@@ -150,7 +152,7 @@ export function AGGridWorkLogTable({
           onClick={onEdit}
           className="h-7 px-2"
         >
-          Edit
+          {t("buttons.edit")}
         </Button>
         <Button
           variant="destructive"
@@ -158,11 +160,11 @@ export function AGGridWorkLogTable({
           onClick={onDelete}
           className="h-7 px-2"
         >
-          Delete
+          {t("buttons.delete")}
         </Button>
       </div>
     );
-  }, []);
+  }, [t]);
 
   // Column definitions
   const columnDefs: ColDef[] = useMemo(() => {
@@ -424,7 +426,7 @@ export function AGGridWorkLogTable({
   // Handle batch save
   const handleBatchSave = useCallback(async () => {
     if (pendingChanges.size === 0) {
-      toast.info("変更がありません");
+      toast.info(t("noChanges"));
       return;
     }
 
@@ -452,7 +454,7 @@ export function AGGridWorkLogTable({
       const result = await response.json();
 
       if (result.success) {
-        toast.success(`${pendingChanges.size}件の変更を保存しました`);
+        toast.success(t("messages.batchSaved", { count: pendingChanges.size }));
         setPendingChanges(new Map());
         setFailedWorkLogIds(new Set());
         setBatchEditingEnabled(false);
@@ -462,12 +464,12 @@ export function AGGridWorkLogTable({
         throw new Error(result.error?.message || "Batch update failed");
       }
     } catch (error) {
-      toast.error("保存に失敗しました");
+      toast.error(t("messages.batchSaveError"));
       console.error("Batch save error:", error);
     } finally {
       setIsSubmitting(false);
     }
-  }, [pendingChanges, onRefresh]);
+  }, [pendingChanges, onRefresh, t]);
 
   // Handle cancel batch editing
   const handleCancelBatchEditing = useCallback(() => {
@@ -495,10 +497,10 @@ export function AGGridWorkLogTable({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-primary mb-2">
-              工数管理
+              {t("title")}
             </h2>
             <p className="text-muted-foreground">
-              Enhanced spreadsheet-like interface for work log management
+              {t("subtitle")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -509,7 +511,7 @@ export function AGGridWorkLogTable({
                   size="lg"
                   onClick={() => setBatchEditingEnabled(true)}
                 >
-                  一括編集
+                  {t("batchEdit")}
                 </Button>
                 <Button
                   variant="outline"
@@ -519,7 +521,7 @@ export function AGGridWorkLogTable({
                     setFormOpen(true);
                   }}
                 >
-                  工数を追加
+                  {t("addNew")}
                 </Button>
               </>
             ) : (
@@ -531,8 +533,8 @@ export function AGGridWorkLogTable({
                   disabled={isSubmitting || pendingChanges.size === 0}
                 >
                   {isSubmitting
-                    ? "保存中..."
-                    : `保存 (${pendingChanges.size}件)`}
+                    ? t("saving")
+                    : t("batchSave", { count: pendingChanges.size })}
                 </Button>
                 <Button
                   variant="outline"
@@ -540,7 +542,7 @@ export function AGGridWorkLogTable({
                   onClick={handleCancelBatchEditing}
                   disabled={isSubmitting}
                 >
-                  キャンセル
+                  {t("cancel")}
                 </Button>
               </>
             )}
@@ -549,7 +551,7 @@ export function AGGridWorkLogTable({
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8">Loading work logs...</div>
+        <div className="text-center py-8">{t("loading")}</div>
       ) : (
         <div
           className={`ag-theme-quartz ag-work-log-table h-[600px] w-full border rounded-lg${batchEditingEnabled ? " batch-editing" : ""}`}
@@ -593,10 +595,9 @@ export function AGGridWorkLogTable({
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>工数を削除</DialogTitle>
+            <DialogTitle>{t("deleteTitle")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this work log? This action cannot
-              be undone.
+              {t("deleteConfirmation")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -604,14 +605,14 @@ export function AGGridWorkLogTable({
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Deleting..." : "Delete"}
+              {isSubmitting ? t("buttons.deleting") : t("buttons.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -620,10 +621,9 @@ export function AGGridWorkLogTable({
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>未保存の変更を破棄しますか？</DialogTitle>
+            <DialogTitle>{t("confirmCancel")}</DialogTitle>
             <DialogDescription>
-              {pendingChanges.size}件の未保存の変更があります。
-              キャンセルすると、これらの変更は失われます。
+              {t("unsavedChanges", { count: pendingChanges.size })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -631,10 +631,10 @@ export function AGGridWorkLogTable({
               variant="outline"
               onClick={() => setCancelDialogOpen(false)}
             >
-              編集を継続
+              {t("continueEditing")}
             </Button>
             <Button variant="destructive" onClick={handleConfirmCancel}>
-              変更を破棄
+              {t("discardChanges")}
             </Button>
           </DialogFooter>
         </DialogContent>

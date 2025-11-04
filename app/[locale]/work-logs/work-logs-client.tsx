@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ export function WorkLogsClient({
   onDeleteWorkLog,
   onRefresh,
 }: WorkLogsClientProps) {
+  const t = useTranslations("workLogs");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,10 +64,10 @@ export function WorkLogsClient({
     try {
       setIsLoading(true);
       await onCreateWorkLog(data);
-      toast.success("Work log created successfully");
+      toast.success(t("messages.created"));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create work log",
+        error instanceof Error ? error.message : t("messages.createError"),
       );
       throw error;
     } finally {
@@ -86,10 +88,10 @@ export function WorkLogsClient({
     try {
       setIsLoading(true);
       await onUpdateWorkLog(id, data);
-      toast.success("Work log updated successfully");
+      toast.success(t("messages.updated"));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update work log",
+        error instanceof Error ? error.message : t("messages.updateError"),
       );
       throw error;
     } finally {
@@ -101,10 +103,10 @@ export function WorkLogsClient({
     try {
       setIsLoading(true);
       await onDeleteWorkLog(id);
-      toast.success("Work log deleted successfully");
+      toast.success(t("messages.deleted"));
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to delete work log",
+        error instanceof Error ? error.message : t("messages.deleteError"),
       );
       throw error;
     } finally {
@@ -130,10 +132,10 @@ export function WorkLogsClient({
         onValueChange={handleScopeChange}
       >
         <TabsList>
-          <TabsTrigger value="own">自分の工数</TabsTrigger>
-          <TabsTrigger value="team">チームの工数</TabsTrigger>
+          <TabsTrigger value="own">{t("tabs.own")}</TabsTrigger>
+          <TabsTrigger value="team">{t("tabs.team")}</TabsTrigger>
           {userRole === "admin" && (
-            <TabsTrigger value="all">全ての工数</TabsTrigger>
+            <TabsTrigger value="all">{t("tabs.all")}</TabsTrigger>
           )}
         </TabsList>
       </Tabs>

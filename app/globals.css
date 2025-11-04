@@ -204,41 +204,49 @@ tr:hover {
 }
 
 /* AG Grid cell input styling - make inputs fill the entire cell */
-.ag-cell-edit-input,
-.ag-cell-editor input,
-.ag-cell-editor select,
-.ag-cell-editor textarea {
-  width: 100% !important;
-  height: 100% !important;
-  padding: 8px !important;
-  border: none !important;
-  box-sizing: border-box !important;
+/* Using higher specificity selectors with AG Grid theme to avoid !important */
+.ag-theme-quartz .ag-cell-editing .ag-cell-edit-input,
+.ag-theme-quartz .ag-cell-editing .ag-cell-editor input,
+.ag-theme-quartz .ag-cell-editing .ag-cell-editor select,
+.ag-theme-quartz .ag-cell-editing .ag-cell-editor textarea,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-edit-input,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-editor input,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-editor select,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-editor textarea {
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  border: none;
+  box-sizing: border-box;
 }
 
 /* AG Grid text input specific styling */
-.ag-text-field-input {
-  width: 100% !important;
-  height: 100% !important;
-  padding: 8px !important;
-  border: none !important;
-  box-sizing: border-box !important;
+.ag-theme-quartz .ag-text-field-input,
+.ag-theme-quartz-dark .ag-text-field-input {
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  border: none;
+  box-sizing: border-box;
 }
 
 /* AG Grid select cell editor styling */
-.ag-select-cell-editor select {
-  width: 100% !important;
-  height: 100% !important;
-  padding: 8px !important;
-  border: none !important;
-  box-sizing: border-box !important;
+.ag-theme-quartz .ag-select-cell-editor select,
+.ag-theme-quartz-dark .ag-select-cell-editor select {
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+  border: none;
+  box-sizing: border-box;
 }
 
 /* AG Grid large text editor (textarea) styling */
-.ag-large-text-input {
-  width: 100% !important;
-  min-height: 100px !important;
-  padding: 8px !important;
-  border: 1px solid hsl(var(--border)) !important;
-  box-sizing: border-box !important;
-  resize: vertical !important;
+.ag-theme-quartz .ag-large-text-input,
+.ag-theme-quartz-dark .ag-large-text-input {
+  width: 100%;
+  min-height: 100px;
+  padding: 8px;
+  border: 1px solid hsl(var(--border));
+  box-sizing: border-box;
+  resize: vertical;
 }

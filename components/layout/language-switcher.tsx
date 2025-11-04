@@ -66,16 +66,22 @@ export function LanguageSwitcherButton() {
     if (isChanging) return;
 
     const newLocale = locale === "ja" ? "en" : "ja";
+    console.log("[LanguageSwitcher] Current locale:", locale);
+    console.log("[LanguageSwitcher] Switching to:", newLocale);
 
     try {
       setIsChanging(true);
+      console.log("[LanguageSwitcher] Calling setLocale...");
+
       // Set the locale cookie using server action
       await setLocale(newLocale);
+
+      console.log("[LanguageSwitcher] setLocale completed, reloading page...");
 
       // Force a full page reload to apply the new locale
       window.location.reload();
     } catch (error) {
-      console.error("Failed to change locale:", error);
+      console.error("[LanguageSwitcher] Failed to change locale:", error);
       // Show error to user
       alert(
         locale === "ja"

@@ -201,12 +201,11 @@ export function useUndoRedoFeature<TData = unknown>(
         undoRef.current();
       }
 
-      // Ctrl+Y or Cmd+Shift+Z for redo
+      // Ctrl+Y, Ctrl+Shift+Z (Windows/Linux), or Cmd+Shift+Z (macOS) for redo
       if (
         ((event.ctrlKey || event.metaKey) && event.key === "y") ||
-        ((event.ctrlKey || event.metaKey) &&
-          event.shiftKey &&
-          event.key === "z")
+        (event.ctrlKey && event.shiftKey && event.key === "z") ||
+        (event.metaKey && event.shiftKey && event.key === "z")
       ) {
         event.preventDefault();
         redoRef.current();

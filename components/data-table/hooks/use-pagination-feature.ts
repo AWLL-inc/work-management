@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Pagination feature hook for data tables
  *

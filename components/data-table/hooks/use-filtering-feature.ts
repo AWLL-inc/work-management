@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Filtering feature hook for data tables
  *

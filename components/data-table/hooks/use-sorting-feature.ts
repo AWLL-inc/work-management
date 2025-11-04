@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Sorting feature hook for data tables
  *

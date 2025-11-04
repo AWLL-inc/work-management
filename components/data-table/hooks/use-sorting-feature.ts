@@ -38,8 +38,11 @@ import type {
  * Default sorting configuration
  */
 const DEFAULT_CONFIG: Required<SortingConfig> = {
+  /** Single-column sorting by default */
   multiSort: false,
+  /** No initial sort applied */
   initialSort: [],
+  /** Maximum 3 columns can be sorted simultaneously in multi-sort mode */
   maxSortColumns: 3,
 };
 
@@ -121,20 +124,19 @@ export function useSortingFeature(config: SortingConfig = {}): SortingFeature {
 
         if (!existingSort) {
           // No existing sort, add ascending
+          const ascSort: SortModel = { column, direction: "asc" };
           return mergedConfig.multiSort
-            ? [...prev, { column, direction: "asc" as SortDirection }].slice(
-                -mergedConfig.maxSortColumns,
-              )
-            : [{ column, direction: "asc" as SortDirection }];
+            ? [...prev, ascSort].slice(-mergedConfig.maxSortColumns)
+            : [ascSort];
         }
 
         if (existingSort.direction === "asc") {
           // asc → desc
-          const newSort = { column, direction: "desc" as SortDirection };
+          const descSort: SortModel = { column, direction: "desc" };
           if (mergedConfig.multiSort) {
-            return prev.map((s) => (s.column === column ? newSort : s));
+            return prev.map((s) => (s.column === column ? descSort : s));
           }
-          return [newSort];
+          return [descSort];
         }
 
         // desc → no sort (multi-column) or asc (single-column)
@@ -144,7 +146,8 @@ export function useSortingFeature(config: SortingConfig = {}): SortingFeature {
         }
 
         // For single-column, go back to asc
-        return [{ column, direction: "asc" as SortDirection }];
+        const ascSort: SortModel = { column, direction: "asc" };
+        return [ascSort];
       });
     },
     [mergedConfig.multiSort, mergedConfig.maxSortColumns],
@@ -183,6 +186,7 @@ export function useSortingFeature(config: SortingConfig = {}): SortingFeature {
   const gridProps = {
     // AG Grid uses onSortChanged event to notify sorting changes
     // We'll implement this integration in useDataTable
+    // Type cast required: AG Grid expects mutable array of union type
     sortingOrder: ["asc", "desc", null] as ("asc" | "desc" | null)[],
     multiSortKey: mergedConfig.multiSort ? "ctrl" : undefined,
   };

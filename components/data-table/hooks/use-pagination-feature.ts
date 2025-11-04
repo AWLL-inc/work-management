@@ -38,9 +38,13 @@ import type {
  * Default pagination configuration
  */
 const DEFAULT_CONFIG: Required<PaginationConfig> = {
+  /** Client-side pagination by default (all data loaded at once) */
   mode: "client",
+  /** Show 20 rows per page by default */
   pageSize: 20,
+  /** Available page size options for user selection */
   pageSizeOptions: [10, 20, 50, 100],
+  /** Start at first page (0-indexed) */
   initialPage: 0,
 };
 

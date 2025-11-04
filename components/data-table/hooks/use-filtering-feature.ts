@@ -37,9 +37,13 @@ import type {
  * Default filtering configuration
  */
 const DEFAULT_CONFIG: Required<FilteringConfig> = {
+  /** Enable both quick and advanced filtering */
   mode: "both",
+  /** 300ms debounce delay for search input to reduce re-renders */
   debounce: 300,
+  /** Floating filters disabled by default (shown in column headers) */
   enableFloatingFilter: false,
+  /** Filter tool panel disabled by default (sidebar with advanced filters) */
   enableFilterToolPanel: false,
 };
 

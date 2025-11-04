@@ -254,7 +254,7 @@ export function EnhancedProjectTable({
           batchEditingEnabled={false}
           enableQuickFilter={true}
           enableFloatingFilter={true}
-          enableFilterToolPanel={true}
+          enableFilterToolPanel={false}
           gridOptions={{
             rowSelection: "single",
             suppressRowClickSelection: true,

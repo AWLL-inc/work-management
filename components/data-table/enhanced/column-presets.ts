@@ -5,8 +5,8 @@
  * reducing boilerplate and ensuring consistency across tables.
  */
 
-import type React from "react";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
+import type React from "react";
 import { createColumnDef } from "./column-builder";
 
 /**

@@ -16,7 +16,6 @@
  * ```
  */
 
-import type React from "react";
 import type {
   ColDef,
   ICellRendererParams,
@@ -25,6 +24,7 @@ import type {
   ValueParserParams,
   ValueSetterParams,
 } from "ag-grid-community";
+import type React from "react";
 
 /**
  * Validation result from a validator function

@@ -2,14 +2,14 @@ import { revalidatePath } from "next/cache";
 import {
   createProject,
   deleteProject,
-  getProjects,
+  getAllProjects,
   updateProject,
-} from "@/lib/api/projects";
+} from "@/lib/db/repositories/project-repository";
 import { ProjectsClient } from "./projects-client";
 
 export default async function ProjectsPage() {
-  // Server-side data fetching
-  const projects = await getProjects(false);
+  // Server-side data fetching - directly from repository
+  const projects = await getAllProjects({ activeOnly: false });
 
   // Server Actions wrapped in async functions
   const handleCreateProject = async (data: {
@@ -21,7 +21,7 @@ export default async function ProjectsPage() {
     await createProject({
       name: data.name,
       description: data.description || null,
-      isActive: data.isActive,
+      isActive: data.isActive ?? true,
     });
     revalidatePath("/[locale]/admin/projects");
   };
@@ -35,13 +35,19 @@ export default async function ProjectsPage() {
     },
   ) => {
     "use server";
-    await updateProject(id, data);
+    const result = await updateProject(id, data);
+    if (!result) {
+      throw new Error("Failed to update project");
+    }
     revalidatePath("/[locale]/admin/projects");
   };
 
   const handleDeleteProject = async (id: string) => {
     "use server";
-    await deleteProject(id);
+    const result = await deleteProject(id);
+    if (!result) {
+      throw new Error("Failed to delete project");
+    }
     revalidatePath("/[locale]/admin/projects");
   };
 

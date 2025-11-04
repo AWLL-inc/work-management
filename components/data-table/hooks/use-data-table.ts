@@ -15,7 +15,11 @@
  *   features: {
  *     sorting: useSortingFeature({ multiSort: true }),
  *     filtering: useFilteringFeature({ mode: 'both' }),
- *     pagination: usePaginationFeature({ pageSize: 20 }, projects.length)
+ *     pagination: usePaginationFeature({ pageSize: 20 }, projects.length),
+ *     selection: useSelectionFeature({ mode: 'multiple' }),
+ *     editing: useEditingFeature({ mode: 'batch' }),
+ *     undoRedo: useUndoRedoFeature({ maxSteps: 20 }),
+ *     rowActions: useRowActionsFeature({ enableAdd: true, enableDelete: true })
  *   }
  * });
  *
@@ -58,7 +62,24 @@ import type { DataTableConfig, DataTableReturn, TableFeatures } from "./types";
  *     pagination: usePaginationFeature({
  *       pageSize: 50,
  *       pageSizeOptions: [25, 50, 100]
- *     }, workLogs.length)
+ *     }, workLogs.length),
+ *     selection: useSelectionFeature({
+ *       mode: 'multiple',
+ *       enableSelectAll: true
+ *     }),
+ *     editing: useEditingFeature({
+ *       mode: 'batch',
+ *       enableAutoSave: false
+ *     }),
+ *     undoRedo: useUndoRedoFeature({
+ *       maxSteps: 20,
+ *       enableKeyboardShortcuts: true
+ *     }),
+ *     rowActions: useRowActionsFeature({
+ *       enableAdd: true,
+ *       enableDelete: true,
+ *       enableDuplicate: true
+ *     })
  *   },
  *   gridOptions: {
  *     rowHeight: 40,
@@ -70,6 +91,10 @@ import type { DataTableConfig, DataTableReturn, TableFeatures } from "./types";
  * table.features.sorting?.actions.setSort('name', 'asc');
  * table.features.filtering?.actions.setQuickFilter('search');
  * table.features.pagination?.actions.nextPage();
+ * table.features.selection?.actions.selectAll(workLogs);
+ * table.features.editing?.actions.saveChanges();
+ * table.features.undoRedo?.actions.undo();
+ * table.features.rowActions?.actions.addRow(newRow);
  * ```
  */
 export function useDataTable<TData>(
@@ -110,6 +135,22 @@ export function useDataTable<TData>(
       Object.assign(mergedProps, features.pagination.gridProps);
     }
 
+    if (features.selection) {
+      Object.assign(mergedProps, features.selection.gridProps);
+    }
+
+    if (features.editing) {
+      Object.assign(mergedProps, features.editing.gridProps);
+    }
+
+    if (features.undoRedo) {
+      Object.assign(mergedProps, features.undoRedo.gridProps);
+    }
+
+    if (features.rowActions) {
+      Object.assign(mergedProps, features.rowActions.gridProps);
+    }
+
     return mergedProps;
   }, [
     data,
@@ -117,6 +158,10 @@ export function useDataTable<TData>(
     features.sorting,
     features.filtering,
     features.pagination,
+    features.selection,
+    features.editing,
+    features.undoRedo,
+    features.rowActions,
     gridOptions,
   ]);
 
@@ -139,8 +184,32 @@ export function useDataTable<TData>(
       Object.assign(mergedProps, features.pagination.toolbarProps || {});
     }
 
+    if (features.selection) {
+      Object.assign(mergedProps, features.selection.toolbarProps || {});
+    }
+
+    if (features.editing) {
+      Object.assign(mergedProps, features.editing.toolbarProps || {});
+    }
+
+    if (features.undoRedo) {
+      Object.assign(mergedProps, features.undoRedo.toolbarProps || {});
+    }
+
+    if (features.rowActions) {
+      Object.assign(mergedProps, features.rowActions.toolbarProps || {});
+    }
+
     return mergedProps;
-  }, [features.sorting, features.filtering, features.pagination]);
+  }, [
+    features.sorting,
+    features.filtering,
+    features.pagination,
+    features.selection,
+    features.editing,
+    features.undoRedo,
+    features.rowActions,
+  ]);
 
   /**
    * Provide access to individual features
@@ -149,6 +218,10 @@ export function useDataTable<TData>(
     sorting: features.sorting,
     filtering: features.filtering,
     pagination: features.pagination,
+    selection: features.selection,
+    editing: features.editing,
+    undoRedo: features.undoRedo,
+    rowActions: features.rowActions,
   };
 
   return {

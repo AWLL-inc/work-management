@@ -526,12 +526,13 @@ export function EnhancedAGGrid<T extends { id: string }>({
       }
     };
 
-    // Add event listener
-    document.addEventListener("keydown", handleKeyDown);
+    // Add event listener with capture flag to intercept before browser defaults
+    // This is crucial for Ctrl+N to work properly and prevent opening new browser windows
+    document.addEventListener("keydown", handleKeyDown, true);
 
     // Cleanup
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [
     batchEditingEnabled,

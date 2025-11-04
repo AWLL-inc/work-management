@@ -15,7 +15,7 @@ interface WorkLogsClientProps {
   categories: WorkCategory[];
   users: SanitizedUser[];
   currentScope: "own" | "team" | "all";
-  userRole: string;
+  userRole: "admin" | "manager" | "user";
   currentUserId: string;
   onCreateWorkLog: (data: {
     date: string;
@@ -105,14 +105,16 @@ export function WorkLogsClient({
     };
 
     startTransition(async () => {
+      updateOptimisticWorkLogs({ type: "create", log: optimisticLog });
+
       try {
-        updateOptimisticWorkLogs({ type: "create", log: optimisticLog });
         await onCreateWorkLog(data);
         toast.success(t("messages.created"));
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : t("messages.createError"),
         );
+        // エラーを再スローして useOptimistic の自動ロールバックをトリガー
         throw error;
       }
     });
@@ -135,14 +137,16 @@ export function WorkLogsClient({
     };
 
     startTransition(async () => {
+      updateOptimisticWorkLogs({ type: "update", id, data: optimisticData });
+
       try {
-        updateOptimisticWorkLogs({ type: "update", id, data: optimisticData });
         await onUpdateWorkLog(id, data);
         toast.success(t("messages.updated"));
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : t("messages.updateError"),
         );
+        // エラーを再スローして useOptimistic の自動ロールバックをトリガー
         throw error;
       }
     });
@@ -150,14 +154,16 @@ export function WorkLogsClient({
 
   const handleDeleteWorkLog = async (id: string) => {
     startTransition(async () => {
+      updateOptimisticWorkLogs({ type: "delete", id });
+
       try {
-        updateOptimisticWorkLogs({ type: "delete", id });
         await onDeleteWorkLog(id);
         toast.success(t("messages.deleted"));
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : t("messages.deleteError"),
         );
+        // エラーを再スローして useOptimistic の自動ロールバックをトリガー
         throw error;
       }
     });

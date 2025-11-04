@@ -105,6 +105,7 @@ export function useEditingFeature<TData = unknown>(
    */
   const updateCell = useCallback(
     (rowId: string, field: string, value: unknown) => {
+      // Update editing rows
       setEditingRows((prev) => {
         const newMap = new Map(prev);
         const row = newMap.get(rowId);
@@ -115,13 +116,13 @@ export function useEditingFeature<TData = unknown>(
             [field]: value,
           };
           newMap.set(rowId, updatedRow);
-
-          // Mark row as dirty
-          setDirtyRows((prevDirty) => new Set([...prevDirty, rowId]));
         }
 
         return newMap;
       });
+
+      // Mark row as dirty (separated from above setState)
+      setDirtyRows((prevDirty) => new Set([...prevDirty, rowId]));
     },
     [],
   );

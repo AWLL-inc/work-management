@@ -25,7 +25,7 @@
  * ```
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   HistoryAction,
   UndoRedoActions,
@@ -77,6 +77,10 @@ export function useUndoRedoFeature<TData = unknown>(
   // Initialize state
   const [undoStack, setUndoStack] = useState<HistoryAction<TData>[]>([]);
   const [redoStack, setRedoStack] = useState<HistoryAction<TData>[]>([]);
+
+  // Refs for stable function references in event handlers
+  const undoRef = useRef<() => void>(() => {});
+  const redoRef = useRef<() => void>(() => {});
 
   /**
    * Undo last action
@@ -155,7 +159,17 @@ export function useUndoRedoFeature<TData = unknown>(
   }, []);
 
   /**
+   * Update refs with latest undo/redo functions
+   * This prevents recreating event listeners on every undo/redo change
+   */
+  useEffect(() => {
+    undoRef.current = undo;
+    redoRef.current = redo;
+  }, [undo, redo]);
+
+  /**
    * Handle keyboard shortcuts
+   * Uses refs to avoid recreating listeners when undo/redo functions change
    */
   useEffect(() => {
     if (!mergedConfig.enableKeyboardShortcuts) {
@@ -170,7 +184,7 @@ export function useUndoRedoFeature<TData = unknown>(
         !event.shiftKey
       ) {
         event.preventDefault();
-        undo();
+        undoRef.current();
       }
 
       // Ctrl+Y or Cmd+Shift+Z for redo
@@ -181,7 +195,7 @@ export function useUndoRedoFeature<TData = unknown>(
           event.key === "z")
       ) {
         event.preventDefault();
-        redo();
+        redoRef.current();
       }
     };
 
@@ -190,7 +204,7 @@ export function useUndoRedoFeature<TData = unknown>(
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [mergedConfig.enableKeyboardShortcuts, undo, redo]);
+  }, [mergedConfig.enableKeyboardShortcuts]);
 
   // Prepare state
   const state: UndoRedoState<TData> = {

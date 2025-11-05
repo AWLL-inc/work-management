@@ -15,6 +15,38 @@ import {
 } from "@/lib/db/repositories/work-log-repository";
 import { WorkLogsClient } from "./work-logs-client";
 
+/**
+ * Validates if a string is a valid date string in ISO format (YYYY-MM-DD)
+ * @param dateStr Date string to validate
+ * @returns true if valid, false otherwise
+ */
+function isValidDateString(dateStr: string): boolean {
+  const date = new Date(dateStr);
+  return !Number.isNaN(date.getTime()) && /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
+}
+
+/**
+ * Validates if a string is a valid UUID
+ * @param str String to validate
+ * @returns true if valid UUID, false otherwise
+ */
+function isValidUUID(str: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    str,
+  );
+}
+
+/**
+ * Parses comma-separated UUID string and validates each UUID
+ * @param param Comma-separated UUID string
+ * @returns Array of valid UUIDs or undefined if no valid UUIDs found
+ */
+function parseUUIDs(param: string | undefined): string[] | undefined {
+  if (!param) return undefined;
+  const ids = param.split(",").filter((id) => isValidUUID(id));
+  return ids.length > 0 ? ids : undefined;
+}
+
 interface WorkLogsPageProps {
   searchParams: Promise<{
     scope?: string;
@@ -48,12 +80,12 @@ export default async function WorkLogsPage({
 
   // Build query options based on scope and filters
   const options: GetWorkLogsOptions = {
-    // Date range filters
-    startDate: from ? new Date(from) : undefined,
-    endDate: to ? new Date(to) : undefined,
-    // Multi-select filters
-    projectIds: projectIdsParam ? projectIdsParam.split(",") : undefined,
-    categoryIds: categoryIdsParam ? categoryIdsParam.split(",") : undefined,
+    // Date range filters (with validation)
+    startDate: from && isValidDateString(from) ? new Date(from) : undefined,
+    endDate: to && isValidDateString(to) ? new Date(to) : undefined,
+    // Multi-select filters (with UUID validation)
+    projectIds: parseUUIDs(projectIdsParam),
+    categoryIds: parseUUIDs(categoryIdsParam),
     // User filter (for admin viewing specific user's logs)
     userId: filterUserId,
   };

@@ -105,7 +105,7 @@ export interface UserTeamMembership {
   id: string;
   teamId: string;
   role: "leader" | "member" | "viewer";
-  joinedAt: Date;
+  joinedAt: string; // ISO 8601 format
 }
 
 /**

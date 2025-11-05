@@ -5,14 +5,16 @@ import { ArrowUpDown, Eye, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
-import type { TeamWithMembers } from "@/lib/api/teams";
+import type { TeamWithMembers, UserTeamMembership } from "@/lib/api/teams";
 
 interface TeamColumnsOptions {
+  userMemberships: UserTeamMembership[];
   onEdit: (team: TeamWithMembers) => void;
   onDelete: (team: TeamWithMembers) => void;
 }
 
 export function createTeamColumns({
+  userMemberships,
   onEdit,
   onDelete,
 }: TeamColumnsOptions): ColumnDef<TeamWithMembers>[] {
@@ -62,6 +64,37 @@ export function createTeamColumns({
       },
       cell: ({ row }) => {
         return <div className="text-sm">{row.original.memberCount || 0}</div>;
+      },
+    },
+    {
+      id: "yourRole",
+      header: "Your Role",
+      cell: ({ row }) => {
+        const teamId = row.original.id;
+        const membership = userMemberships.find((m) => m.teamId === teamId);
+
+        if (!membership) {
+          return <div className="text-sm text-muted-foreground">-</div>;
+        }
+
+        const roleConfig = {
+          leader: {
+            label: "Leader",
+            variant: "default" as const,
+          },
+          member: {
+            label: "Member",
+            variant: "secondary" as const,
+          },
+          viewer: {
+            label: "Viewer",
+            variant: "outline" as const,
+          },
+        };
+
+        const config = roleConfig[membership.role];
+
+        return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
     {

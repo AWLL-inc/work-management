@@ -174,11 +174,20 @@ Target Bundle Sizes:
 - AG Grid Chunk: < 150KB (gzipped)
 ```
 
-**Status**: 🔴 **MEASUREMENT REQUIRED** - Issue #93 AC verification pending
+**Status**: 🔴 **MEASUREMENT REQUIRED - PRE-MERGE BLOCKER**
 
-> **⚠️ Important**: This measurement is **required** to verify Issue #93's Acceptance Criteria:
-> - "初期バンドルサイズが20%以上削減される"
-> - Run `pnpm run analyze` to establish the baseline and verify the reduction percentage
+> **⚠️ CRITICAL - PR Merge Blocker**: This measurement is **REQUIRED before merging** to verify Issue #93's Acceptance Criteria:
+> - **AC Requirement**: "初期バンドルサイズが20%以上削減される" (20%+ bundle size reduction)
+> - **Action Required**: Run `pnpm run analyze` on both main branch (before) and this PR branch (after)
+> - **Verification**: Calculate actual reduction percentage: `(old_size - new_size) / old_size * 100%`
+> - **Documentation**: Update this file with measured values before PR approval
+>
+> **Measurement Approach**:
+> 1. Checkout `main` branch → `pnpm run analyze` → Record baseline metrics
+> 2. Checkout this PR branch → `pnpm run analyze` → Record current metrics
+> 3. Calculate reduction percentage for each metric
+> 4. Verify reduction meets 20%+ threshold for Issue #93 AC
+> 5. Update "Expected Baseline" section below with actual measurements
 
 ### Measurement Checklist
 

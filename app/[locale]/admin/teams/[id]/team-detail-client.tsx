@@ -51,6 +51,8 @@ interface TeamDetailClientProps {
   onRemoveMember: (userId: string) => Promise<ServerActionResult>;
 }
 
+type TeamMemberRole = "leader" | "member" | "viewer";
+
 export function TeamDetailClient({
   team,
   users,
@@ -63,6 +65,7 @@ export function TeamDetailClient({
   const [selectedRole, setSelectedRole] = useState<string>("member");
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updatingRoleFor, setUpdatingRoleFor] = useState<string | null>(null);
 
   // Filter out users who are already members
   const memberUserIds = new Set(team.members?.map((m) => m.userId) ?? []);
@@ -119,6 +122,34 @@ export function TeamDetailClient({
       console.error("Failed to remove member:", error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: TeamMemberRole) => {
+    setUpdatingRoleFor(userId);
+    try {
+      const response = await fetch(`/api/teams/${team.id}/members/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error?.message || "Failed to update role");
+      }
+
+      toast.success("Member role updated successfully");
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update member role",
+      );
+      console.error("Failed to update member role:", error);
+    } finally {
+      setUpdatingRoleFor(null);
     }
   };
 
@@ -184,7 +215,25 @@ export function TeamDetailClient({
                     </TableCell>
                     <TableCell>{member.userEmail}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{member.role}</Badge>
+                      <Select
+                        value={member.role}
+                        onValueChange={(value) =>
+                          handleRoleChange(
+                            member.userId,
+                            value as TeamMemberRole,
+                          )
+                        }
+                        disabled={updatingRoleFor === member.userId}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="leader">Leader</SelectItem>
+                          <SelectItem value="member">Member</SelectItem>
+                          <SelectItem value="viewer">Viewer</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>
                       {new Date(member.joinedAt).toLocaleDateString()}

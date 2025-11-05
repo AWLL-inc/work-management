@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   addTeamMember,
   getTeam,
@@ -13,51 +13,59 @@ import {
 } from "@/lib/server-actions";
 import { TeamDetailClient } from "./team-detail-client";
 
-interface TeamDetailPageProps {
+export default async function TeamDetailPage({
+  params,
+}: {
   params: Promise<{ id: string }>;
-}
-
-export default async function TeamDetailPage({ params }: TeamDetailPageProps) {
-  // Permission check: Only admins can access team management
+}) {
+  // Authenticate user - only admins and team members can access
   const session = await getAuthenticatedSession();
-
-  if (!session || session.user.role !== "admin") {
-    redirect("/work-logs");
+  if (!session?.user) {
+    redirect("/login");
   }
 
-  const { id } = await params;
+  const { id: teamId } = await params;
 
-  // Server-side data fetching
-  const [team, users] = await Promise.all([getTeam(id), getUsers()]);
+  try {
+    // Fetch team details with members and available users
+    const [team, users] = await Promise.all([getTeam(teamId), getUsers()]);
 
-  // Server Actions with type-safe error handling
-  const handleAddMember = async (data: {
-    userId: string;
-    role?: string;
-  }): Promise<ServerActionResult> => {
-    "use server";
-    return wrapServerAction(async () => {
-      await addTeamMember(id, data);
-      revalidatePath(`/[locale]/admin/teams/${id}`);
-    });
-  };
+    if (!team) {
+      notFound();
+    }
 
-  const handleRemoveMember = async (
-    userId: string,
-  ): Promise<ServerActionResult> => {
-    "use server";
-    return wrapServerAction(async () => {
-      await removeTeamMember(id, userId);
-      revalidatePath(`/[locale]/admin/teams/${id}`);
-    });
-  };
+    // Server Actions for member management
+    const handleAddMember = async (data: {
+      userId: string;
+      role?: string;
+    }): Promise<ServerActionResult> => {
+      "use server";
+      return wrapServerAction(async () => {
+        await addTeamMember(teamId, data);
+        revalidatePath(`/[locale]/admin/teams/${teamId}`);
+      });
+    };
 
-  return (
-    <TeamDetailClient
-      team={team}
-      users={users}
-      onAddMember={handleAddMember}
-      onRemoveMember={handleRemoveMember}
-    />
-  );
+    const handleRemoveMember = async (
+      userId: string,
+    ): Promise<ServerActionResult> => {
+      "use server";
+      return wrapServerAction(async () => {
+        await removeTeamMember(teamId, userId);
+        revalidatePath(`/[locale]/admin/teams/${teamId}`);
+      });
+    };
+
+    return (
+      <TeamDetailClient
+        team={team}
+        users={users}
+        onAddMember={handleAddMember}
+        onRemoveMember={handleRemoveMember}
+      />
+    );
+  } catch (error) {
+    console.error("Failed to fetch team details:", error);
+    notFound();
+  }
 }

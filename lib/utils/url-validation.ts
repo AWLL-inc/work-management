@@ -45,7 +45,8 @@ export function parseUrlUUID(
   param: string | null | undefined,
 ): string | undefined {
   if (!param || param.trim() === "") return undefined;
-  return isValidUUID(param) ? param : undefined;
+  const trimmed = param.trim();
+  return isValidUUID(trimmed) ? trimmed : undefined;
 }
 
 /**
@@ -99,7 +100,20 @@ export function parseUrlDate(
 
   const date = new Date(dateStr);
   // Check if date is valid (not NaN)
-  return !Number.isNaN(date.getTime()) ? date : undefined;
+  if (Number.isNaN(date.getTime())) return undefined;
+
+  // Check if the date was auto-corrected by JavaScript (e.g., Feb 30 -> Mar 1)
+  // This ensures dates like "2024-02-30" or "2023-02-29" are rejected
+  const [year, month, day] = dateStr.split("-").map(Number);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() + 1 !== month ||
+    date.getDate() !== day
+  ) {
+    return undefined;
+  }
+
+  return date;
 }
 
 /**
@@ -119,5 +133,13 @@ export function isValidDateString(dateStr: string): boolean {
   if (!ISO_DATE_PATTERN.test(dateStr)) return false;
 
   const date = new Date(dateStr);
-  return !Number.isNaN(date.getTime());
+  if (Number.isNaN(date.getTime())) return false;
+
+  // Check if the date was auto-corrected (e.g., Feb 30 -> Mar 1)
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() + 1 === month &&
+    date.getDate() === day
+  );
 }

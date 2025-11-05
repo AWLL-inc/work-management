@@ -14,7 +14,6 @@ import type {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useDebouncedCallback } from "use-debounce";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,8 +49,6 @@ interface SearchFilters {
   userId: string | null;
 }
 
-// Import from API file for consistency
-import type { GetWorkLogsOptions } from "@/lib/api/work-logs";
 import {
   validateDate,
   validateHours,
@@ -101,7 +98,6 @@ interface EnhancedWorkLogTableProps {
     }>,
   ) => Promise<void>;
   onRefresh?: () => void;
-  onFilterChange?: (filters: GetWorkLogsOptions) => void;
   isLoading: boolean;
 }
 
@@ -123,7 +119,6 @@ export function EnhancedWorkLogTable({
   onDeleteWorkLog,
   onBatchUpdateWorkLogs,
   onRefresh,
-  onFilterChange,
   isLoading,
 }: EnhancedWorkLogTableProps) {
   // Responsive design hook
@@ -194,47 +189,20 @@ export function EnhancedWorkLogTable({
     [router],
   );
 
-  // Debounced API filter change to reduce calls
-  const debouncedFilterChange = useDebouncedCallback(
-    (newFilters: SearchFilters) => {
-      if (onFilterChange) {
-        try {
-          const apiFilters: GetWorkLogsOptions = {
-            startDate: newFilters.dateRange.from?.toISOString().split("T")[0],
-            endDate: newFilters.dateRange.to?.toISOString().split("T")[0],
-            projectIds:
-              newFilters.projectIds.length > 0
-                ? newFilters.projectIds.join(",")
-                : undefined,
-            categoryIds:
-              newFilters.categoryIds.length > 0
-                ? newFilters.categoryIds.join(",")
-                : undefined,
-            userId: newFilters.userId || undefined,
-          };
-          onFilterChange(apiFilters);
-        } catch (error) {
-          console.error("Filter application error:", error);
-          toast.error(ERROR_MESSAGES.FILTER.APPLY_FAILED);
-        }
-      }
-    },
-    500, // 500ms待機
-  );
-
-  // Handle filter changes with URL update and debounced API calls
+  // Handle filter changes with URL update
+  // Note: URL changes automatically trigger Server Component re-render in Next.js App Router
   const handleFiltersChange = useCallback(
     (newFilters: SearchFilters) => {
       try {
         setSearchFilters(newFilters);
         updateUrlWithFilters(newFilters);
-        debouncedFilterChange(newFilters); // デバウンスされたAPI呼び出し
+        // Next.js App Router automatically re-renders Server Component on URL change
       } catch (error) {
         console.error("Filter state update error:", error);
         toast.error(ERROR_MESSAGES.FILTER.UPDATE_FAILED);
       }
     },
-    [updateUrlWithFilters, debouncedFilterChange],
+    [updateUrlWithFilters],
   );
 
   // Create project, category, and user lookup maps
@@ -1260,26 +1228,8 @@ export function EnhancedWorkLogTable({
           users={users}
           showUserFilter={userRole === "admin"}
           onApplyFilters={() => {
-            if (onFilterChange) {
-              const apiFilters: GetWorkLogsOptions = {
-                startDate: searchFilters.dateRange.from
-                  ?.toISOString()
-                  .split("T")[0],
-                endDate: searchFilters.dateRange.to
-                  ?.toISOString()
-                  .split("T")[0],
-                projectIds:
-                  searchFilters.projectIds.length > 0
-                    ? searchFilters.projectIds.join(",")
-                    : undefined,
-                categoryIds:
-                  searchFilters.categoryIds.length > 0
-                    ? searchFilters.categoryIds.join(",")
-                    : undefined,
-                userId: searchFilters.userId ?? undefined,
-              };
-              onFilterChange(apiFilters);
-            }
+            // Filter changes are already applied via handleFiltersChange
+            // URL update triggers Server Component re-render automatically
           }}
           onClearFilters={() => {
             const clearedFilters: SearchFilters = {
@@ -1289,9 +1239,7 @@ export function EnhancedWorkLogTable({
               userId: null,
             };
             handleFiltersChange(clearedFilters);
-            if (onFilterChange) {
-              onFilterChange({});
-            }
+            // URL update triggers Server Component re-render automatically
           }}
           isLoading={isLoading}
           className="flex-1"

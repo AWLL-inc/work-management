@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useOptimistic, useTransition } from "react";
 import { toast } from "sonner";
@@ -75,6 +75,7 @@ export function WorkLogsClient({
 }: WorkLogsClientProps) {
   const t = useTranslations("workLogs");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   // Optimistic state for work logs
@@ -103,7 +104,10 @@ export function WorkLogsClient({
   );
 
   const handleScopeChange = (newScope: string) => {
-    router.push(`/work-logs?scope=${newScope}`);
+    // Preserve existing filter parameters when changing scope
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("scope", newScope);
+    router.push(`/work-logs?${params.toString()}`);
   };
 
   const handleCreateWorkLog = async (data: {

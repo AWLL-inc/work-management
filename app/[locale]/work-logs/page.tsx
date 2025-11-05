@@ -16,7 +16,14 @@ import {
 import { WorkLogsClient } from "./work-logs-client";
 
 interface WorkLogsPageProps {
-  searchParams: Promise<{ scope?: string }>;
+  searchParams: Promise<{
+    scope?: string;
+    from?: string;
+    to?: string;
+    projects?: string;
+    categories?: string;
+    userId?: string;
+  }>;
 }
 
 export default async function WorkLogsPage({
@@ -28,47 +35,69 @@ export default async function WorkLogsPage({
     throw new Error("Unauthorized");
   }
 
-  // Get scope from URL parameter
-  const { scope = "own" } = await searchParams;
+  // Get parameters from URL
+  const params = await searchParams;
+  const {
+    scope = "own",
+    from,
+    to,
+    projects: projectIdsParam,
+    categories: categoryIdsParam,
+    userId: filterUserId,
+  } = params;
 
-  // Build query options based on scope
-  const options: GetWorkLogsOptions = {};
+  // Build query options based on scope and filters
+  const options: GetWorkLogsOptions = {
+    // Date range filters
+    startDate: from ? new Date(from) : undefined,
+    endDate: to ? new Date(to) : undefined,
+    // Multi-select filters
+    projectIds: projectIdsParam ? projectIdsParam.split(",") : undefined,
+    categoryIds: categoryIdsParam ? categoryIdsParam.split(",") : undefined,
+    // User filter (for admin viewing specific user's logs)
+    userId: filterUserId,
+  };
 
-  if (scope === "all") {
-    // Admin can view all work logs
-    if (session.user.role !== "admin") {
-      throw new Error("Forbidden: Only admins can view all work logs");
-    }
-    // No user filter for admin viewing all
-  } else if (scope === "team") {
-    // Get user's teams
-    const userTeams = await db
-      .select({ teamId: teamMembers.teamId })
-      .from(teamMembers)
-      .where(eq(teamMembers.userId, session.user.id));
-
-    if (userTeams.length > 0) {
-      const teamIds = userTeams.map((tm) => tm.teamId);
-
-      // Get all team members
-      const allMembers = await db
-        .select({ userId: teamMembers.userId })
+  // Apply scope-based filtering (unless userId filter is specified)
+  if (!filterUserId) {
+    if (scope === "all") {
+      // Admin can view all work logs
+      if (session.user.role !== "admin") {
+        throw new Error("Forbidden: Only admins can view all work logs");
+      }
+      // No user filter - show all users' logs
+      delete options.userId;
+    } else if (scope === "team") {
+      // Get user's teams
+      const userTeams = await db
+        .select({ teamId: teamMembers.teamId })
         .from(teamMembers)
-        .where(inArray(teamMembers.teamId, teamIds));
+        .where(eq(teamMembers.userId, session.user.id));
 
-      // Include current user and deduplicate
-      const uniqueTeammateIds = Array.from(
-        new Set([session.user.id, ...allMembers.map((m) => m.userId)]),
-      );
+      if (userTeams.length > 0) {
+        const teamIds = userTeams.map((tm) => tm.teamId);
 
-      options.userIds = uniqueTeammateIds;
+        // Get all team members
+        const allMembers = await db
+          .select({ userId: teamMembers.userId })
+          .from(teamMembers)
+          .where(inArray(teamMembers.teamId, teamIds));
+
+        // Include current user and deduplicate
+        const uniqueTeammateIds = Array.from(
+          new Set([session.user.id, ...allMembers.map((m) => m.userId)]),
+        );
+
+        options.userIds = uniqueTeammateIds;
+        delete options.userId;
+      } else {
+        // User not in any team, show only own work logs
+        options.userId = session.user.id;
+      }
     } else {
-      // User not in any team, show only own work logs
+      // scope === "own" (default)
       options.userId = session.user.id;
     }
-  } else {
-    // scope === "own" (default)
-    options.userId = session.user.id;
   }
 
   // Server-side data fetching

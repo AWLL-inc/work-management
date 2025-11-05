@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "2mb",
     },
+    // Enable React Compiler for automatic memoization
+    reactCompiler: true,
   },
 };
 

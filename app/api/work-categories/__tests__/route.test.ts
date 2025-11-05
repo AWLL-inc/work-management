@@ -20,8 +20,8 @@ vi.mock("@/lib/env", () => ({
 }));
 
 // Mock dependencies - must be before imports
-vi.mock("@/lib/auth", () => ({
-  auth: vi.fn(),
+vi.mock("@/lib/auth-helpers", () => ({
+  getAuthenticatedSession: vi.fn(),
 }));
 vi.mock("@/lib/db/repositories/work-category-repository", () => ({
   getAllWorkCategories: vi.fn(),
@@ -30,7 +30,7 @@ vi.mock("@/lib/db/repositories/work-category-repository", () => ({
 }));
 
 import { GET, POST } from "@/app/api/work-categories/route";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   createWorkCategory,
   getAllWorkCategories,
@@ -44,7 +44,7 @@ describe("Work Categories API - Collection Routes", () => {
 
   describe("GET /api/work-categories", () => {
     it("should return 401 if user is not authenticated", async () => {
-      vi.mocked(auth).mockResolvedValue(null as any);
+      vi.mocked(getAuthenticatedSession).mockResolvedValue(null as any);
 
       const request = new NextRequest(
         "http://localhost:3000/api/work-categories",
@@ -58,7 +58,7 @@ describe("Work Categories API - Collection Routes", () => {
     });
 
     it("should return all active work categories when active=true", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -101,7 +101,7 @@ describe("Work Categories API - Collection Routes", () => {
     });
 
     it("should return all work categories when active=false", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "admin" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -122,7 +122,7 @@ describe("Work Categories API - Collection Routes", () => {
     });
 
     it("should handle validation errors in query parameters", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -141,7 +141,7 @@ describe("Work Categories API - Collection Routes", () => {
 
   describe("POST /api/work-categories", () => {
     it("should return 401 if user is not authenticated", async () => {
-      vi.mocked(auth).mockResolvedValue(null as any);
+      vi.mocked(getAuthenticatedSession).mockResolvedValue(null as any);
 
       const request = new NextRequest(
         "http://localhost:3000/api/work-categories",
@@ -163,7 +163,7 @@ describe("Work Categories API - Collection Routes", () => {
     });
 
     it("should return 403 if user is not admin", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "user-id", email: "user@example.com", role: "user" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -188,7 +188,7 @@ describe("Work Categories API - Collection Routes", () => {
     });
 
     it("should create work category with valid data", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "admin-id", email: "admin@example.com", role: "admin" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -227,7 +227,7 @@ describe("Work Categories API - Collection Routes", () => {
     });
 
     it("should return 400 for duplicate category name", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "admin-id", email: "admin@example.com", role: "admin" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -254,7 +254,7 @@ describe("Work Categories API - Collection Routes", () => {
     });
 
     it("should return 400 for invalid request data", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "admin-id", email: "admin@example.com", role: "admin" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
@@ -278,7 +278,7 @@ describe("Work Categories API - Collection Routes", () => {
     });
 
     it("should apply default values for optional fields", async () => {
-      vi.mocked(auth).mockResolvedValue({
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
         user: { id: "admin-id", email: "admin@example.com", role: "admin" },
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);

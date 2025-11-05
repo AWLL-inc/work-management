@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { teamMembers, teams } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
+import { canManageTeamMembers, getTeamRole } from "@/lib/permissions";
 
 /**
  * DELETE /api/teams/[id]/members/[userId]
@@ -35,22 +36,24 @@ export async function DELETE(
       );
     }
 
-    // Check if user is admin
-    // TODO: Phase 2 - Allow team leaders to remove members
-    if (session.user.role !== "admin") {
+    const { id: teamId, userId } = await params;
+
+    // Check management permissions (Admin or Team Leader)
+    const teamRole = await getTeamRole(session.user.id, teamId);
+    const canManage = canManageTeamMembers(session.user.role, teamRole);
+
+    if (!canManage) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "FORBIDDEN",
-            message: "Only admins can remove team members",
+            message: "Only admins and team leaders can remove team members",
           },
         },
         { status: 403 },
       );
     }
-
-    const { id: teamId, userId } = await params;
 
     // Check if team exists
     const [team] = await db

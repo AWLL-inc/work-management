@@ -4,9 +4,9 @@ import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   deleteWorkLog,
   getWorkLogById,
-  isWorkLogOwner,
   updateWorkLog,
 } from "@/lib/db/repositories/work-log-repository";
+import { canEditWorkLog } from "@/lib/permissions";
 import { updateWorkLogSchema } from "@/lib/validations";
 
 // Use Node.js runtime for database operations
@@ -71,21 +71,25 @@ export async function PUT(
       );
     }
 
-    // Check ownership (non-admin users can only update their own logs)
-    if (session.user.role !== "admin") {
-      const isOwner = await isWorkLogOwner(id, session.user.id);
-      if (!isOwner) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: "FORBIDDEN",
-              message: "You can only update your own work logs",
-            },
+    // Check edit permissions (Admin, owner, or Team Leader of the same team)
+    const canEdit = await canEditWorkLog(
+      session.user.id,
+      existingLog.userId,
+      session.user.role,
+    );
+
+    if (!canEdit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN",
+            message:
+              "You can only update your own work logs or team members' logs if you are a team leader",
           },
-          { status: 403 },
-        );
-      }
+        },
+        { status: 403 },
+      );
     }
 
     // Parse and validate request body
@@ -200,21 +204,25 @@ export async function DELETE(
       );
     }
 
-    // Check ownership (non-admin users can only delete their own logs)
-    if (session.user.role !== "admin") {
-      const isOwner = await isWorkLogOwner(id, session.user.id);
-      if (!isOwner) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: {
-              code: "FORBIDDEN",
-              message: "You can only delete your own work logs",
-            },
+    // Check edit permissions (Admin, owner, or Team Leader of the same team)
+    const canEdit = await canEditWorkLog(
+      session.user.id,
+      existingLog.userId,
+      session.user.role,
+    );
+
+    if (!canEdit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN",
+            message:
+              "You can only delete your own work logs or team members' logs if you are a team leader",
           },
-          { status: 403 },
-        );
-      }
+        },
+        { status: 403 },
+      );
     }
 
     // Delete work log

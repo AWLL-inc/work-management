@@ -44,9 +44,15 @@ vi.mock("drizzle-orm", async () => {
   };
 });
 
+vi.mock("@/lib/permissions", () => ({
+  getTeamRole: vi.fn(),
+  canManageTeamMembers: vi.fn(),
+}));
+
 import { DELETE } from "@/app/api/teams/[id]/members/[userId]/route";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
+import { canManageTeamMembers, getTeamRole } from "@/lib/permissions";
 
 describe("Team Members API - DELETE", () => {
   const teamId = "550e8400-e29b-41d4-a716-446655440000";
@@ -54,6 +60,10 @@ describe("Team Members API - DELETE", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Default: admin permissions (can be overridden in specific tests)
+    vi.mocked(getTeamRole).mockResolvedValue(null);
+    vi.mocked(canManageTeamMembers).mockReturnValue(true);
   });
 
   it("should return 401 if user is not authenticated", async () => {
@@ -73,11 +83,15 @@ describe("Team Members API - DELETE", () => {
     expect(data.error.code).toBe("UNAUTHORIZED");
   });
 
-  it("should return 403 if user is not admin", async () => {
+  it("should return 403 if user is not admin or team leader", async () => {
     vi.mocked(getAuthenticatedSession).mockResolvedValue({
       user: { id: "user-id", email: "user@example.com", role: "user" },
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     } as any);
+
+    // User is not a team leader (just a regular member)
+    vi.mocked(getTeamRole).mockResolvedValue("member");
+    vi.mocked(canManageTeamMembers).mockReturnValue(false);
 
     const request = new NextRequest(
       `http://localhost:3000/api/teams/${teamId}/members/${userId}`,

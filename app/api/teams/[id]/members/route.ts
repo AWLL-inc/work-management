@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { teamMembers, teams, users } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
+import { canManageTeamMembers, getTeamRole } from "@/lib/permissions";
 import { addTeamMemberSchema } from "@/lib/validations";
 
 /**
@@ -42,22 +43,24 @@ export async function POST(
       );
     }
 
-    // Check if user is admin
-    // TODO: Phase 2 - Allow team leaders to add members
-    if (session.user.role !== "admin") {
+    const { id: teamId } = await params;
+
+    // Check management permissions (Admin or Team Leader)
+    const teamRole = await getTeamRole(session.user.id, teamId);
+    const canManage = canManageTeamMembers(session.user.role, teamRole);
+
+    if (!canManage) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "FORBIDDEN",
-            message: "Only admins can add team members",
+            message: "Only admins and team leaders can add team members",
           },
         },
         { status: 403 },
       );
     }
-
-    const { id: teamId } = await params;
 
     // Check if team exists
     const [team] = await db

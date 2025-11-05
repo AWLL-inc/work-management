@@ -141,18 +141,74 @@ If bundle size becomes a critical issue, consider:
 
 ## Baseline Metrics
 
-To be updated after first analysis run:
+### How to Measure Baseline
+
+Run the following commands to establish baseline metrics:
+
+```bash
+# 1. Build the production bundle
+pnpm run build
+
+# 2. Analyze bundle with visualization
+pnpm run analyze
+
+# 3. Check .next/static/chunks/ for actual file sizes
+ls -lh .next/static/chunks/*.js
+
+# 4. Get gzipped sizes (more accurate for network transfer)
+gzip -c .next/static/chunks/app-*.js | wc -c
+```
+
+### Expected Baseline (Post-Cleanup)
+
+After removing `ag-grid-enterprise` (~1.3MB reduction):
 
 ```
-Initial Bundle Sizes (before optimization):
-- Client Bundle: TBD
-- AG Grid Chunk: TBD
-- Total JS: TBD
+Initial Bundle Sizes (after ag-grid-enterprise removal):
+- Client Bundle: TBD (measure with pnpm run analyze)
+- AG Grid Chunk: TBD (measure with pnpm run analyze)
+- Total JS: TBD (measure with pnpm run analyze)
 
 Target Bundle Sizes:
 - Client Bundle: < 200KB (gzipped)
 - AG Grid Chunk: < 150KB (gzipped)
 ```
+
+**Status**: 🔴 **MEASUREMENT REQUIRED - PRE-MERGE BLOCKER**
+
+> **⚠️ CRITICAL - PR Merge Blocker**: This measurement is **REQUIRED before merging** to verify Issue #93's Acceptance Criteria:
+> - **AC Requirement**: "初期バンドルサイズが20%以上削減される" (20%+ bundle size reduction)
+> - **Action Required**: Run `pnpm run analyze` on both main branch (before) and this PR branch (after)
+> - **Verification**: Calculate actual reduction percentage: `(old_size - new_size) / old_size * 100%`
+> - **Documentation**: Update this file with measured values before PR approval
+>
+> **Measurement Approach**:
+> 1. Checkout `main` branch → `pnpm run analyze` → Record baseline metrics
+> 2. Checkout this PR branch → `pnpm run analyze` → Record current metrics
+> 3. Calculate reduction percentage for each metric
+> 4. Verify reduction meets 20%+ threshold for Issue #93 AC
+> 5. Update "Expected Baseline" section below with actual measurements
+
+### Measurement Checklist
+
+**Pre-merge Requirements** (Issue #93 AC verification):
+- [ ] Run `pnpm run build` successfully
+- [ ] Run `pnpm run analyze` and capture bundle visualization screenshots
+- [ ] Record the following metrics in this document:
+  - Client Bundle size (gzipped) - e.g., `.next/static/chunks/app-*.js`
+  - AG Grid chunk size (gzipped) - identify AG Grid related chunks
+  - Total JavaScript size (all chunks combined)
+  - First Contentful Paint (FCP) from Lighthouse
+  - Largest Contentful Paint (LCP) from Lighthouse
+- [ ] Calculate the actual reduction percentage:
+  - Compare against pre-cleanup baseline (if available from previous measurements)
+  - Document the improvement: `(old_size - new_size) / old_size * 100%`
+- [ ] Update Issue #93 with verification results
+- [ ] Mark AC "初期バンドルサイズが20%以上削減される" as ✅ or document actual percentage
+
+**Post-merge Monitoring**:
+- [ ] Set up CI bundle size monitoring (see CI Integration section below)
+- [ ] Establish regular measurement cadence (e.g., monthly, or on major dependency updates)
 
 ## Monitoring
 

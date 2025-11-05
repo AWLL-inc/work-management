@@ -69,7 +69,8 @@ describe("User Team Memberships API", () => {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       } as any);
 
-      const mockMemberships = [
+      // Mock DB returns Date objects
+      const mockMembershipsFromDb = [
         {
           id: "membership-1",
           teamId: "team-1",
@@ -93,7 +94,7 @@ describe("User Team Memberships API", () => {
       // Mock chained db calls
       vi.mocked(db.select).mockReturnValue({
         from: vi.fn().mockReturnValue({
-          where: vi.fn().mockResolvedValue(mockMemberships),
+          where: vi.fn().mockResolvedValue(mockMembershipsFromDb),
         }),
       } as any);
 
@@ -107,6 +108,9 @@ describe("User Team Memberships API", () => {
       expect(data.data[1].role).toBe("member");
       expect(data.data[2].role).toBe("viewer");
       expect(data.data[0].teamId).toBe("team-1");
+      // Verify joinedAt is converted to ISO 8601 string
+      expect(typeof data.data[0].joinedAt).toBe("string");
+      expect(data.data[0].joinedAt).toBe("2024-01-15T10:00:00.000Z");
     });
 
     it("should return empty array when user has no team memberships", async () => {
@@ -186,6 +190,8 @@ describe("User Team Memberships API", () => {
       expect(data.data[0]).toHaveProperty("teamId");
       expect(data.data[0]).toHaveProperty("role");
       expect(data.data[0]).toHaveProperty("joinedAt");
+      // Verify joinedAt is a string (ISO 8601)
+      expect(typeof data.data[0].joinedAt).toBe("string");
     });
 
     it("should only return memberships for the authenticated user", async () => {
@@ -217,6 +223,37 @@ describe("User Team Memberships API", () => {
       expect(mockWhere).toHaveBeenCalled();
       const data = await response.json();
       expect(data.success).toBe(true);
+    });
+
+    it("should return joinedAt as ISO 8601 string format", async () => {
+      const userId = "user-id-123";
+      vi.mocked(getAuthenticatedSession).mockResolvedValue({
+        user: { id: userId, email: "user@example.com", role: "user" },
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      } as any);
+
+      const mockMembership = {
+        id: "membership-1",
+        teamId: "team-1",
+        role: "leader" as const,
+        joinedAt: new Date("2024-01-15T10:00:00.000Z"),
+      };
+
+      vi.mocked(db.select).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockMembership]),
+        }),
+      } as any);
+
+      const response = await GET();
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      // Verify ISO 8601 format: YYYY-MM-DDTHH:mm:ss.sssZ
+      expect(data.data[0].joinedAt).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+      );
+      expect(data.data[0].joinedAt).toBe("2024-01-15T10:00:00.000Z");
     });
   });
 });

@@ -41,9 +41,15 @@ export async function GET() {
       .from(teamMembers)
       .where(eq(teamMembers.userId, session.user.id));
 
+    // Convert Date objects to ISO 8601 strings (API design standard)
+    const formattedMemberships = memberships.map((m) => ({
+      ...m,
+      joinedAt: m.joinedAt.toISOString(),
+    }));
+
     return NextResponse.json({
       success: true,
-      data: memberships,
+      data: formattedMemberships,
     });
   } catch (error) {
     console.error(`GET /api/users/me/team-memberships error:`, error);

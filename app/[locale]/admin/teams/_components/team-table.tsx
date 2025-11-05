@@ -14,12 +14,13 @@ import {
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/spinner";
-import type { TeamWithMembers } from "@/lib/api/teams";
+import type { TeamWithMembers, UserTeamMembership } from "@/lib/api/teams";
 import { createTeamColumns } from "./team-columns";
 import { TeamFormDialog } from "./team-form-dialog";
 
 interface TeamTableProps {
   teams: TeamWithMembers[];
+  userMemberships: UserTeamMembership[];
   onCreateTeam: (data: {
     name: string;
     description?: string;
@@ -39,6 +40,7 @@ interface TeamTableProps {
 
 export function TeamTable({
   teams,
+  userMemberships,
   onCreateTeam,
   onUpdateTeam,
   onDeleteTeam,
@@ -83,6 +85,7 @@ export function TeamTable({
   };
 
   const columns = createTeamColumns({
+    userMemberships,
     onEdit: handleEdit,
     onDelete: handleDelete,
   });

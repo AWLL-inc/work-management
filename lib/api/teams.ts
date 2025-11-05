@@ -97,3 +97,20 @@ export async function removeTeamMember(
 export async function getUsers(): Promise<User[]> {
   return apiClient.get<User[]>("/api/users");
 }
+
+/**
+ * User's team membership information
+ */
+export interface UserTeamMembership {
+  id: string;
+  teamId: string;
+  role: "leader" | "member" | "viewer";
+  joinedAt: Date;
+}
+
+/**
+ * Fetch current user's team memberships
+ */
+export async function getUserTeamMemberships(): Promise<UserTeamMembership[]> {
+  return apiClient.get<UserTeamMembership[]>("/api/users/me/team-memberships");
+}

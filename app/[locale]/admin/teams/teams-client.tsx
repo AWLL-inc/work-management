@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import type { TeamWithMembers } from "@/lib/api/teams";
+import type { TeamWithMembers, UserTeamMembership } from "@/lib/api/teams";
 import type { ServerActionResult } from "@/lib/server-actions";
 import { TeamTable } from "./_components/team-table";
 
 interface TeamsClientProps {
   initialTeams: TeamWithMembers[];
+  userMemberships: UserTeamMembership[];
   onCreateTeam: (data: {
     name: string;
     description?: string;
@@ -26,6 +27,7 @@ interface TeamsClientProps {
 
 export function TeamsClient({
   initialTeams,
+  userMemberships,
   onCreateTeam,
   onUpdateTeam,
   onDeleteTeam,
@@ -98,6 +100,7 @@ export function TeamsClient({
     <div className="px-4 sm:px-0">
       <TeamTable
         teams={initialTeams}
+        userMemberships={userMemberships}
         onCreateTeam={handleCreateTeam}
         onUpdateTeam={handleUpdateTeam}
         onDeleteTeam={handleDeleteTeam}

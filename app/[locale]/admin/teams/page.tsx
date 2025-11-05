@@ -5,6 +5,7 @@ import {
   createTeam,
   deleteTeam,
   getTeams,
+  getUserTeamMemberships,
   type UpdateTeamData,
   updateTeam,
 } from "@/lib/api/teams";
@@ -24,7 +25,10 @@ export default async function TeamsPage() {
   }
 
   // Server-side data fetching
-  const teams = await getTeams(false);
+  const [teams, userMemberships] = await Promise.all([
+    getTeams(false),
+    getUserTeamMemberships(),
+  ]);
 
   // Server Actions with type-safe error handling
   const handleCreateTeam = async (
@@ -59,6 +63,7 @@ export default async function TeamsPage() {
   return (
     <TeamsClient
       initialTeams={teams}
+      userMemberships={userMemberships}
       onCreateTeam={handleCreateTeam}
       onUpdateTeam={handleUpdateTeam}
       onDeleteTeam={handleDeleteTeam}

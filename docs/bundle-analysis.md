@@ -141,18 +141,50 @@ If bundle size becomes a critical issue, consider:
 
 ## Baseline Metrics
 
-To be updated after first analysis run:
+### How to Measure Baseline
+
+Run the following commands to establish baseline metrics:
+
+```bash
+# 1. Build the production bundle
+pnpm run build
+
+# 2. Analyze bundle with visualization
+pnpm run analyze
+
+# 3. Check .next/static/chunks/ for actual file sizes
+ls -lh .next/static/chunks/*.js
+
+# 4. Get gzipped sizes (more accurate for network transfer)
+gzip -c .next/static/chunks/app-*.js | wc -c
+```
+
+### Expected Baseline (Post-Cleanup)
+
+After removing `ag-grid-enterprise` (~1.3MB reduction):
 
 ```
-Initial Bundle Sizes (before optimization):
-- Client Bundle: TBD
-- AG Grid Chunk: TBD
-- Total JS: TBD
+Initial Bundle Sizes (after ag-grid-enterprise removal):
+- Client Bundle: TBD (measure with pnpm run analyze)
+- AG Grid Chunk: TBD (measure with pnpm run analyze)
+- Total JS: TBD (measure with pnpm run analyze)
 
 Target Bundle Sizes:
 - Client Bundle: < 200KB (gzipped)
 - AG Grid Chunk: < 150KB (gzipped)
 ```
+
+**Status**: ✅ Environment ready for measurement. Run `pnpm run analyze` to establish baseline.
+
+### Measurement Checklist
+
+- [ ] Run `pnpm run build` successfully
+- [ ] Run `pnpm run analyze` and capture screenshots
+- [ ] Record Client Bundle size (gzipped)
+- [ ] Record AG Grid chunk size (gzipped)
+- [ ] Record Total JS size
+- [ ] Update this document with actual numbers
+- [ ] Calculate reduction percentage vs. pre-cleanup baseline (if available)
 
 ## Monitoring
 

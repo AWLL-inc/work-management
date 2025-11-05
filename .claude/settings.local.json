@@ -134,7 +134,16 @@
       "Bash(pnpm lint)",
       "Bash(git fetch:*)",
       "Bash(git branch:*)",
-      "Bash(pnpm test:e2e:*)"
+      "Bash(pnpm test:e2e:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm info:*)",
+      "Bash(vercel env:*)",
+      "Bash(script-src 'self' 'unsafe-eval' 'unsafe-inline')",
+      "Bash(style-src 'self' 'unsafe-inline')",
+      "Bash(img-src 'self' data: https:)",
+      "Bash(font-src 'self' data:)",
+      "Bash(connect-src 'self' https://*.vercel.app)",
+      "Bash(pnpm remove:*)"
     ],
     "deny": [],
     "ask": []

@@ -202,6 +202,13 @@ export function WorkLogsClient({
     });
   };
 
+  // Handle filter changes - refresh server-side data to ensure consistency
+  const handleFilterChange = async () => {
+    startTransition(async () => {
+      await onRefresh();
+    });
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] px-4 sm:px-0 space-y-6">
       {/* Scope Tabs */}
@@ -232,7 +239,7 @@ export function WorkLogsClient({
           onUpdateWorkLog={handleUpdateWorkLog}
           onDeleteWorkLog={handleDeleteWorkLog}
           onRefresh={handleRefresh}
-          onFilterChange={() => {}}
+          onFilterChange={handleFilterChange}
           isLoading={isPending}
         />
       </div>

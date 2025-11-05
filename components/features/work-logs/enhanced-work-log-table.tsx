@@ -32,6 +32,7 @@ import type { SanitizedUser } from "@/lib/api/users";
 import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { useMediaQuery } from "@/lib/hooks";
 import { parseDate } from "@/lib/utils";
+import { parseUrlDate, parseUrlUUIDs } from "@/lib/utils/url-validation";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import { validateUUID } from "@/lib/validations/common";
 import { CustomDateEditor } from "./custom-date-editor";
@@ -153,16 +154,11 @@ export function EnhancedWorkLogTable({
   // Initialize search filters from URL parameters
   const [searchFilters, setSearchFilters] = useState<SearchFilters>(() => ({
     dateRange: {
-      from: searchParams.get("from")
-        ? new Date(searchParams.get("from") as string)
-        : undefined,
-      to: searchParams.get("to")
-        ? new Date(searchParams.get("to") as string)
-        : undefined,
+      from: parseUrlDate(searchParams.get("from")),
+      to: parseUrlDate(searchParams.get("to")),
     },
-    projectIds: searchParams.get("projects")?.split(",").filter(Boolean) || [],
-    categoryIds:
-      searchParams.get("categories")?.split(",").filter(Boolean) || [],
+    projectIds: parseUrlUUIDs(searchParams.get("projects")) || [],
+    categoryIds: parseUrlUUIDs(searchParams.get("categories")) || [],
     userId: searchParams.get("userId") || null,
   }));
 

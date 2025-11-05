@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { teamMembers, teams, users } from "@/drizzle/schema";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
+import { canManageTeamMembers, getTeamRole } from "@/lib/permissions";
 import { updateTeamSchema } from "@/lib/validations";
 
 /**
@@ -133,21 +134,24 @@ export async function PUT(
       );
     }
 
-    // Check if user is admin
-    if (session.user.role !== "admin") {
+    const { id: teamId } = await params;
+
+    // Check management permissions (Admin or Team Leader)
+    const teamRole = await getTeamRole(session.user.id, teamId);
+    const canManage = canManageTeamMembers(session.user.role, teamRole);
+
+    if (!canManage) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "FORBIDDEN",
-            message: "Only admins can update teams",
+            message: "Only admins and team leaders can update teams",
           },
         },
         { status: 403 },
       );
     }
-
-    const { id: teamId } = await params;
 
     // Check if team exists
     const [existingTeam] = await db

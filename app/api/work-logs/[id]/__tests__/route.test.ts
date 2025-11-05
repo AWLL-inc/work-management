@@ -33,6 +33,11 @@ vi.mock("@/lib/db/connection", () => ({
   db: {},
 }));
 
+// Mock permissions
+vi.mock("@/lib/permissions", () => ({
+  canEditWorkLog: vi.fn(),
+}));
+
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import {
   deleteWorkLog,
@@ -40,6 +45,7 @@ import {
   isWorkLogOwner,
   updateWorkLog,
 } from "@/lib/db/repositories/work-log-repository";
+import { canEditWorkLog } from "@/lib/permissions";
 
 describe("PUT /api/work-logs/[id]", () => {
   const validUuid = "123e4567-e89b-12d3-a456-426614174000";
@@ -176,7 +182,7 @@ describe("PUT /api/work-logs/[id]", () => {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     } as any);
     vi.mocked(getWorkLogById).mockResolvedValue(mockWorkLog);
-    vi.mocked(isWorkLogOwner).mockResolvedValue(false);
+    vi.mocked(canEditWorkLog).mockResolvedValue(false); // Cannot edit
 
     const request = new NextRequest(
       `http://localhost:3000/api/work-logs/${validUuid}`,
@@ -211,7 +217,7 @@ describe("PUT /api/work-logs/[id]", () => {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     } as any);
     vi.mocked(getWorkLogById).mockResolvedValue(mockWorkLog);
-    vi.mocked(isWorkLogOwner).mockResolvedValue(true);
+    vi.mocked(canEditWorkLog).mockResolvedValue(true); // Can edit own log
     vi.mocked(updateWorkLog).mockResolvedValue(updatedWorkLog);
 
     const request = new NextRequest(
@@ -247,6 +253,7 @@ describe("PUT /api/work-logs/[id]", () => {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     } as any);
     vi.mocked(getWorkLogById).mockResolvedValue(mockWorkLog);
+    vi.mocked(canEditWorkLog).mockResolvedValue(true); // Admin can edit any log
     vi.mocked(updateWorkLog).mockResolvedValue(updatedWorkLog);
 
     const request = new NextRequest(
@@ -264,8 +271,6 @@ describe("PUT /api/work-logs/[id]", () => {
     expect(response.status).toBe(200);
     expect(data.success).toBe(true);
     expect(data.data.hours).toBe("7.5");
-    // Admin should not need ownership check
-    expect(isWorkLogOwner).not.toHaveBeenCalled();
   });
 
   it("should return 400 for invalid data", async () => {
@@ -458,7 +463,7 @@ describe("DELETE /api/work-logs/[id]", () => {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     } as any);
     vi.mocked(getWorkLogById).mockResolvedValue(mockWorkLog);
-    vi.mocked(isWorkLogOwner).mockResolvedValue(false);
+    vi.mocked(canEditWorkLog).mockResolvedValue(false); // Cannot delete
 
     const request = new NextRequest(
       `http://localhost:3000/api/work-logs/${validUuid}`,
@@ -486,7 +491,7 @@ describe("DELETE /api/work-logs/[id]", () => {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     } as any);
     vi.mocked(getWorkLogById).mockResolvedValue(mockWorkLog);
-    vi.mocked(isWorkLogOwner).mockResolvedValue(true);
+    vi.mocked(canEditWorkLog).mockResolvedValue(true); // Can delete own log
     vi.mocked(deleteWorkLog).mockResolvedValue(undefined);
 
     const request = new NextRequest(
@@ -513,6 +518,7 @@ describe("DELETE /api/work-logs/[id]", () => {
       expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     } as any);
     vi.mocked(getWorkLogById).mockResolvedValue(mockWorkLog);
+    vi.mocked(canEditWorkLog).mockResolvedValue(true); // Admin can delete any log
     vi.mocked(deleteWorkLog).mockResolvedValue(undefined);
 
     const request = new NextRequest(
@@ -527,8 +533,6 @@ describe("DELETE /api/work-logs/[id]", () => {
     expect(response.status).toBe(204);
     expect(response.body).toBeNull();
     expect(deleteWorkLog).toHaveBeenCalledWith(validUuid);
-    // Admin should not need ownership check
-    expect(isWorkLogOwner).not.toHaveBeenCalled();
   });
 
   it("should return 500 when repository throws error", async () => {

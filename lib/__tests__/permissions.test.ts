@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  canEditTeamMemberWorkLog,
   canEditWorkLog,
+  canManageTeamMembers,
   canViewWorkLog,
   checkIfTeammates,
 } from "../permissions";
@@ -336,6 +338,143 @@ describe("Permission Logic", () => {
 
       expect(canView).toBe(false);
       expect(canEdit).toBe(false);
+    });
+  });
+
+  describe("Team Leader Permissions", () => {
+    describe("canEditTeamMemberWorkLog", () => {
+      it("should allow admin to edit any work log", () => {
+        const editorId = "admin-1";
+        const targetId = "user-1";
+        const editorRole = "admin";
+        const teamRole = null;
+        const isSameTeam = false;
+
+        const result = canEditTeamMemberWorkLog(
+          editorId,
+          targetId,
+          editorRole,
+          teamRole,
+          isSameTeam,
+        );
+
+        expect(result).toBe(true);
+      });
+
+      it("should allow user to edit their own work log", () => {
+        const userId = "user-1";
+        const editorRole = "user";
+        const teamRole = "member";
+        const isSameTeam = true;
+
+        const result = canEditTeamMemberWorkLog(
+          userId,
+          userId,
+          editorRole,
+          teamRole,
+          isSameTeam,
+        );
+
+        expect(result).toBe(true);
+      });
+
+      it("should allow team leader to edit same team member work log", () => {
+        const leaderId = "leader-1";
+        const memberId = "member-1";
+        const editorRole = "user";
+        const teamRole = "leader";
+        const isSameTeam = true;
+
+        const result = canEditTeamMemberWorkLog(
+          leaderId,
+          memberId,
+          editorRole,
+          teamRole,
+          isSameTeam,
+        );
+
+        expect(result).toBe(true);
+      });
+
+      it("should deny team leader editing non-team member work log", () => {
+        const leaderId = "leader-1";
+        const otherId = "user-1";
+        const editorRole = "user";
+        const teamRole = "leader";
+        const isSameTeam = false;
+
+        const result = canEditTeamMemberWorkLog(
+          leaderId,
+          otherId,
+          editorRole,
+          teamRole,
+          isSameTeam,
+        );
+
+        expect(result).toBe(false);
+      });
+
+      it("should deny viewer editing their own work log", () => {
+        const viewerId = "viewer-1";
+        const editorRole = "user";
+        const teamRole = "viewer";
+        const isSameTeam = true;
+
+        const result = canEditTeamMemberWorkLog(
+          viewerId,
+          viewerId,
+          editorRole,
+          teamRole,
+          isSameTeam,
+        );
+
+        expect(result).toBe(false);
+      });
+
+      it("should deny member editing other member work log", () => {
+        const memberId = "member-1";
+        const otherMemberId = "member-2";
+        const editorRole = "user";
+        const teamRole = "member";
+        const isSameTeam = true;
+
+        const result = canEditTeamMemberWorkLog(
+          memberId,
+          otherMemberId,
+          editorRole,
+          teamRole,
+          isSameTeam,
+        );
+
+        expect(result).toBe(false);
+      });
+    });
+
+    describe("canManageTeamMembers", () => {
+      it("should allow admin to manage team members", () => {
+        const result = canManageTeamMembers("admin", null);
+        expect(result).toBe(true);
+      });
+
+      it("should allow team leader to manage team members", () => {
+        const result = canManageTeamMembers("user", "leader");
+        expect(result).toBe(true);
+      });
+
+      it("should deny regular member from managing team members", () => {
+        const result = canManageTeamMembers("user", "member");
+        expect(result).toBe(false);
+      });
+
+      it("should deny viewer from managing team members", () => {
+        const result = canManageTeamMembers("user", "viewer");
+        expect(result).toBe(false);
+      });
+
+      it("should deny manager without team leader role from managing team members", () => {
+        const result = canManageTeamMembers("manager", "member");
+        expect(result).toBe(false);
+      });
     });
   });
 });

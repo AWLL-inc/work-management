@@ -49,25 +49,29 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 
 **Reason for NOT implementing:**
 
-AG Grid's module-based architecture requires **AG Grid Enterprise** packages:
-- `@ag-grid-community/core`
-- `@ag-grid-community/client-side-row-model`
-- `@ag-grid-community/csv-export`
-- etc.
+This project uses the **monolithic package approach** with AG Grid Community Edition. While modular imports (`@ag-grid-community/*` packages) are available for both Community and Enterprise editions, migrating to the modular approach requires significant refactoring.
 
-Our project uses **AG Grid Community** packages:
+**Current Package Configuration:**
+
+Our project uses monolithic packages:
 - `ag-grid-community` (monolithic package)
 - `ag-grid-react`
+- ~~`ag-grid-enterprise`~~ (installed but **NOT used** - legacy dependency)
 
-**Key Differences:**
+> **Note**: `ag-grid-enterprise` appears in `package.json` but is not imported or used in any source files. It's a legacy dependency from previous experimentation and can be safely removed in a future cleanup.
 
-| Feature | Community (Current) | Enterprise (Not Used) |
-|---------|--------------------|-----------------------|
-| Package structure | Monolithic | Modular |
-| Module imports | ❌ Not supported | ✅ Supported |
-| Tree-shaking | Limited | Better |
-| Bundle size | Larger | Smaller (with modules) |
-| License | Free | Commercial |
+**Available Package Approaches:**
+
+| Approach | Packages | Tree-shaking | Migration Cost | License |
+|----------|----------|--------------|----------------|---------|
+| **Monolithic (Current)** | `ag-grid-community` | Limited | N/A | Free |
+| **Modular Community** | `@ag-grid-community/*` | Better | High (refactor all imports) | Free |
+| **Modular Enterprise** | `@ag-grid-community/*` + `@ag-grid-enterprise/*` | Best | Very High + License Cost | Commercial |
+
+**Why Not Modular Packages:**
+1. **High Migration Cost**: Requires refactoring all AG Grid imports across the codebase
+2. **Limited Benefit**: Community modular packages provide better tree-shaking but not enterprise features
+3. **Existing Optimization**: Next.js code splitting already handles most optimization needs
 
 ### Current Bundle Optimization Strategy
 
@@ -85,23 +89,51 @@ Since AG Grid module splitting is not available, we rely on:
    - Identify actual optimization opportunities
    - Make data-driven decisions
 
+### Package Cleanup Recommendation
+
+**Action Item**: Remove `ag-grid-enterprise` from `package.json`
+
+```bash
+# Safe to remove - not used in codebase
+pnpm remove ag-grid-enterprise
+```
+
+**Why it's safe:**
+- Not imported in any source files (verified via code search)
+- Legacy dependency from commit `c6b605d` where Enterprise imports were removed
+- No functionality depends on this package
+- Removing it will reduce node_modules size (~2-3MB)
+
+**History:**
+- Added during experimentation with Enterprise features
+- Removed from code in commit `c6b605d: fix: remove AG Grid Enterprise dependencies completely for stable Community edition`
+- Forgotten in package.json cleanup
+
 ### Future Optimization Options
 
 If bundle size becomes a critical issue, consider:
 
-1. **Upgrade to AG Grid Enterprise**
-   - Requires commercial license
-   - Enables module-based imports
-   - Estimated savings: 30-50% of AG Grid bundle size
+1. **Migrate to Modular Community Packages**
+   - Use `@ag-grid-community/*` packages for better tree-shaking
+   - Free, no license required
+   - Estimated savings: 20-30% of AG Grid bundle size
+   - Cost: High refactoring effort
 
-2. **Alternative Table Libraries**
+2. **Upgrade to AG Grid Enterprise** (if business requires advanced features)
+   - Requires commercial license
+   - Access to Enterprise-only features (Advanced Filtering, Excel Export, etc.)
+   - Use `@ag-grid-community/*` + `@ag-grid-enterprise/*` modular packages
+   - Estimated savings: 30-50% of AG Grid bundle size with modules
+
+3. **Alternative Table Libraries**
    - TanStack Table (already in use for some tables)
-   - React Table
+   - Consider migrating all tables to TanStack Table for consistency
    - Consideration: Feature parity and migration cost
 
-3. **Dynamic Imports** (if not already applied)
+4. **Dynamic Imports** (if not already applied)
    - Lazy load AG Grid pages
    - Load on user interaction
+   - Implement route-based code splitting
 
 ## Optimization Checklist
 
@@ -137,16 +169,35 @@ Consider adding bundle size monitoring to CI:
 # .github/workflows/bundle-size.yml
 - name: Analyze bundle size
   run: pnpm run analyze
+
 - name: Check bundle size limits
   run: |
     # Fail if bundle exceeds threshold
     MAX_SIZE=250000  # 250KB
-    ACTUAL_SIZE=$(stat -f%z .next/static/chunks/main-*.js)
+
+    # Cross-platform stat command (Linux uses -c%s, macOS uses -f%z)
+    if stat -c%s .next/static/chunks/*.js >/dev/null 2>&1; then
+      # Linux
+      ACTUAL_SIZE=$(stat -c%s .next/static/chunks/app-*.js 2>/dev/null | sort -n | tail -1)
+    else
+      # macOS/BSD
+      ACTUAL_SIZE=$(stat -f%z .next/static/chunks/app-*.js 2>/dev/null | sort -n | tail -1)
+    fi
+
+    if [ -z "$ACTUAL_SIZE" ]; then
+      echo "Warning: Could not find bundle chunks"
+      exit 0
+    fi
+
     if [ $ACTUAL_SIZE -gt $MAX_SIZE ]; then
       echo "Bundle size exceeded: $ACTUAL_SIZE > $MAX_SIZE"
       exit 1
     fi
+
+    echo "Bundle size OK: $ACTUAL_SIZE <= $MAX_SIZE"
 ```
+
+> **Note**: This example demonstrates the concept but needs adjustment based on actual Next.js 15 output structure. The chunk file naming (e.g., `app-*.js`, `framework-*.js`, `main-*.js`) may vary. Run `pnpm run build` and inspect `.next/static/chunks/` to determine the correct filenames for your monitoring.
 
 ### Regular Checks
 

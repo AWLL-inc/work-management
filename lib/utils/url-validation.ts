@@ -27,6 +27,28 @@ export function isValidUUID(id: string): boolean {
 }
 
 /**
+ * Parses a URL parameter as a single UUID
+ *
+ * @param param - URL parameter value (e.g., "123e4567-e89b-12d3-a456-426614174000")
+ * @returns Valid UUID string, or undefined if invalid
+ *
+ * @example
+ * ```typescript
+ * parseUrlUUID("123e4567-e89b-12d3-a456-426614174000")
+ * // Returns: "123e4567-e89b-12d3-a456-426614174000"
+ *
+ * parseUrlUUID("invalid-uuid") // Returns: undefined
+ * parseUrlUUID("") // Returns: undefined
+ * ```
+ */
+export function parseUrlUUID(
+  param: string | null | undefined,
+): string | undefined {
+  if (!param || param.trim() === "") return undefined;
+  return isValidUUID(param) ? param : undefined;
+}
+
+/**
  * Parses a URL parameter containing comma-separated UUIDs
  *
  * @param param - URL parameter value (e.g., "uuid1,uuid2,uuid3")

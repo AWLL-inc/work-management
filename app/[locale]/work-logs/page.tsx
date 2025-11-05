@@ -13,7 +13,11 @@ import {
   getWorkLogs as getWorkLogsRepo,
   updateWorkLog as updateWorkLogRepo,
 } from "@/lib/db/repositories/work-log-repository";
-import { parseUrlDate, parseUrlUUIDs } from "@/lib/utils/url-validation";
+import {
+  parseUrlDate,
+  parseUrlUUID,
+  parseUrlUUIDs,
+} from "@/lib/utils/url-validation";
 import { WorkLogsClient } from "./work-logs-client";
 
 interface WorkLogsPageProps {
@@ -55,8 +59,8 @@ export default async function WorkLogsPage({
     // Multi-select filters (with UUID validation)
     projectIds: parseUrlUUIDs(projectIdsParam) ?? undefined,
     categoryIds: parseUrlUUIDs(categoryIdsParam) ?? undefined,
-    // User filter (for admin viewing specific user's logs)
-    userId: filterUserId || undefined,
+    // User filter (for admin viewing specific user's logs, with UUID validation)
+    userId: parseUrlUUID(filterUserId),
   };
 
   // Apply scope-based filtering (unless userId filter is specified)

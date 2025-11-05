@@ -115,14 +115,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check admin role
-    if (session.user.role !== "admin") {
+    // Check admin or manager role
+    if (session.user.role !== "admin" && session.user.role !== "manager") {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: "FORBIDDEN",
-            message: "Admin role required",
+            message: "Admin or Manager role required",
           },
         },
         { status: 403 },

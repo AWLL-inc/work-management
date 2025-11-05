@@ -114,8 +114,8 @@ export function WorkLogsClient({
         toast.error(
           error instanceof Error ? error.message : t("messages.createError"),
         );
-        // Note: useOptimistic will automatically revert on component re-render
-        // when the server state doesn't include the optimistic update
+        // Explicitly sync with server state after error to ensure UI consistency
+        await onRefresh();
       }
     });
   };
@@ -146,8 +146,8 @@ export function WorkLogsClient({
         toast.error(
           error instanceof Error ? error.message : t("messages.updateError"),
         );
-        // Note: useOptimistic will automatically revert on component re-render
-        // when the server state doesn't include the optimistic update
+        // Explicitly sync with server state after error to ensure UI consistency
+        await onRefresh();
       }
     });
   };
@@ -163,8 +163,8 @@ export function WorkLogsClient({
         toast.error(
           error instanceof Error ? error.message : t("messages.deleteError"),
         );
-        // Note: useOptimistic will automatically revert on component re-render
-        // when the server state doesn't include the optimistic update
+        // Explicitly sync with server state after error to ensure UI consistency
+        await onRefresh();
       }
     });
   };

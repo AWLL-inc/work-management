@@ -59,7 +59,6 @@
     "@tanstack/react-table": "^8.21.3",
     "@vercel/postgres": "^0.10.0",
     "ag-grid-community": "^34.2.0",
-    "ag-grid-enterprise": "^34.2.0",
     "ag-grid-react": "^34.2.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",

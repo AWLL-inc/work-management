@@ -9,6 +9,28 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import type { SanitizedUser } from "@/lib/api/users";
 
+/**
+ * Prefix for temporary IDs used in optimistic updates
+ * These IDs are replaced with real IDs from the server after successful creation
+ */
+const OPTIMISTIC_ID_PREFIX = "optimistic-";
+
+/**
+ * Creates a temporary ID for optimistic updates
+ * Format: optimistic-{uuid}
+ */
+function createOptimisticId(): string {
+  return `${OPTIMISTIC_ID_PREFIX}${crypto.randomUUID()}`;
+}
+
+/**
+ * Checks if an ID is a temporary optimistic ID
+ * Note: Currently unused but available for future validation needs
+ */
+function _isOptimisticId(id: string): boolean {
+  return id.startsWith(OPTIMISTIC_ID_PREFIX);
+}
+
 interface WorkLogsClientProps {
   initialWorkLogs: WorkLog[];
   projects: Project[];
@@ -93,7 +115,7 @@ export function WorkLogsClient({
   }) => {
     // Create optimistic work log
     const optimisticLog: WorkLog = {
-      id: `temp-${crypto.randomUUID()}`,
+      id: createOptimisticId(),
       userId: currentUserId,
       date: new Date(data.date),
       hours: data.hours,

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   try {
     // Check authentication
     const session = await getAuthenticatedSession();
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         {
           success: false,
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const session = await getAuthenticatedSession();
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
         {
           success: false,

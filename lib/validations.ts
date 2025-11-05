@@ -482,6 +482,19 @@ export const addTeamMemberSchema = z
   })
   .describe("Schema for adding a team member");
 
+// Update team member schema
+export const updateTeamMemberSchema = z
+  .object({
+    role: z
+      .enum(["member", "leader", "viewer"], {
+        message: "Role must be 'member', 'leader', or 'viewer'",
+      })
+      .describe(
+        "Team member role: member (regular member), leader (team leader), viewer (read-only)",
+      ),
+  })
+  .describe("Schema for updating a team member's role");
+
 /**
  * Type exports for Teams
  */
@@ -489,3 +502,4 @@ export type CreateTeamInput = z.infer<typeof createTeamSchema>;
 export type UpdateTeamInput = z.infer<typeof updateTeamSchema>;
 export type ListTeamsQuery = z.infer<typeof listTeamsQuerySchema>;
 export type AddTeamMemberInput = z.infer<typeof addTeamMemberSchema>;
+export type UpdateTeamMemberInput = z.infer<typeof updateTeamMemberSchema>;

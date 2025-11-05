@@ -50,13 +50,13 @@ export default async function WorkLogsPage({
   // Build query options based on scope and filters
   const options: GetWorkLogsOptions = {
     // Date range filters (with validation)
-    startDate: parseUrlDate(from),
-    endDate: parseUrlDate(to),
+    startDate: parseUrlDate(from) ?? undefined,
+    endDate: parseUrlDate(to) ?? undefined,
     // Multi-select filters (with UUID validation)
-    projectIds: parseUrlUUIDs(projectIdsParam),
-    categoryIds: parseUrlUUIDs(categoryIdsParam),
+    projectIds: parseUrlUUIDs(projectIdsParam) ?? undefined,
+    categoryIds: parseUrlUUIDs(categoryIdsParam) ?? undefined,
     // User filter (for admin viewing specific user's logs)
-    userId: filterUserId,
+    userId: filterUserId || undefined,
   };
 
   // Apply scope-based filtering (unless userId filter is specified)

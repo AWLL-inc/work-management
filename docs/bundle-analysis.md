@@ -174,17 +174,32 @@ Target Bundle Sizes:
 - AG Grid Chunk: < 150KB (gzipped)
 ```
 
-**Status**: ✅ Environment ready for measurement. Run `pnpm run analyze` to establish baseline.
+**Status**: 🔴 **MEASUREMENT REQUIRED** - Issue #93 AC verification pending
+
+> **⚠️ Important**: This measurement is **required** to verify Issue #93's Acceptance Criteria:
+> - "初期バンドルサイズが20%以上削減される"
+> - Run `pnpm run analyze` to establish the baseline and verify the reduction percentage
 
 ### Measurement Checklist
 
+**Pre-merge Requirements** (Issue #93 AC verification):
 - [ ] Run `pnpm run build` successfully
-- [ ] Run `pnpm run analyze` and capture screenshots
-- [ ] Record Client Bundle size (gzipped)
-- [ ] Record AG Grid chunk size (gzipped)
-- [ ] Record Total JS size
-- [ ] Update this document with actual numbers
-- [ ] Calculate reduction percentage vs. pre-cleanup baseline (if available)
+- [ ] Run `pnpm run analyze` and capture bundle visualization screenshots
+- [ ] Record the following metrics in this document:
+  - Client Bundle size (gzipped) - e.g., `.next/static/chunks/app-*.js`
+  - AG Grid chunk size (gzipped) - identify AG Grid related chunks
+  - Total JavaScript size (all chunks combined)
+  - First Contentful Paint (FCP) from Lighthouse
+  - Largest Contentful Paint (LCP) from Lighthouse
+- [ ] Calculate the actual reduction percentage:
+  - Compare against pre-cleanup baseline (if available from previous measurements)
+  - Document the improvement: `(old_size - new_size) / old_size * 100%`
+- [ ] Update Issue #93 with verification results
+- [ ] Mark AC "初期バンドルサイズが20%以上削減される" as ✅ or document actual percentage
+
+**Post-merge Monitoring**:
+- [ ] Set up CI bundle size monitoring (see CI Integration section below)
+- [ ] Establish regular measurement cadence (e.g., monthly, or on major dependency updates)
 
 ## Monitoring
 

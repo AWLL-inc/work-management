@@ -12,7 +12,7 @@ import type {
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import type { SanitizedUser } from "@/lib/api/users";
 import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { useMediaQuery } from "@/lib/hooks";
+import { canEditWorkLog } from "@/lib/permissions";
 import { parseDate } from "@/lib/utils";
 import { parseUrlDate, parseUrlUUIDs } from "@/lib/utils/url-validation";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
@@ -134,6 +135,9 @@ export function EnhancedWorkLogTable({
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [failedWorkLogIds, setFailedWorkLogIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [editableWorkLogIds, setEditableWorkLogIds] = useState<Set<string>>(
     new Set(),
   );
 
@@ -244,6 +248,31 @@ export function EnhancedWorkLogTable({
   }, [workLogs, projectsMap, categoriesMap, usersMap]);
 
   // AG Grid handles data management internally - no manual sync needed
+
+  // Compute which work logs are editable based on permissions
+  useEffect(() => {
+    const computeEditableWorkLogs = async () => {
+      const editable = new Set<string>();
+
+      // Check permissions for each work log
+      await Promise.all(
+        workLogs.map(async (workLog) => {
+          const canEdit = await canEditWorkLog(
+            currentUserId,
+            workLog.userId,
+            userRole,
+          );
+          if (canEdit) {
+            editable.add(workLog.id);
+          }
+        }),
+      );
+
+      setEditableWorkLogIds(editable);
+    };
+
+    computeEditableWorkLogs();
+  }, [workLogs, currentUserId, userRole]);
 
   // Actions cell renderer
   const ActionsCellRenderer = useCallback((params: { data: WorkLog }) => {
@@ -664,15 +693,22 @@ export function EnhancedWorkLogTable({
     [],
   );
 
-  // Row class function for highlighting failed records
+  // Row class function for highlighting failed records and non-editable rows
   const getRowClass = useCallback(
     (params: RowClassParams) => {
+      // Priority 1: Failed records (error state)
       if (failedWorkLogIds.has(params.data.id)) {
         return "ag-row-error";
       }
+
+      // Priority 2: Non-editable rows (permission-based)
+      if (!editableWorkLogIds.has(params.data.id)) {
+        return "opacity-50 cursor-not-allowed";
+      }
+
       return "";
     },
-    [failedWorkLogIds],
+    [failedWorkLogIds, editableWorkLogIds],
   );
 
   // AG Grid standard: Handle row addition with applyTransaction

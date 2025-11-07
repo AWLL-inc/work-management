@@ -12,7 +12,7 @@ import type {
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,6 @@ import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import type { SanitizedUser } from "@/lib/api/users";
 import { ERROR_MESSAGES } from "@/lib/constants/error-messages";
 import { useMediaQuery } from "@/lib/hooks";
-import { canEditWorkLog } from "@/lib/permissions";
 import { parseDate } from "@/lib/utils";
 import { parseUrlDate, parseUrlUUIDs } from "@/lib/utils/url-validation";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
@@ -72,6 +71,7 @@ interface EnhancedWorkLogTableProps {
   users: SanitizedUser[];
   currentUserId: string;
   userRole: string;
+  editableWorkLogIds: string[];
   onCreateWorkLog: (data: {
     date: string;
     hours: string;
@@ -115,6 +115,7 @@ export function EnhancedWorkLogTable({
   users,
   currentUserId,
   userRole,
+  editableWorkLogIds: editableWorkLogIdsArray,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -137,8 +138,11 @@ export function EnhancedWorkLogTable({
   const [failedWorkLogIds, setFailedWorkLogIds] = useState<Set<string>>(
     new Set(),
   );
-  const [editableWorkLogIds, setEditableWorkLogIds] = useState<Set<string>>(
-    new Set(),
+
+  // Convert array to Set for efficient lookup
+  const editableWorkLogIds = useMemo(
+    () => new Set(editableWorkLogIdsArray),
+    [editableWorkLogIdsArray],
   );
 
   // Simplified AG Grid state management
@@ -248,31 +252,6 @@ export function EnhancedWorkLogTable({
   }, [workLogs, projectsMap, categoriesMap, usersMap]);
 
   // AG Grid handles data management internally - no manual sync needed
-
-  // Compute which work logs are editable based on permissions
-  useEffect(() => {
-    const computeEditableWorkLogs = async () => {
-      const editable = new Set<string>();
-
-      // Check permissions for each work log
-      await Promise.all(
-        workLogs.map(async (workLog) => {
-          const canEdit = await canEditWorkLog(
-            currentUserId,
-            workLog.userId,
-            userRole,
-          );
-          if (canEdit) {
-            editable.add(workLog.id);
-          }
-        }),
-      );
-
-      setEditableWorkLogIds(editable);
-    };
-
-    computeEditableWorkLogs();
-  }, [workLogs, currentUserId, userRole]);
 
   // Actions cell renderer
   const ActionsCellRenderer = useCallback((params: { data: WorkLog }) => {

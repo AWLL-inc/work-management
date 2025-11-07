@@ -39,6 +39,7 @@ interface WorkLogsClientProps {
   currentScope: "own" | "team" | "all";
   userRole: "admin" | "manager" | "user";
   currentUserId: string;
+  editableWorkLogIds: string[];
   onCreateWorkLog: (data: {
     date: string;
     hours: string;
@@ -68,6 +69,7 @@ export function WorkLogsClient({
   currentScope,
   userRole,
   currentUserId,
+  editableWorkLogIds,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -228,6 +230,7 @@ export function WorkLogsClient({
           users={users}
           currentUserId={currentUserId}
           userRole={userRole}
+          editableWorkLogIds={editableWorkLogIds}
           onCreateWorkLog={handleCreateWorkLog}
           onUpdateWorkLog={handleUpdateWorkLog}
           onDeleteWorkLog={handleDeleteWorkLog}

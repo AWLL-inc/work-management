@@ -71,6 +71,7 @@ interface EnhancedWorkLogTableProps {
   users: SanitizedUser[];
   currentUserId: string;
   userRole: string;
+  editableWorkLogIds: string[];
   onCreateWorkLog: (data: {
     date: string;
     hours: string;
@@ -114,6 +115,7 @@ export function EnhancedWorkLogTable({
   users,
   currentUserId,
   userRole,
+  editableWorkLogIds: editableWorkLogIdsArray,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -135,6 +137,12 @@ export function EnhancedWorkLogTable({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [failedWorkLogIds, setFailedWorkLogIds] = useState<Set<string>>(
     new Set(),
+  );
+
+  // Convert array to Set for efficient lookup
+  const editableWorkLogIds = useMemo(
+    () => new Set(editableWorkLogIdsArray),
+    [editableWorkLogIdsArray],
   );
 
   // Simplified AG Grid state management
@@ -664,15 +672,22 @@ export function EnhancedWorkLogTable({
     [],
   );
 
-  // Row class function for highlighting failed records
+  // Row class function for highlighting failed records and non-editable rows
   const getRowClass = useCallback(
     (params: RowClassParams) => {
+      // Priority 1: Failed records (error state)
       if (failedWorkLogIds.has(params.data.id)) {
         return "ag-row-error";
       }
+
+      // Priority 2: Non-editable rows (permission-based)
+      if (!editableWorkLogIds.has(params.data.id)) {
+        return "opacity-50 cursor-not-allowed";
+      }
+
       return "";
     },
-    [failedWorkLogIds],
+    [failedWorkLogIds, editableWorkLogIds],
   );
 
   // AG Grid standard: Handle row addition with applyTransaction

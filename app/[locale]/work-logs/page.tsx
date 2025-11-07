@@ -13,6 +13,7 @@ import {
   getWorkLogs as getWorkLogsRepo,
   updateWorkLog as updateWorkLogRepo,
 } from "@/lib/db/repositories/work-log-repository";
+import { canEditWorkLog } from "@/lib/permissions";
 import {
   parseUrlDate,
   parseUrlUUID,
@@ -127,6 +128,21 @@ export default async function WorkLogsPage({
     updatedAt: user.updatedAt,
   }));
 
+  // Compute editable work log IDs on the server
+  const editableWorkLogIds = new Set<string>();
+  await Promise.all(
+    workLogs.map(async (workLog) => {
+      const canEdit = await canEditWorkLog(
+        session.user.id,
+        workLog.userId,
+        session.user.role,
+      );
+      if (canEdit) {
+        editableWorkLogIds.add(workLog.id);
+      }
+    }),
+  );
+
   // Server Actions wrapped in async functions
   const handleCreateWorkLog = async (data: {
     date: string;
@@ -211,6 +227,7 @@ export default async function WorkLogsPage({
       currentScope={scope as "own" | "team" | "all"}
       userRole={session.user.role}
       currentUserId={session.user.id}
+      editableWorkLogIds={Array.from(editableWorkLogIds)}
       onCreateWorkLog={handleCreateWorkLog}
       onUpdateWorkLog={handleUpdateWorkLog}
       onDeleteWorkLog={handleDeleteWorkLog}

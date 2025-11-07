@@ -28,6 +28,7 @@ vi.mock("@/lib/db/connection", () => {
     db: {
       select: vi.fn(),
       delete: vi.fn(),
+      update: vi.fn(),
       from: vi.fn(),
       where: vi.fn(),
       limit: vi.fn(),
@@ -49,7 +50,7 @@ vi.mock("@/lib/permissions", () => ({
   canManageTeamMembers: vi.fn(),
 }));
 
-import { DELETE } from "@/app/api/teams/[id]/members/[userId]/route";
+import { DELETE, PUT } from "@/app/api/teams/[id]/members/[userId]/route";
 import { getAuthenticatedSession } from "@/lib/auth-helpers";
 import { db } from "@/lib/db/connection";
 import { canManageTeamMembers, getTeamRole } from "@/lib/permissions";
@@ -248,5 +249,290 @@ describe("Team Members API - DELETE", () => {
 
     // Verify delete was called
     expect(vi.mocked(db.delete)).toHaveBeenCalled();
+  });
+});
+
+describe("Team Members API - PUT", () => {
+  const teamId = "550e8400-e29b-41d4-a716-446655440000";
+  const userId = "550e8400-e29b-41d4-a716-446655440001";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    // Default: admin permissions (can be overridden in specific tests)
+    vi.mocked(getTeamRole).mockResolvedValue(null);
+    vi.mocked(canManageTeamMembers).mockReturnValue(true);
+  });
+
+  it("should return 401 if user is not authenticated", async () => {
+    vi.mocked(getAuthenticatedSession).mockResolvedValue(null);
+
+    const request = new NextRequest(
+      `http://localhost:3000/api/teams/${teamId}/members/${userId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ role: "leader" }),
+      },
+    );
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: teamId, userId }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(data.success).toBe(false);
+    expect(data.error.code).toBe("UNAUTHORIZED");
+  });
+
+  it("should return 403 if user is not admin or team leader", async () => {
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
+      user: { id: "user-id", email: "user@example.com", role: "user" },
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    } as any);
+
+    // User is not a team leader (just a regular member)
+    vi.mocked(getTeamRole).mockResolvedValue("member");
+    vi.mocked(canManageTeamMembers).mockReturnValue(false);
+
+    const request = new NextRequest(
+      `http://localhost:3000/api/teams/${teamId}/members/${userId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ role: "leader" }),
+      },
+    );
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: teamId, userId }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.success).toBe(false);
+    expect(data.error.code).toBe("FORBIDDEN");
+  });
+
+  it("should return 404 if team not found", async () => {
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
+      user: { id: "admin-id", email: "admin@example.com", role: "admin" },
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    } as any);
+
+    // Mock team not found
+    vi.mocked(db.select).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([]), // Empty array
+        }),
+      }),
+    } as any);
+
+    const request = new NextRequest(
+      `http://localhost:3000/api/teams/${teamId}/members/${userId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ role: "leader" }),
+      },
+    );
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: teamId, userId }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(data.success).toBe(false);
+    expect(data.error.code).toBe("NOT_FOUND");
+    expect(data.error.message).toBe("Team not found");
+  });
+
+  it("should return 404 if member not found in team", async () => {
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
+      user: { id: "admin-id", email: "admin@example.com", role: "admin" },
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    } as any);
+
+    const mockTeam = {
+      id: teamId,
+      name: "Team A",
+      isActive: true,
+    };
+
+    let callCount = 0;
+    vi.mocked(db.select).mockImplementation(() => {
+      if (callCount++ === 0) {
+        // First call: check if team exists
+        return {
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([mockTeam]),
+            }),
+          }),
+        } as any;
+      } else {
+        // Second call: check if member exists - not found
+        return {
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([]), // Empty array
+            }),
+          }),
+        } as any;
+      }
+    });
+
+    const request = new NextRequest(
+      `http://localhost:3000/api/teams/${teamId}/members/${userId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ role: "leader" }),
+      },
+    );
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: teamId, userId }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(data.success).toBe(false);
+    expect(data.error.code).toBe("NOT_FOUND");
+    expect(data.error.message).toBe("Member not found in this team");
+  });
+
+  it("should return 400 if role validation fails", async () => {
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
+      user: { id: "admin-id", email: "admin@example.com", role: "admin" },
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    } as any);
+
+    const mockTeam = {
+      id: teamId,
+      name: "Team A",
+      isActive: true,
+    };
+
+    const existingMember = {
+      id: "member-1",
+      teamId,
+      userId,
+      role: "member",
+      joinedAt: new Date(),
+    };
+
+    let callCount = 0;
+    vi.mocked(db.select).mockImplementation(() => {
+      if (callCount++ === 0) {
+        // First call: check if team exists
+        return {
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([mockTeam]),
+            }),
+          }),
+        } as any;
+      } else {
+        // Second call: check if member exists
+        return {
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([existingMember]),
+            }),
+          }),
+        } as any;
+      }
+    });
+
+    const request = new NextRequest(
+      `http://localhost:3000/api/teams/${teamId}/members/${userId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ role: "invalid-role" }),
+      },
+    );
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: teamId, userId }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.error.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("should update member role successfully", async () => {
+    vi.mocked(getAuthenticatedSession).mockResolvedValue({
+      user: { id: "admin-id", email: "admin@example.com", role: "admin" },
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    } as any);
+
+    const mockTeam = {
+      id: teamId,
+      name: "Team A",
+      isActive: true,
+    };
+
+    const joinedAtDate = new Date();
+    const existingMember = {
+      id: "member-1",
+      teamId,
+      userId,
+      role: "member",
+      joinedAt: joinedAtDate,
+    };
+
+    const updatedMember = {
+      ...existingMember,
+      role: "leader",
+      joinedAt: joinedAtDate.toISOString(), // API returns ISO string
+    };
+
+    let callCount = 0;
+    vi.mocked(db.select).mockImplementation(() => {
+      if (callCount++ === 0) {
+        // First call: check if team exists
+        return {
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([mockTeam]),
+            }),
+          }),
+        } as any;
+      } else {
+        // Second call: check if member exists
+        return {
+          from: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([existingMember]),
+            }),
+          }),
+        } as any;
+      }
+    });
+
+    vi.mocked(db.update).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([updatedMember]),
+        }),
+      }),
+    } as any);
+
+    const request = new NextRequest(
+      `http://localhost:3000/api/teams/${teamId}/members/${userId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ role: "leader" }),
+      },
+    );
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: teamId, userId }),
+    });
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.data).toEqual(updatedMember);
+    expect(data.data.role).toBe("leader");
+
+    // Verify update was called
+    expect(vi.mocked(db.update)).toHaveBeenCalled();
   });
 });

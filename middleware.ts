@@ -19,6 +19,8 @@ const intlMiddleware = createMiddleware(routing);
 // Define public paths that don't require authentication
 const PUBLIC_PATHS = [
   "/api/health",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
   "/login",
   "/auth/error",
   "/forgot-password",
@@ -30,9 +32,16 @@ const PASSWORD_RESET_ALLOWED_PATHS = ["/change-password", "/api/auth"];
 
 /**
  * Check if a path is public (doesn't require authentication)
+ * Handles locale prefixes (e.g., /ja/reset-password, /en/reset-password)
  */
 function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+  // Remove locale prefix if present
+  const pathnameWithoutLocale = pathname.replace(/^\/(en|ja)/, "");
+
+  return PUBLIC_PATHS.some(
+    (path) =>
+      pathname.startsWith(path) || pathnameWithoutLocale.startsWith(path),
+  );
 }
 
 /**
@@ -175,9 +184,13 @@ function handlePasswordResetRequired(
   // Skip if user doesn't need password reset
   if (!req.auth.user.passwordResetRequired) return null;
 
+  // Remove locale prefix for path comparison
+  const pathnameWithoutLocale = pathname.replace(/^\/(en|ja)/, "");
+
   // Allow access to password reset allowed paths
-  const isAllowedPath = PASSWORD_RESET_ALLOWED_PATHS.some((path) =>
-    pathname.startsWith(path),
+  const isAllowedPath = PASSWORD_RESET_ALLOWED_PATHS.some(
+    (path) =>
+      pathname.startsWith(path) || pathnameWithoutLocale.startsWith(path),
   );
   if (isAllowedPath) return null;
 

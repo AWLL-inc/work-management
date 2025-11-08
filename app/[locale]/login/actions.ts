@@ -18,7 +18,7 @@ export async function loginAction(formData: FormData) {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/work-logs",
+      redirectTo: "/",
     });
     return { success: true };
   } catch (error) {

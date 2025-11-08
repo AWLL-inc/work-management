@@ -39,7 +39,9 @@
     "categories": "Categories",
     "signOut": "Sign Out",
     "signIn": "Sign In",
-    "logout": "Logout"
+    "logout": "Logout",
+    "changePassword": "Change Password",
+    "userMenu": "User menu"
   },
   "home": {
     "title": "Work Management",
@@ -63,7 +65,8 @@
       "password": "Password",
       "signInButton": "Sign In",
       "emailPlaceholder": "your-email@example.com",
-      "passwordPlaceholder": "Enter your password"
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot your password?"
     },
     "signOut": {
       "title": "Sign Out",

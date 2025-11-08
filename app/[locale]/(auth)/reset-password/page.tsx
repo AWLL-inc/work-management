@@ -25,7 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const resetPasswordSchema = z
   .object({
@@ -88,7 +88,17 @@ export default function ResetPasswordPage() {
           router.push("/login");
         }, 2000);
       } else {
-        toast.error(result.error?.message || t("error"));
+        // Show specific validation errors if available
+        if (
+          result.error?.details?.errors &&
+          Array.isArray(result.error.details.errors)
+        ) {
+          result.error.details.errors.forEach((error: string) => {
+            toast.error(error);
+          });
+        } else {
+          toast.error(result.error?.message || t("error"));
+        }
       }
     } catch (error) {
       console.error("Reset password error:", error);
@@ -135,8 +145,7 @@ export default function ResetPasswordPage() {
                   <FormItem>
                     <FormLabel>{t("newPasswordLabel")}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
                         placeholder={t("newPasswordPlaceholder")}
                         disabled={isLoading}
                         {...field}
@@ -157,8 +166,7 @@ export default function ResetPasswordPage() {
                   <FormItem>
                     <FormLabel>{t("confirmPasswordLabel")}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
+                      <PasswordInput
                         placeholder={t("confirmPasswordPlaceholder")}
                         disabled={isLoading}
                         {...field}

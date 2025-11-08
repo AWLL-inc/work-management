@@ -39,7 +39,9 @@
     "categories": "カテゴリ",
     "signOut": "ログアウト",
     "signIn": "ログイン",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "changePassword": "パスワード変更",
+    "userMenu": "ユーザーメニュー"
   },
   "home": {
     "title": "Work Management",
@@ -63,7 +65,8 @@
       "password": "パスワード",
       "signInButton": "サインイン",
       "emailPlaceholder": "your-email@example.com",
-      "passwordPlaceholder": "パスワードを入力してください"
+      "passwordPlaceholder": "パスワードを入力してください",
+      "forgotPassword": "パスワードをお忘れですか？"
     },
     "signOut": {
       "title": "サインアウト",

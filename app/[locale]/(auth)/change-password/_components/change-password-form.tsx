@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const changePasswordSchema = z
   .object({
@@ -82,11 +82,21 @@ export function ChangePasswordForm({ isRequired }: ChangePasswordFormProps) {
       if (response.ok) {
         toast.success(t("success"));
         setTimeout(() => {
-          router.push("/dashboard");
+          router.push("/");
           router.refresh();
         }, 1000);
       } else {
-        toast.error(result.error?.message || t("error"));
+        // Show specific validation errors if available
+        if (
+          result.error?.details?.errors &&
+          Array.isArray(result.error.details.errors)
+        ) {
+          result.error.details.errors.forEach((error: string) => {
+            toast.error(error);
+          });
+        } else {
+          toast.error(result.error?.message || t("error"));
+        }
       }
     } catch (error) {
       console.error("Change password error:", error);
@@ -120,8 +130,7 @@ export function ChangePasswordForm({ isRequired }: ChangePasswordFormProps) {
                 <FormItem>
                   <FormLabel>{t("currentPasswordLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder={t("currentPasswordPlaceholder")}
                       disabled={isLoading}
                       {...field}
@@ -139,8 +148,7 @@ export function ChangePasswordForm({ isRequired }: ChangePasswordFormProps) {
                 <FormItem>
                   <FormLabel>{t("newPasswordLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder={t("newPasswordPlaceholder")}
                       disabled={isLoading}
                       {...field}
@@ -159,8 +167,7 @@ export function ChangePasswordForm({ isRequired }: ChangePasswordFormProps) {
                 <FormItem>
                   <FormLabel>{t("confirmPasswordLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       placeholder={t("confirmPasswordPlaceholder")}
                       disabled={isLoading}
                       {...field}

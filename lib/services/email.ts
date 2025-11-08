@@ -288,7 +288,7 @@ If you did not expect this email, please contact your system administrator.
 
     // Construct reset URL (adjust baseUrl for production)
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-    const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}`;
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
     const html = `
       <!DOCTYPE html>

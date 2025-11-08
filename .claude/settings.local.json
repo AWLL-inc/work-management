@@ -147,7 +147,9 @@
       "WebFetch(domain:resend.com)",
       "WebFetch(domain:dev.to)",
       "Bash(pnpm run db:generate:*)",
-      "Bash(pnpm run db:migrate:*)"
+      "Bash(pnpm run db:migrate:*)",
+      "Bash(tsx scripts/test-email.ts:*)",
+      "Bash(nc:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,3 +1,5 @@
+import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
 import { Resend } from "resend";
 
 /**
@@ -41,11 +43,30 @@ export interface EmailResult {
 export class EmailService {
   private config: EmailConfig;
   private resendClient?: Resend;
+  private smtpTransporter?: Transporter;
 
   constructor() {
     this.config = this.loadConfig();
     if (this.config.provider === "resend" && this.config.resendApiKey) {
       this.resendClient = new Resend(this.config.resendApiKey);
+    } else if (this.config.provider === "smtp") {
+      this.smtpTransporter = nodemailer.createTransport({
+        host: this.config.smtpHost,
+        port: this.config.smtpPort,
+        secure: this.config.smtpSecure,
+        auth:
+          this.config.smtpUser && this.config.smtpPass
+            ? {
+                user: this.config.smtpUser,
+                pass: this.config.smtpPass,
+              }
+            : undefined,
+        tls: {
+          rejectUnauthorized: false,
+        },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+      });
     }
   }
 
@@ -129,27 +150,35 @@ export class EmailService {
    * Send email via SMTP (for development with Mailpit)
    */
   private async sendViaSMTP(emailData: EmailData): Promise<EmailResult> {
-    // For SMTP, we'll use nodemailer in a future implementation
-    // For now, log to console in development
-    if (process.env.NODE_ENV === "development") {
-      console.log("📧 SMTP Email (Development Mode):");
-      console.log("To:", emailData.to);
-      console.log("Subject:", emailData.subject);
-      console.log("From:", this.config.smtpFrom);
-      console.log(
-        "SMTP Config:",
-        `${this.config.smtpHost}:${this.config.smtpPort}`,
-      );
-      console.log("HTML Preview:", `${emailData.html.substring(0, 200)}...`);
+    if (!this.smtpTransporter) {
+      throw new Error("SMTP transporter not initialized");
+    }
+
+    try {
+      const info = await this.smtpTransporter.sendMail({
+        from: this.config.smtpFrom,
+        to: Array.isArray(emailData.to) ? emailData.to.join(", ") : emailData.to,
+        subject: emailData.subject,
+        html: emailData.html,
+        text: emailData.text,
+      });
+
+      console.log("📧 Email sent via SMTP:");
+      console.log("  Message ID:", info.messageId);
+      console.log("  To:", emailData.to);
+      console.log("  Subject:", emailData.subject);
 
       return {
         success: true,
-        messageId: `dev-${Date.now()}`,
+        messageId: info.messageId,
+      };
+    } catch (error) {
+      console.error("SMTP send error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "SMTP send failed",
       };
     }
-
-    // Production SMTP would require nodemailer implementation
-    throw new Error("SMTP provider not fully implemented yet");
   }
 
   /**

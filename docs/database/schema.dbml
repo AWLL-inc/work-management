@@ -1,5 +1,5 @@
 // Database Markup Language (DBML) Schema
-// 自動生成日時: 2025-11-05T13:18:36.246Z
+// 自動生成日時: 2025-11-08T00:16:07.882Z
 // 注意: このファイルは drizzle/schema.ts から自動生成されます。直接編集しないでください。
 // 再生成: npm run docs:db:dbml
 // 可視化: https://dbdiagram.io/d
@@ -78,6 +78,10 @@ table users {
   image varchar(2048)
   password_hash varchar(255)
   role varchar(50) [not null, default: 'user']
+  password_reset_required boolean [not null, default: false]
+  password_reset_token varchar(255)
+  password_reset_token_expires timestamp
+  last_password_change timestamp
   created_at timestamp [not null, default: `now()`]
   updated_at timestamp [not null, default: `now()`]
 }

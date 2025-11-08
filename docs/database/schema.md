@@ -1,6 +1,6 @@
 # データベーススキーマドキュメント
 
-> **自動生成日時**: 2025-11-05T13:18:37.384Z
+> **自動生成日時**: 2025-11-08T00:16:08.503Z
 > **注意**: このファイルは `drizzle/schema.ts` から自動生成されます。直接編集しないでください。
 > 
 > 再生成: `npm run docs:db:markdown`
@@ -152,6 +152,10 @@
 | image | VARCHAR | 画像URL |
 | password_hash | VARCHAR | パスワードハッシュ |
 | role | VARCHAR | 役割・権限（必須、デフォルト値あり） |
+| password_reset_required | BOOLEAN | password_reset_required（必須、デフォルト値あり） |
+| password_reset_token | VARCHAR | password_reset_token |
+| password_reset_token_expires | TIMESTAMP | password_reset_token_expires |
+| last_password_change | TIMESTAMP | last_password_change |
 | created_at | TIMESTAMP | 作成日時（必須、デフォルト値あり） |
 | updated_at | TIMESTAMP | 更新日時（必須、デフォルト値あり） |
 
@@ -253,6 +257,6 @@ erDiagram
 ## 統計情報
 
 - テーブル総数: 9
-- カラム総数: 61
+- カラム総数: 65
 - インデックス総数: 11
 - 外部キー総数: 7

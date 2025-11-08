@@ -2,8 +2,8 @@
  * Simple SMTP connection test
  */
 
-import { config } from "dotenv";
 import { resolve } from "node:path";
+import { config } from "dotenv";
 import nodemailer from "nodemailer";
 
 config({ path: resolve(process.cwd(), ".env.local") });

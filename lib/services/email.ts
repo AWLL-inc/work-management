@@ -1,5 +1,5 @@
-import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
+import nodemailer from "nodemailer";
 import { Resend } from "resend";
 
 /**
@@ -157,7 +157,9 @@ export class EmailService {
     try {
       const info = await this.smtpTransporter.sendMail({
         from: this.config.smtpFrom,
-        to: Array.isArray(emailData.to) ? emailData.to.join(", ") : emailData.to,
+        to: Array.isArray(emailData.to)
+          ? emailData.to.join(", ")
+          : emailData.to,
         subject: emailData.subject,
         html: emailData.html,
         text: emailData.text,

@@ -145,6 +145,11 @@ export const updateWorkCategorySchema = z
 // Create work log schema
 export const createWorkLogSchema = z
   .object({
+    userId: z
+      .string()
+      .uuid("Invalid user ID")
+      .optional()
+      .describe("UUID of the user (optional, defaults to authenticated user)"),
     date: z
       .string()
       .date()

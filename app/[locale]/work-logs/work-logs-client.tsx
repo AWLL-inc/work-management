@@ -40,7 +40,9 @@ interface WorkLogsClientProps {
   userRole: "admin" | "manager" | "user";
   currentUserId: string;
   editableWorkLogIds: string[];
+  canSelectUser: boolean;
   onCreateWorkLog: (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
@@ -70,6 +72,7 @@ export function WorkLogsClient({
   userRole,
   currentUserId,
   editableWorkLogIds,
+  canSelectUser,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -113,6 +116,7 @@ export function WorkLogsClient({
   };
 
   const handleCreateWorkLog = async (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
@@ -122,7 +126,7 @@ export function WorkLogsClient({
     // Create optimistic work log
     const optimisticLog: WorkLog = {
       id: createOptimisticId(),
-      userId: currentUserId,
+      userId: data.userId,
       date: new Date(data.date),
       hours: data.hours,
       projectId: data.projectId,
@@ -231,6 +235,7 @@ export function WorkLogsClient({
           currentUserId={currentUserId}
           userRole={userRole}
           editableWorkLogIds={editableWorkLogIds}
+          canSelectUser={canSelectUser}
           onCreateWorkLog={handleCreateWorkLog}
           onUpdateWorkLog={handleUpdateWorkLog}
           onDeleteWorkLog={handleDeleteWorkLog}

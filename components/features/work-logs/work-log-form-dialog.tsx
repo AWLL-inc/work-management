@@ -30,8 +30,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import type { SanitizedUser } from "@/lib/api/users";
+import { UserSelect } from "./search/user-select";
 
 const workLogFormSchema = z.object({
+  userId: z.string().min(1, "User is required"),
   date: z.string().min(1, "Date is required"),
   hours: z
     .string()
@@ -56,6 +59,9 @@ interface WorkLogFormDialogProps {
   isSubmitting: boolean;
   projects: Project[];
   categories: WorkCategory[];
+  users: SanitizedUser[];
+  currentUserId: string;
+  canSelectUser: boolean;
 }
 
 export function WorkLogFormDialog({
@@ -66,10 +72,14 @@ export function WorkLogFormDialog({
   isSubmitting,
   projects,
   categories,
+  users,
+  currentUserId,
+  canSelectUser,
 }: WorkLogFormDialogProps) {
   const form = useForm<WorkLogFormValues>({
     resolver: zodResolver(workLogFormSchema),
     defaultValues: {
+      userId: currentUserId,
       date: new Date().toISOString().split("T")[0],
       hours: "",
       projectId: "",
@@ -81,6 +91,7 @@ export function WorkLogFormDialog({
   useEffect(() => {
     if (workLog) {
       form.reset({
+        userId: workLog.userId,
         date: new Date(workLog.date).toISOString().split("T")[0],
         hours: workLog.hours,
         projectId: workLog.projectId,
@@ -89,6 +100,7 @@ export function WorkLogFormDialog({
       });
     } else {
       form.reset({
+        userId: currentUserId,
         date: new Date().toISOString().split("T")[0],
         hours: "",
         projectId: "",
@@ -96,7 +108,7 @@ export function WorkLogFormDialog({
         details: "",
       });
     }
-  }, [workLog, form]);
+  }, [workLog, form, currentUserId]);
 
   const handleSubmit = async (data: WorkLogFormValues) => {
     await onSubmit(data);
@@ -117,6 +129,28 @@ export function WorkLogFormDialog({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-4"
           >
+            {canSelectUser && (
+              <FormField
+                control={form.control}
+                name="userId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>User</FormLabel>
+                    <FormControl>
+                      <UserSelect
+                        users={users}
+                        selectedUserId={field.value}
+                        onSelectionChange={(userId) => {
+                          field.onChange(userId || currentUserId);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="date"

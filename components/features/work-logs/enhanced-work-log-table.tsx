@@ -72,13 +72,14 @@ interface EnhancedWorkLogTableProps {
   currentUserId: string;
   userRole: string;
   editableWorkLogIds: string[];
+  canSelectUser: boolean;
   onCreateWorkLog: (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
     categoryId: string;
     details?: string;
-    userId?: string;
   }) => Promise<void>;
   onUpdateWorkLog: (
     id: string,
@@ -116,6 +117,7 @@ export function EnhancedWorkLogTable({
   currentUserId,
   userRole,
   editableWorkLogIds: editableWorkLogIdsArray,
+  canSelectUser,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -826,6 +828,7 @@ export function EnhancedWorkLogTable({
 
   // Handle form submission
   const handleFormSubmit = async (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
@@ -1332,6 +1335,9 @@ export function EnhancedWorkLogTable({
         onSubmit={handleFormSubmit}
         projects={projects}
         categories={categories}
+        users={users}
+        currentUserId={currentUserId}
+        canSelectUser={canSelectUser}
         workLog={selectedWorkLog}
         isSubmitting={isSubmitting}
       />

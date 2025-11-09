@@ -145,12 +145,12 @@ export default async function WorkLogsPage({
 
   // Server Actions wrapped in async functions
   const handleCreateWorkLog = async (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
     categoryId: string;
     details?: string;
-    userId?: string;
   }) => {
     "use server";
     const session = await getAuthenticatedSession();
@@ -158,7 +158,7 @@ export default async function WorkLogsPage({
 
     // Only admins can create work logs for other users
     let targetUserId = session.user.id;
-    if (data.userId && data.userId !== session.user.id) {
+    if (data.userId !== session.user.id) {
       if (session.user.role !== "admin") {
         throw new Error(
           "Forbidden: Only admins can create work logs for other users",
@@ -228,6 +228,7 @@ export default async function WorkLogsPage({
       userRole={session.user.role}
       currentUserId={session.user.id}
       editableWorkLogIds={Array.from(editableWorkLogIds)}
+      canSelectUser={session.user.role === "admin"}
       onCreateWorkLog={handleCreateWorkLog}
       onUpdateWorkLog={handleUpdateWorkLog}
       onDeleteWorkLog={handleDeleteWorkLog}

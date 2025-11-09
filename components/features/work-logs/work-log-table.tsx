@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import type { SanitizedUser } from "@/lib/api/users";
 import { createWorkLogColumns } from "./work-log-columns";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
 
@@ -19,7 +20,11 @@ interface WorkLogTableProps {
   workLogs: WorkLog[];
   projects: Project[];
   categories: WorkCategory[];
+  users: SanitizedUser[];
+  currentUserId: string;
+  canSelectUser: boolean;
   onCreateWorkLog: (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
@@ -44,6 +49,9 @@ export function WorkLogTable({
   workLogs,
   projects,
   categories,
+  users,
+  currentUserId,
+  canSelectUser,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -65,6 +73,7 @@ export function WorkLogTable({
   };
 
   const handleFormSubmit = async (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
@@ -142,6 +151,9 @@ export function WorkLogTable({
         isSubmitting={isSubmitting}
         projects={projects}
         categories={categories}
+        users={users}
+        currentUserId={currentUserId}
+        canSelectUser={canSelectUser}
       />
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

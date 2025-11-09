@@ -1,8 +1,11 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { PasswordInput } from "@/components/ui/password-input";
+import { Link } from "@/i18n/routing";
 import { loginAction } from "./actions";
 
 /**
@@ -27,6 +30,7 @@ function SubmitButton() {
  * Simple credentials-based authentication form
  */
 export default function LoginPage() {
+  const t = useTranslations("auth.signIn");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const searchParams = useSearchParams();
@@ -103,15 +107,22 @@ export default function LoginPage() {
               >
                 Password
               </label>
-              <input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 autoComplete="current-password"
                 required
-                className="mt-1 block w-full px-3 py-2 border-2 border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="mt-1"
                 placeholder="••••••••"
               />
+              <div className="mt-2">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
+                  {t("forgotPassword")}
+                </Link>
+              </div>
             </div>
           </div>
 

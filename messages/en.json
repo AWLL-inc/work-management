@@ -39,7 +39,9 @@
     "categories": "Categories",
     "signOut": "Sign Out",
     "signIn": "Sign In",
-    "logout": "Logout"
+    "logout": "Logout",
+    "changePassword": "Change Password",
+    "userMenu": "User menu"
   },
   "home": {
     "title": "Work Management",
@@ -63,7 +65,8 @@
       "password": "Password",
       "signInButton": "Sign In",
       "emailPlaceholder": "your-email@example.com",
-      "passwordPlaceholder": "Enter your password"
+      "passwordPlaceholder": "Enter your password",
+      "forgotPassword": "Forgot your password?"
     },
     "signOut": {
       "title": "Sign Out",
@@ -83,6 +86,70 @@
       "emailsignin": "Failed to send email.",
       "credentialssignin": "Invalid credentials. Please try again.",
       "sessionrequired": "You need to sign in to access this page."
+    },
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "description": "Enter your registered email address. We will send you a link to reset your password.",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "your-email@example.com",
+      "submit": "Send Reset Link",
+      "sending": "Sending...",
+      "success": "Reset link sent successfully",
+      "error": "Failed to send reset link",
+      "successTitle": "Email Sent",
+      "successDescription": "If an account exists with this email, you will receive a password reset link.",
+      "checkEmail": "Please check your inbox and click the password reset link.",
+      "backToLogin": "Back to Login",
+      "invalidEmail": "Please enter a valid email address"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your new password.",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "passwordRequirements": "8+ characters, including uppercase, lowercase, and numbers",
+      "submit": "Reset Password",
+      "resetting": "Resetting...",
+      "success": "Password reset successfully",
+      "error": "Failed to reset password",
+      "invalidToken": "Invalid or expired reset link",
+      "invalidTokenTitle": "Invalid Link",
+      "invalidTokenDescription": "This password reset link is invalid or has expired.",
+      "requestNewLink": "Request New Link",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMissingUppercase": "Password must contain at least one uppercase letter",
+      "passwordMissingLowercase": "Password must contain at least one lowercase letter",
+      "passwordMissingNumber": "Password must contain at least one number"
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "titleRequired": "Password Change Required",
+      "description": "Update your password to enhance security.",
+      "descriptionRequired": "You must change your password on first login.",
+      "currentPasswordLabel": "Current Password",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "passwordRequirements": "8+ characters, including uppercase, lowercase, and numbers",
+      "submit": "Change Password",
+      "changing": "Changing...",
+      "success": "Password changed successfully",
+      "error": "Failed to change password",
+      "requiredWarning": "For security reasons, you must change your password.",
+      "currentPasswordRequired": "Current password is required",
+      "newPasswordRequired": "New password is required",
+      "confirmPasswordRequired": "Password confirmation is required",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMissingUppercase": "Password must contain at least one uppercase letter",
+      "passwordMissingLowercase": "Password must contain at least one lowercase letter",
+      "passwordMissingNumber": "Password must contain at least one number",
+      "incorrectCurrentPassword": "Current password is incorrect"
     }
   },
   "dashboard": {

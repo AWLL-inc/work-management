@@ -17,6 +17,7 @@ export interface AuthSession {
     name?: string | null;
     image?: string | null;
     role: "admin" | "manager" | "user";
+    passwordResetRequired?: boolean;
   };
   expires?: string;
 }

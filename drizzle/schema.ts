@@ -29,6 +29,15 @@ export const users = pgTable("users", {
   passwordHash: varchar("password_hash", { length: 255 }),
   // Role-based access control
   role: varchar("role", { length: 50 }).notNull().default("user"), // 'admin', 'manager', 'user'
+  // Password reset fields (Issue #122)
+  passwordResetRequired: boolean("password_reset_required")
+    .notNull()
+    .default(false),
+  passwordResetToken: varchar("password_reset_token", { length: 255 }),
+  passwordResetTokenExpires: timestamp("password_reset_token_expires", {
+    mode: "date",
+  }),
+  lastPasswordChange: timestamp("last_password_change", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
 });

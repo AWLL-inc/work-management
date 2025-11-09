@@ -17,6 +17,10 @@
 | image | VARCHAR | 画像URL |
 | password_hash | VARCHAR | パスワードハッシュ |
 | role | VARCHAR | 役割・権限（必須、デフォルト値あり） |
+| password_reset_required | BOOLEAN | password_reset_required（必須、デフォルト値あり） |
+| password_reset_token | VARCHAR | password_reset_token |
+| password_reset_token_expires | TIMESTAMP | password_reset_token_expires |
+| last_password_change | TIMESTAMP | last_password_change |
 | created_at | TIMESTAMP | 作成日時（必須、デフォルト値あり） |
 | updated_at | TIMESTAMP | 更新日時（必須、デフォルト値あり） |
 
@@ -36,6 +40,6 @@
 
 ---
 
-> **自動生成日時**: 2025-11-05T13:18:37.942Z
+> **自動生成日時**: 2025-11-08T09:33:54.088Z
 
 [← スキーマ概要に戻る](../schema.md)

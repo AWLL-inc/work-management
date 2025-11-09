@@ -288,6 +288,354 @@ DISABLE_AUTH=false        # Set to "true" to disable authentication in developme
 3. Configure NextAuth secret: `openssl rand -base64 32`
 4. Update NEXTAUTH_URL for production deployment
 
+## Email Configuration
+
+This project requires email sending functionality for user management features (Issue #122):
+- Welcome emails with initial passwords
+- Password reset emails
+- Account notifications
+
+### Local Development Setup (Mailpit)
+
+**Mailpit** is recommended for local email testing. It captures all emails without sending them and provides a web interface for preview.
+
+#### Docker Compose Setup
+Add to `docker-compose.yml`:
+
+```yaml
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    restart: unless-stopped
+    ports:
+      - '1025:1025'  # SMTP server port
+      - '8025:8025'  # Web UI port
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=true
+      - MP_SMTP_AUTH_ALLOW_INSECURE=true
+      - MP_MAX_MESSAGES=500
+    networks:
+      - work-management-network
+```
+
+#### Local Environment Variables
+Add to `.env.local`:
+
+```bash
+# Email Configuration (Development - Mailpit)
+EMAIL_PROVIDER=smtp
+SMTP_HOST=localhost
+SMTP_PORT=1025
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=noreply@work-management.local
+SMTP_SECURE=false
+EMAIL_PREVIEW_MODE=true  # Optional: log emails to console instead of sending
+```
+
+#### Usage
+1. Start Mailpit: `docker-compose up mailpit`
+2. Access web UI: http://localhost:8025
+3. All sent emails will appear in the UI for testing
+
+### Production Setup (Resend)
+
+**Resend** is recommended for production email delivery due to its Next.js integration and reliability.
+
+#### Required Packages
+```bash
+npm install resend nodemailer react-email @react-email/components
+npm install -D @types/nodemailer
+```
+
+#### Production Environment Variables
+Configure in Vercel dashboard:
+
+```bash
+# Email Configuration (Production - Resend)
+EMAIL_PROVIDER=resend
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxx
+SMTP_FROM=noreply@yourdomain.com
+
+# Fallback SMTP Configuration (if not using Resend)
+SMTP_HOST=smtp.resend.com
+SMTP_PORT=465
+SMTP_USER=resend
+SMTP_PASS=re_xxxxxxxxxxxxxxxxxx
+SMTP_SECURE=true
+```
+
+#### Resend Setup Steps
+1. Sign up at https://resend.com
+2. Verify your sending domain
+3. Generate API key
+4. Add API key to Vercel environment variables
+5. Test email delivery in staging environment
+
+### Email Service Implementation
+
+#### Directory Structure
+```
+lib/email/
+├── index.ts              # Email service abstraction
+├── resend.ts            # Resend provider implementation
+├── smtp.ts              # SMTP/Nodemailer fallback
+└── templates/
+    ├── welcome.tsx      # Welcome email template
+    └── password-reset.tsx # Password reset template
+
+emails/
+├── welcome-email.tsx    # React Email welcome template
+├── password-reset-email.tsx # React Email reset template
+└── _components/
+    ├── email-layout.tsx # Shared email layout
+    └── email-button.tsx # Reusable email components
+```
+
+#### Email Service Abstraction Pattern
+```typescript
+// lib/email/index.ts
+import { render } from '@react-email/render';
+import { sendWithResend } from './resend';
+import { sendWithSMTP } from './smtp';
+
+interface SendEmailOptions {
+  to: string;
+  subject: string;
+  template: React.ReactElement;
+}
+
+export async function sendEmail({ to, subject, template }: SendEmailOptions) {
+  const html = await render(template);
+  const text = await render(template, { plainText: true });
+
+  const provider = process.env.EMAIL_PROVIDER || 'smtp';
+
+  if (provider === 'resend' && process.env.RESEND_API_KEY) {
+    return sendWithResend({ to, subject, html, text });
+  }
+
+  return sendWithSMTP({ to, subject, html, text });
+}
+```
+
+### Email Templates with React Email
+
+#### Template Development
+```bash
+# Start React Email dev server
+npm run email:dev
+
+# Access template preview at http://localhost:3000
+```
+
+#### Example Template
+```typescript
+// emails/password-reset-email.tsx
+import { Button, Html, Text, Container } from '@react-email/components';
+
+interface PasswordResetEmailProps {
+  userName: string;
+  resetUrl: string;
+  locale: 'en' | 'ja';
+}
+
+export default function PasswordResetEmail({
+  userName,
+  resetUrl,
+  locale
+}: PasswordResetEmailProps) {
+  const content = {
+    ja: {
+      greeting: `${userName}さん、こんにちは。`,
+      message: 'パスワードをリセットするには、以下のボタンをクリックしてください。',
+      button: 'パスワードをリセット',
+      expiry: 'このリンクは1時間で無効になります。',
+    },
+    en: {
+      greeting: `Hello ${userName},`,
+      message: 'Click the button below to reset your password.',
+      button: 'Reset Password',
+      expiry: 'This link expires in 1 hour.',
+    },
+  };
+
+  const t = content[locale];
+
+  return (
+    <Html>
+      <Container>
+        <Text>{t.greeting}</Text>
+        <Text>{t.message}</Text>
+        <Button href={resetUrl}>{t.button}</Button>
+        <Text style={{ color: '#666', fontSize: '12px' }}>{t.expiry}</Text>
+      </Container>
+    </Html>
+  );
+}
+```
+
+### Security Considerations
+
+#### Email Security Checklist
+- ✅ Use secure token generation (`crypto.randomBytes(32)`)
+- ✅ Hash tokens before database storage
+- ✅ Set short expiration times (1 hour for reset links)
+- ✅ Implement rate limiting (max 3 requests per 5 minutes)
+- ✅ Always return success messages (prevent email enumeration)
+- ✅ Use HTTPS for all reset links in production
+- ✅ Invalidate tokens after single use
+- ✅ Never log or expose email credentials
+
+#### Rate Limiting Example
+```typescript
+// Rate limit: 3 requests per 5 minutes per IP
+const rateLimitMap = new Map<string, number[]>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const attempts = rateLimitMap.get(ip) || [];
+  const recentAttempts = attempts.filter(time => now - time < 5 * 60 * 1000);
+
+  if (recentAttempts.length >= 3) {
+    return false; // Rate limit exceeded
+  }
+
+  rateLimitMap.set(ip, [...recentAttempts, now]);
+  return true;
+}
+```
+
+### Testing Strategy
+
+#### Unit Tests
+```typescript
+// lib/email/__tests__/email.test.ts
+import { describe, it, expect } from 'vitest';
+import { sendPasswordResetEmail } from '../index';
+
+describe('Email Service', () => {
+  it('should send password reset email', async () => {
+    const result = await sendPasswordResetEmail({
+      to: 'test@example.com',
+      userName: 'Test User',
+      resetUrl: 'https://example.com/reset?token=abc',
+      locale: 'ja',
+    });
+
+    expect(result.success).toBe(true);
+  });
+});
+```
+
+#### E2E Tests with Mailpit
+```typescript
+// tests/e2e/email.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('password reset email flow', async ({ page }) => {
+  // Request password reset
+  await page.goto('/auth/forgot-password');
+  await page.fill('input[name="email"]', 'test@example.com');
+  await page.click('button[type="submit"]');
+
+  // Verify email sent message
+  await expect(page.locator('text=Email sent')).toBeVisible();
+
+  // Check Mailpit for received email (in CI)
+  // const mailpitResponse = await fetch('http://localhost:8025/api/v1/messages');
+  // const emails = await mailpitResponse.json();
+  // expect(emails.total).toBeGreaterThan(0);
+});
+```
+
+### Cost Estimate
+
+#### Development
+- **Mailpit**: Free (Docker-based)
+
+#### Production
+- **Resend Free Tier**: 3,000 emails/month (sufficient for MVP)
+- **Resend Paid Tier**: $20/month for 50,000 emails
+- **Alternative (AWS SES)**: $0.10 per 1,000 emails (requires AWS setup)
+
+### Implementation Checklist
+
+#### Phase 1: Local Development Setup
+- [ ] Add Mailpit to `docker-compose.yml`
+- [ ] Configure local environment variables
+- [ ] Test Mailpit connection
+- [ ] Create email service abstraction layer
+
+#### Phase 2: Email Templates
+- [ ] Install React Email and dependencies
+- [ ] Create email layout components
+- [ ] Build welcome email template
+- [ ] Build password reset email template
+- [ ] Add multi-language support (Japanese/English)
+- [ ] Test templates in Mailpit web UI
+
+#### Phase 3: API Integration
+- [ ] Integrate email into user creation API
+- [ ] Implement password reset request API
+- [ ] Implement password reset confirmation API
+- [ ] Add error handling and logging
+- [ ] Write unit tests for email service
+
+#### Phase 4: Production Deployment
+- [ ] Sign up for Resend account
+- [ ] Verify sending domain
+- [ ] Configure production environment variables in Vercel
+- [ ] Test email delivery in staging environment
+- [ ] Monitor deliverability and error rates
+- [ ] Set up email sending alerts
+
+### Troubleshooting
+
+#### Common Issues
+
+**Mailpit not receiving emails in development**
+```bash
+# Check Mailpit is running
+docker ps | grep mailpit
+
+# Check SMTP connection
+telnet localhost 1025
+
+# Restart Mailpit
+docker-compose restart mailpit
+```
+
+**Resend emails not delivering in production**
+```bash
+# Verify domain is verified
+# Check Resend dashboard: https://resend.com/domains
+
+# Test API key
+curl -X POST https://api.resend.com/emails \
+  -H "Authorization: Bearer $RESEND_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"from":"noreply@yourdomain.com","to":"test@example.com","subject":"Test","html":"Test"}'
+
+# Check Vercel environment variables
+vercel env ls
+```
+
+**Emails going to spam**
+- Verify SPF, DKIM, and DMARC records for your domain
+- Use Resend's domain verification to automatically configure DNS
+- Avoid spam trigger words in subject lines
+- Include plain text version with HTML emails
+- Maintain good sender reputation (low bounce/complaint rates)
+
+### Related Documentation
+
+- Issue #122: User Management Features (User creation, password reset)
+- [Resend Documentation](https://resend.com/docs)
+- [React Email Documentation](https://react.email)
+- [Mailpit GitHub](https://github.com/axllent/mailpit)
+
 ## API Design
 
 ### RESTful Endpoints

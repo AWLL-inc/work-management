@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link } from "@/i18n/routing";
+import { getAuthenticatedSession } from "@/lib/auth-helpers";
 
 export async function generateMetadata({
   params,
@@ -31,6 +32,11 @@ export default async function HomePage({
   const { locale } = await params;
   const t = await getTranslations({ locale });
 
+  // Get user session and role
+  const session = await getAuthenticatedSession();
+  const userRole = session?.user?.role;
+  const isAdmin = userRole === "admin";
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -40,8 +46,8 @@ export default async function HomePage({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+      <div className="flex flex-wrap justify-center gap-6">
+        <Card className="w-full md:w-80">
           <CardHeader>
             <CardTitle>{t("nav.dashboard")}</CardTitle>
             <CardDescription>
@@ -55,7 +61,7 @@ export default async function HomePage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="w-full md:w-80">
           <CardHeader>
             <CardTitle>{t("nav.workLogs")}</CardTitle>
             <CardDescription>
@@ -69,19 +75,21 @@ export default async function HomePage({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("nav.admin")}</CardTitle>
-            <CardDescription>
-              {t("home.cards.admin.description")}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/admin/projects">{t("nav.admin")}</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {isAdmin && (
+          <Card className="w-full md:w-80">
+            <CardHeader>
+              <CardTitle>{t("nav.admin")}</CardTitle>
+              <CardDescription>
+                {t("home.cards.admin.description")}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link href="/admin/projects">{t("nav.admin")}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -40,11 +40,22 @@ export default async function LocaleLayout({ children, params }: Props) {
   // Get user info for navigation
   const userEmail = session?.user?.email || null;
   const userRole = session?.user?.role || "user";
+  const passwordResetRequired = session?.user?.passwordResetRequired || false;
 
-  // Check if current page is login page
+  // Check if current page is login page or auth-related page
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   const isLoginPage = pathname.includes("/login");
+  const isAuthPage =
+    pathname.includes("/forgot-password") ||
+    pathname.includes("/reset-password");
+
+  // Hide navigation if:
+  // 1. User is on login page
+  // 2. User is on auth pages (forgot-password, reset-password)
+  // 3. User has passwordResetRequired flag (forced password change)
+  const shouldHideNavigation =
+    isLoginPage || isAuthPage || passwordResetRequired;
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
@@ -58,7 +69,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           {/* Global live region for screen reader announcements */}
           <LiveRegion />
           <div className="min-h-screen bg-background">
-            {!isLoginPage && (
+            {!shouldHideNavigation && (
               <Navigation userEmail={userEmail} userRole={userRole} />
             )}
             <main className="container mx-auto p-6">{children}</main>

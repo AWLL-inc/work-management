@@ -17,18 +17,22 @@ export const authConfig: NextAuthConfig = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      // Add user role to token on sign in
+      // Add user role and password reset flag to token on sign in
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        token.passwordResetRequired = user.passwordResetRequired;
       }
       return token;
     },
     async session({ session, token }) {
-      // Add user role and id to session
+      // Add user role, id, and password reset flag to session
       if (session.user) {
         session.user.role = token.role as string;
         session.user.id = token.id as string;
+        session.user.passwordResetRequired = token.passwordResetRequired as
+          | boolean
+          | undefined;
       }
       return session;
     },

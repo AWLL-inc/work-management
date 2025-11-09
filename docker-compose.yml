@@ -27,10 +27,35 @@ services:
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
       # Authentication settings for development
-      - DISABLE_AUTH=true
+      - DISABLE_AUTH=${DISABLE_AUTH:-false}
+      # Email settings (Mailpit)
+      - EMAIL_PROVIDER=smtp
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+      - SMTP_FROM=noreply@work-management.local
+      - SMTP_SECURE=false
+      - EMAIL_PREVIEW_MODE=false
     depends_on:
       db:
         condition: service_healthy
+      mailpit:
+        condition: service_started
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ============================================
+  # Mailpit Email Testing Service
+  # ============================================
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: work-management-mailpit
+    ports:
+      - "8025:8025" # Web UI
+      - "1025:1025" # SMTP server
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
     networks:
       - app-network
     restart: unless-stopped

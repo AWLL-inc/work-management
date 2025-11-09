@@ -1,11 +1,26 @@
 "use client";
 
-import { ClipboardList, FolderKanban, LogOut, Tags } from "lucide-react";
+import {
+  ClipboardList,
+  FolderKanban,
+  KeyRound,
+  LogOut,
+  Tags,
+  User,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { logoutAction } from "@/app/logout/actions";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcherButton } from "./language-switcher";
@@ -151,18 +166,46 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
             <LanguageSwitcherButton />
             <ThemeToggle />
             {userEmail && (
-              <span className="text-sm text-muted-foreground">{userEmail}</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" aria-label={t("userMenu")}>
+                    <User className="w-4 h-4 mr-2" />
+                    <span className="text-sm">{userEmail}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {userEmail}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {userRole}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/change-password"
+                      className="flex w-full cursor-pointer"
+                    >
+                      <KeyRound className="w-4 h-4 mr-2" />
+                      {t("changePassword")}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {isLoggingOut ? `${t("logout")}...` : t("logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              aria-label={t("logout")}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              {isLoggingOut ? `${t("logout")}...` : t("logout")}
-            </Button>
           </div>
         </div>
       </div>

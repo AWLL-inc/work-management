@@ -143,7 +143,13 @@
       "Bash(img-src 'self' data: https:)",
       "Bash(font-src 'self' data:)",
       "Bash(connect-src 'self' https://*.vercel.app)",
-      "Bash(pnpm remove:*)"
+      "Bash(pnpm remove:*)",
+      "WebFetch(domain:resend.com)",
+      "WebFetch(domain:dev.to)",
+      "Bash(pnpm run db:generate:*)",
+      "Bash(pnpm run db:migrate:*)",
+      "Bash(tsx scripts/test-email.ts:*)",
+      "Bash(nc:*)"
     ],
     "deny": [],
     "ask": []

@@ -39,7 +39,9 @@
     "categories": "カテゴリ",
     "signOut": "ログアウト",
     "signIn": "ログイン",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "changePassword": "パスワード変更",
+    "userMenu": "ユーザーメニュー"
   },
   "home": {
     "title": "Work Management",
@@ -63,7 +65,8 @@
       "password": "パスワード",
       "signInButton": "サインイン",
       "emailPlaceholder": "your-email@example.com",
-      "passwordPlaceholder": "パスワードを入力してください"
+      "passwordPlaceholder": "パスワードを入力してください",
+      "forgotPassword": "パスワードをお忘れですか？"
     },
     "signOut": {
       "title": "サインアウト",
@@ -83,6 +86,70 @@
       "emailsignin": "メールの送信に失敗しました。",
       "credentialssignin": "認証情報が正しくありません。もう一度お試しください。",
       "sessionrequired": "このページにアクセスするにはサインインが必要です。"
+    },
+    "forgotPassword": {
+      "title": "パスワードをお忘れですか？",
+      "description": "登録済みのメールアドレスを入力してください。パスワードリセット用のリンクをお送りします。",
+      "emailLabel": "メールアドレス",
+      "emailPlaceholder": "your-email@example.com",
+      "submit": "リセットリンクを送信",
+      "sending": "送信中...",
+      "success": "リセットリンクを送信しました",
+      "error": "リセットリンクの送信に失敗しました",
+      "successTitle": "メールを送信しました",
+      "successDescription": "このメールアドレスでアカウントが存在する場合、パスワードリセット用のリンクが送信されます。",
+      "checkEmail": "メールボックスを確認して、パスワードリセット用のリンクをクリックしてください。",
+      "backToLogin": "ログインに戻る",
+      "invalidEmail": "有効なメールアドレスを入力してください"
+    },
+    "resetPassword": {
+      "title": "パスワードをリセット",
+      "description": "新しいパスワードを入力してください。",
+      "newPasswordLabel": "新しいパスワード",
+      "newPasswordPlaceholder": "新しいパスワードを入力",
+      "confirmPasswordLabel": "パスワードの確認",
+      "confirmPasswordPlaceholder": "パスワードを再入力",
+      "passwordRequirements": "8文字以上、大文字・小文字・数字を含む",
+      "submit": "パスワードをリセット",
+      "resetting": "リセット中...",
+      "success": "パスワードをリセットしました",
+      "error": "パスワードのリセットに失敗しました",
+      "invalidToken": "無効または期限切れのリセットリンク",
+      "invalidTokenTitle": "無効なリンク",
+      "invalidTokenDescription": "このパスワードリセットリンクは無効か期限切れです。",
+      "requestNewLink": "新しいリンクをリクエスト",
+      "passwordsDoNotMatch": "パスワードが一致しません",
+      "passwordTooShort": "パスワードは8文字以上である必要があります",
+      "passwordMissingUppercase": "パスワードには少なくとも1つの大文字が必要です",
+      "passwordMissingLowercase": "パスワードには少なくとも1つの小文字が必要です",
+      "passwordMissingNumber": "パスワードには少なくとも1つの数字が必要です"
+    },
+    "changePassword": {
+      "title": "パスワード変更",
+      "titleRequired": "パスワード変更が必要です",
+      "description": "セキュリティ強化のため、パスワードを変更してください。",
+      "descriptionRequired": "初回ログインのため、パスワードを変更してください。",
+      "currentPasswordLabel": "現在のパスワード",
+      "currentPasswordPlaceholder": "現在のパスワードを入力",
+      "newPasswordLabel": "新しいパスワード",
+      "newPasswordPlaceholder": "新しいパスワードを入力",
+      "confirmPasswordLabel": "パスワードの確認",
+      "confirmPasswordPlaceholder": "パスワードを再入力",
+      "passwordRequirements": "8文字以上、大文字・小文字・数字を含む",
+      "submit": "パスワードを変更",
+      "changing": "変更中...",
+      "success": "パスワードを変更しました",
+      "error": "パスワードの変更に失敗しました",
+      "requiredWarning": "セキュリティのため、パスワードの変更が必要です。",
+      "currentPasswordRequired": "現在のパスワードを入力してください",
+      "newPasswordRequired": "新しいパスワードを入力してください",
+      "confirmPasswordRequired": "パスワードの確認を入力してください",
+      "passwordsDoNotMatch": "パスワードが一致しません",
+      "passwordTooShort": "パスワードは8文字以上である必要があります",
+      "passwordMissingUppercase": "パスワードには少なくとも1つの大文字が必要です",
+      "passwordMissingLowercase": "パスワードには少なくとも1つの小文字が必要です",
+      "passwordMissingNumber": "パスワードには少なくとも1つの数字が必要です",
+      "incorrectCurrentPassword": "現在のパスワードが正しくありません"
     }
   },
   "dashboard": {

@@ -7,6 +7,7 @@ import {
   LogOut,
   Tags,
   User,
+  Users,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -63,6 +64,11 @@ export function Navigation({ userEmail, userName, userRole }: NavigationProps) {
       name: t("categories"),
       href: "/admin/work-categories",
       icon: Tags,
+    },
+    {
+      name: t("users"),
+      href: "/admin/users",
+      icon: Users,
     },
   ];
 

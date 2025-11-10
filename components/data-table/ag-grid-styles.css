@@ -711,14 +711,38 @@
   justify-content: center !important;
   height: 100% !important;
   width: 100% !important;
+  outline: none !important;
+  border: none !important;
+}
+
+.ag-cell .ag-selection-checkbox:focus,
+.ag-cell .ag-selection-checkbox:focus-visible,
+.ag-cell.ag-cell-focus .ag-selection-checkbox {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Fix checkbox cell layout */
-.ag-cell[col-id="ag-Grid-AutoColumn"] {
+.ag-cell[col-id="ag-Grid-AutoColumn"],
+.ag-cell.selection-checkbox-cell {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 0 !important;
+}
+
+.ag-cell[col-id="ag-Grid-AutoColumn"]:focus,
+.ag-cell[col-id="ag-Grid-AutoColumn"]:focus-visible,
+.ag-cell[col-id="ag-Grid-AutoColumn"].ag-cell-focus,
+.ag-cell[col-id="ag-Grid-AutoColumn"]:focus-within,
+.ag-cell.selection-checkbox-cell:focus,
+.ag-cell.selection-checkbox-cell:focus-visible,
+.ag-cell.selection-checkbox-cell.ag-cell-focus,
+.ag-cell.selection-checkbox-cell:focus-within {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .ag-checkbox-input-wrapper {
@@ -731,6 +755,9 @@
   line-height: 1 !important;
   position: relative !important;
   margin: 0 auto !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
 }
 
 .ag-checkbox-input-wrapper input {
@@ -739,6 +766,25 @@
   margin: 0 !important;
   cursor: pointer !important;
   flex-shrink: 0 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ag-checkbox-input-wrapper input:focus,
+.ag-checkbox-input-wrapper input:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.ag-checkbox-input,
+.ag-checkbox-input:focus,
+.ag-checkbox-input:focus-visible,
+.ag-checkbox-input:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
 }
 
 .ag-checkbox-input-wrapper.ag-checked::after {
@@ -783,15 +829,20 @@
 
   /* Larger checkboxes for touch */
   .ag-checkbox-input-wrapper {
-    width: 24px;
-    height: 24px;
-    font-size: 22px;
-    line-height: 1;
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 22px !important;
+    line-height: 1 !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
   }
 
   .ag-checkbox-input-wrapper input {
-    width: 24px;
-    height: 24px;
+    width: 24px !important;
+    height: 24px !important;
+    border: none !important;
+    outline: none !important;
   }
 
   /* Larger touch targets for buttons */
@@ -847,15 +898,20 @@
   }
 
   .ag-checkbox-input-wrapper {
-    width: 22px;
-    height: 22px;
-    font-size: 20px;
-    line-height: 1;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
   }
 
   .ag-checkbox-input-wrapper input {
-    width: 22px;
-    height: 22px;
+    width: 22px !important;
+    height: 22px !important;
+    border: none !important;
+    outline: none !important;
   }
 
   .ag-cell button {
@@ -965,11 +1021,10 @@ a:focus-visible {
   background-color: hsl(var(--muted) / 0.8);
 }
 
-/* Checkbox focus - larger for accessibility */
+/* Checkbox focus - disabled */
 .ag-checkbox-input-wrapper:focus-within {
-  outline: 3px solid hsl(var(--ring));
-  outline-offset: 2px;
-  border-radius: 2px;
+  outline: none !important;
+  border: none !important;
 }
 
 /* Screen reader only content - unified */
@@ -1527,4 +1582,100 @@ output[aria-live] {
 .dark .ag-theme-quartz select {
   background-color: hsl(var(--background)) !important;
   color: hsl(var(--foreground)) !important;
+}
+
+/* =================================
+   Editing Mode Visual Feedback
+   ================================= */
+
+/* Editing mode - Grid container with blue border */
+.ag-theme-quartz.editing-mode {
+  border: 2px solid hsl(217 91% 60%);
+  box-shadow:
+    0 0 0 1px hsl(217 91% 60% / 0.1),
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Dark mode editing border */
+.dark .ag-theme-quartz.editing-mode {
+  border-color: hsl(217 91% 70%);
+  box-shadow:
+    0 0 0 1px hsl(217 91% 70% / 0.2),
+    0 4px 6px -1px rgb(0 0 0 / 0.3),
+    0 2px 4px -2px rgb(0 0 0 / 0.3);
+}
+
+/* Editing mode - Header background */
+.ag-theme-quartz.editing-mode .ag-header {
+  background: hsl(217 91% 95%);
+  border-bottom-color: hsl(217 91% 60%);
+}
+
+.dark .ag-theme-quartz.editing-mode .ag-header {
+  background: hsl(217 91% 15% / 0.5);
+  border-bottom-color: hsl(217 91% 70%);
+}
+
+/* Editing mode - Editable cell hover effect */
+.ag-theme-quartz.editing-mode
+.ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
+  background-color: hsl(217 91% 95%) !important;
+  cursor: text;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.dark
+  .ag-theme-quartz.editing-mode
+  .ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
+  background-color: hsl(217 91% 15% / 0.3) !important;
+}
+
+/* Editing mode - Active editing cell */
+.ag-theme-quartz.editing-mode .ag-cell.ag-cell-editing {
+  background-color: hsl(217 91% 98%) !important;
+  outline: 2px solid hsl(217 91% 60%) !important;
+  outline-offset: -2px !important;
+  box-shadow: inset 0 0 0 1px hsl(217 91% 60% / 0.2);
+}
+
+.dark .ag-theme-quartz.editing-mode .ag-cell.ag-cell-editing {
+  background-color: hsl(217 91% 10%) !important;
+  outline-color: hsl(217 91% 70%) !important;
+  box-shadow: inset 0 0 0 1px hsl(217 91% 70% / 0.3);
+}
+
+/* Editing mode - Selected rows */
+.ag-theme-quartz.editing-mode .ag-row.ag-row-selected {
+  background-color: hsl(217 91% 92%) !important;
+}
+
+.dark .ag-theme-quartz.editing-mode .ag-row.ag-row-selected {
+  background-color: hsl(217 91% 20% / 0.4) !important;
+}
+
+/* Editing mode - Row hover */
+.ag-theme-quartz.editing-mode .ag-row:hover {
+  background-color: hsl(217 91% 96%) !important;
+}
+
+.dark .ag-theme-quartz.editing-mode .ag-row:hover {
+  background-color: hsl(217 91% 15% / 0.2) !important;
+}
+
+/* Editing mode - Focus ring for inputs */
+.ag-theme-quartz.editing-mode .ag-cell-editor input:focus,
+.ag-theme-quartz.editing-mode .ag-cell-editor textarea:focus,
+.ag-theme-quartz.editing-mode .ag-cell-editor select:focus {
+  outline: 2px solid hsl(217 91% 60%) !important;
+  outline-offset: -2px !important;
+  border-color: hsl(217 91% 60%) !important;
+}
+
+.dark .ag-theme-quartz.editing-mode .ag-cell-editor input:focus,
+.dark .ag-theme-quartz.editing-mode .ag-cell-editor textarea:focus,
+.dark .ag-theme-quartz.editing-mode .ag-cell-editor select:focus {
+  outline-color: hsl(217 91% 70%) !important;
+  border-color: hsl(217 91% 70%) !important;
 }

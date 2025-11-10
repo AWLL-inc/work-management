@@ -1,6 +1,6 @@
 # Database Entity Relationship Diagram
 
-> **自動生成日時**: 2025-11-08T09:33:53.332Z
+> **自動生成日時**: 2025-11-10T11:18:07.005Z
 > **注意**: このファイルは `drizzle/schema.ts` から自動生成されます。直接編集しないでください。
 > 
 > 再生成: `npm run docs:db:mermaid`

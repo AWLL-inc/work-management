@@ -151,7 +151,8 @@
       "Bash(tsx scripts/test-email.ts:*)",
       "Bash(nc:*)",
       "Bash(pnpm run db:seed:*)",
-      "Bash(pg_isready:*)"
+      "Bash(pg_isready:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": []

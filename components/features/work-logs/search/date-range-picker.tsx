@@ -89,7 +89,7 @@ export function DateRangePicker({
             type="date"
             value={formatDate(value.from)}
             onChange={(e) => handleFromChange(e.target.value)}
-            className="w-full"
+            className="w-full min-w-[160px]"
           />
         </div>
         <div>
@@ -104,7 +104,7 @@ export function DateRangePicker({
             type="date"
             value={formatDate(value.to)}
             onChange={(e) => handleToChange(e.target.value)}
-            className="w-full"
+            className="w-full min-w-[160px]"
           />
         </div>
       </div>

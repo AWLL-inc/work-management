@@ -2,9 +2,18 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { EnhancedWorkLogTable } from "@/components/features/work-logs/enhanced-work-log-table";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import type { SanitizedUser } from "@/lib/api/users";
@@ -83,6 +92,16 @@ export function WorkLogsClient({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
+  // State for scope change confirmation dialog
+  const [scopeChangeDialogOpen, setScopeChangeDialogOpen] = useState(false);
+  const [pendingScopeChange, setPendingScopeChange] = useState<string | null>(
+    null,
+  );
+
+  // Ref to check if batch editing is enabled
+  const batchEditingEnabledRef = useRef(false);
+  const checkHasChangesRef = useRef<(() => boolean) | null>(null);
+
   // Optimistic state for work logs
   const [optimisticWorkLogs, updateOptimisticWorkLogs] = useOptimistic(
     initialWorkLogs,
@@ -109,10 +128,38 @@ export function WorkLogsClient({
   );
 
   const handleScopeChange = (newScope: string) => {
-    // Preserve existing filter parameters when changing scope
+    // Check if batch editing is enabled and there are changes
+    if (batchEditingEnabledRef.current) {
+      // Check if there are any changes
+      const hasChanges = checkHasChangesRef.current?.() ?? false;
+
+      if (hasChanges) {
+        // Show confirmation dialog
+        setPendingScopeChange(newScope);
+        setScopeChangeDialogOpen(true);
+        return;
+      }
+    }
+
+    // No changes or not in batch editing mode, proceed with scope change
     const params = new URLSearchParams(searchParams.toString());
     params.set("scope", newScope);
     router.push(`/work-logs?${params.toString()}`);
+  };
+
+  const handleConfirmScopeChange = () => {
+    if (pendingScopeChange) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("scope", pendingScopeChange);
+      router.push(`/work-logs?${params.toString()}`);
+      setScopeChangeDialogOpen(false);
+      setPendingScopeChange(null);
+    }
+  };
+
+  const handleCancelScopeChange = () => {
+    setScopeChangeDialogOpen(false);
+    setPendingScopeChange(null);
   };
 
   const handleCreateWorkLog = async (data: {
@@ -234,6 +281,7 @@ export function WorkLogsClient({
           users={users}
           currentUserId={currentUserId}
           userRole={userRole}
+          currentScope={currentScope}
           editableWorkLogIds={editableWorkLogIds}
           canSelectUser={canSelectUser}
           onCreateWorkLog={handleCreateWorkLog}
@@ -241,8 +289,37 @@ export function WorkLogsClient({
           onDeleteWorkLog={handleDeleteWorkLog}
           onRefresh={handleRefresh}
           isLoading={isPending}
+          onBatchEditingChange={(enabled) => {
+            batchEditingEnabledRef.current = enabled;
+          }}
+          onRegisterHasChangesCheck={(checkFn) => {
+            checkHasChangesRef.current = checkFn;
+          }}
         />
       </div>
+
+      {/* Scope change confirmation dialog */}
+      <Dialog
+        open={scopeChangeDialogOpen}
+        onOpenChange={setScopeChangeDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>未保存の変更を破棄しますか？</DialogTitle>
+            <DialogDescription>
+              編集中の変更があります。スコープを切り替えると、これらの変更は失われます。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelScopeChange}>
+              キャンセル
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmScopeChange}>
+              破棄して続行
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

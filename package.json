@@ -22,7 +22,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
-    "db:seed": "dotenv -e .env.local -- tsx drizzle/seed.ts",
+    "db:seed": "dotenv -e .env.local -- tsx drizzle/seed-minimal.ts",
     "docs:db:dbml": "tsx scripts/generate-dbml.ts",
     "docs:db:mermaid": "tsx scripts/generate-mermaid-erd.ts",
     "docs:db:markdown": "tsx scripts/generate-db-docs.ts",

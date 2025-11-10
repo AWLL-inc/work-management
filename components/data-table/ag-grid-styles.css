@@ -183,12 +183,69 @@
 .ag-cell-editor {
   width: 100% !important;
   height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
   padding: 0 !important;
   margin: 0 !important;
   border: none !important;
   box-sizing: border-box !important;
   display: flex !important;
   align-items: stretch !important;
+}
+
+/* Select editors often have nested padding; remove it when used as cell editors */
+.ag-theme-quartz .ag-select.ag-cell-editor,
+.ag-theme-quartz-dark .ag-select.ag-cell-editor {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+.ag-theme-quartz .ag-select.ag-cell-editor .ag-picker-field-wrapper,
+.ag-theme-quartz-dark .ag-select.ag-cell-editor .ag-picker-field-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+.ag-theme-quartz .ag-select.ag-cell-editor .ag-picker-field-display,
+.ag-theme-quartz-dark .ag-select.ag-cell-editor .ag-picker-field-display {
+  flex: 1 1 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.ag-theme-quartz .ag-select.ag-cell-editor .ag-picker-field-icon,
+.ag-theme-quartz-dark .ag-select.ag-cell-editor .ag-picker-field-icon {
+  padding: 0 !important;
+  margin: 0 !important;
+  min-width: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
 }
 
 /* Input fields - fill cell completely to border edges */
@@ -205,11 +262,10 @@
   /* Fill entire cell to the edges */
   width: 100% !important;
   height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-
-  /* Add small internal text offset for readability */
-  text-indent: 8px !important;
 
   /* Remove default styling */
   border: none !important;
@@ -217,8 +273,9 @@
   outline: none !important;
 
   /* Theme colors */
-  background-color: hsl(var(--background)) !important;
+  background-color: transparent !important;
   color: hsl(var(--foreground)) !important;
+  box-shadow: none !important;
 
   /* Typography */
   font-size: 14px !important;
@@ -239,11 +296,10 @@
   /* Fill entire cell to the edges */
   width: 100% !important;
   height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-
-  /* Add small internal text offset for readability */
-  padding-left: 8px !important;
 
   /* Remove default styling */
   border: none !important;
@@ -251,8 +307,9 @@
   outline: none !important;
 
   /* Theme colors */
-  background-color: hsl(var(--background)) !important;
+  background-color: transparent !important;
   color: hsl(var(--foreground)) !important;
+  box-shadow: none !important;
 
   /* Typography */
   font-size: 14px !important;
@@ -266,6 +323,50 @@
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
   appearance: none !important;
+}
+
+/* AG input wrappers sometimes reintroduce padding - force zero spacing */
+.ag-theme-quartz .ag-cell-editing .ag-input-field-input-wrapper,
+.ag-theme-quartz .ag-cell-editor .ag-input-field-input-wrapper,
+.ag-theme-quartz .ag-cell-editing .ag-input-field-input,
+.ag-theme-quartz .ag-cell-editor .ag-input-field-input,
+.ag-theme-quartz .ag-cell-editing .ag-text-field-input,
+.ag-theme-quartz .ag-cell-editor .ag-text-field-input,
+.ag-theme-quartz .ag-cell-editing .ag-picker-field-display,
+.ag-theme-quartz .ag-cell-editor .ag-picker-field-display,
+.ag-theme-quartz .ag-cell-editing .ag-cell-edit-input,
+.ag-theme-quartz .ag-cell-editor .ag-cell-edit-input,
+.ag-theme-quartz .ag-cell-editing .ag-input-field,
+.ag-theme-quartz .ag-cell-editor .ag-input-field,
+.ag-theme-quartz .ag-cell-editing .ag-input-wrapper,
+.ag-theme-quartz .ag-cell-editor .ag-input-wrapper,
+.ag-theme-quartz-dark .ag-cell-editing .ag-input-field-input-wrapper,
+.ag-theme-quartz-dark .ag-cell-editor .ag-input-field-input-wrapper,
+.ag-theme-quartz-dark .ag-cell-editing .ag-input-field-input,
+.ag-theme-quartz-dark .ag-cell-editor .ag-input-field-input,
+.ag-theme-quartz-dark .ag-cell-editing .ag-text-field-input,
+.ag-theme-quartz-dark .ag-cell-editor .ag-text-field-input,
+.ag-theme-quartz-dark .ag-cell-editing .ag-picker-field-display,
+.ag-theme-quartz-dark .ag-cell-editor .ag-picker-field-display,
+.ag-theme-quartz-dark .ag-cell-editing .ag-cell-edit-input,
+.ag-theme-quartz-dark .ag-cell-editor .ag-cell-edit-input,
+.ag-theme-quartz-dark .ag-cell-editing .ag-input-field,
+.ag-theme-quartz-dark .ag-cell-editor .ag-input-field,
+.ag-theme-quartz-dark .ag-cell-editing .ag-input-wrapper,
+.ag-theme-quartz-dark .ag-cell-editor .ag-input-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  flex: 1 1 auto !important;
 }
 
 /* Checkbox - container fills cell, checkbox centered inside */
@@ -1049,10 +1150,7 @@ output[aria-live] {
   width: 100% !important;
   height: 100% !important;
   margin: 0 !important;
-  padding: 0 !important;
-
-  /* Add small internal text offset for readability */
-  text-indent: 8px !important;
+  padding: 0 4px !important;
 
   /* Remove default styling */
   border: none !important;
@@ -1077,9 +1175,6 @@ output[aria-live] {
   margin: 0 !important;
   padding: 0 !important;
 
-  /* Add small internal text offset for readability */
-  padding-left: 8px !important;
-
   /* Remove default styling */
   border: none !important;
   border-radius: 0 !important;
@@ -1093,6 +1188,58 @@ output[aria-live] {
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
   appearance: none !important;
+}
+
+/* Popup editors (used by select editors) - remove built-in padding/margins */
+.ag-theme-quartz .ag-popup-editor,
+.ag-theme-quartz-dark .ag-popup-editor {
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.ag-theme-quartz .ag-popup-editor .ag-picker-field-wrapper,
+.ag-theme-quartz .ag-popup-editor .ag-picker-field-display,
+.ag-theme-quartz .ag-popup-editor .ag-input-field-input-wrapper,
+.ag-theme-quartz .ag-popup-editor .ag-input-wrapper,
+.ag-theme-quartz .ag-popup-editor .ag-cell-editor,
+.ag-theme-quartz-dark .ag-popup-editor .ag-picker-field-wrapper,
+.ag-theme-quartz-dark .ag-popup-editor .ag-picker-field-display,
+.ag-theme-quartz-dark .ag-popup-editor .ag-input-field-input-wrapper,
+.ag-theme-quartz-dark .ag-popup-editor .ag-input-wrapper,
+.ag-theme-quartz-dark .ag-popup-editor .ag-cell-editor {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+.ag-theme-quartz .ag-popup-editor input,
+.ag-theme-quartz .ag-popup-editor select,
+.ag-theme-quartz .ag-popup-editor textarea,
+.ag-theme-quartz-dark .ag-popup-editor input,
+.ag-theme-quartz-dark .ag-popup-editor select,
+.ag-theme-quartz-dark .ag-popup-editor textarea {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important;
+  color: hsl(var(--foreground)) !important;
+  box-shadow: none !important;
 }
 
 /* Dark mode: Checkbox - centered in cell */

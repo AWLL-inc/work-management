@@ -6,6 +6,8 @@ import {
   accounts,
   projects,
   sessions,
+  teamMembers,
+  teams,
   users,
   verificationTokens,
   workCategories,
@@ -25,6 +27,12 @@ async function seed() {
 
     await db.delete(workLogs);
     console.log("✓ Deleted work logs");
+
+    await db.delete(teamMembers);
+    console.log("✓ Deleted team members");
+
+    await db.delete(teams);
+    console.log("✓ Deleted teams");
 
     await db.delete(sessions);
     console.log("✓ Deleted sessions");
@@ -78,12 +86,91 @@ async function seed() {
         role: "user",
         emailVerified: new Date(),
       },
+      // Additional users for testing user selection
+      {
+        name: "田中 太郎",
+        email: "tanaka@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "佐藤 花子",
+        email: "sato@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "鈴木 一郎",
+        email: "suzuki@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "高橋 美咲",
+        email: "takahashi@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "manager",
+        emailVerified: new Date(),
+      },
+      {
+        name: "伊藤 健太",
+        email: "ito@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "渡辺 由美",
+        email: "watanabe@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "山本 誠",
+        email: "yamamoto@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "中村 愛",
+        email: "nakamura@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "小林 翔太",
+        email: "kobayashi@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "加藤 麻衣",
+        email: "kato@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
+      {
+        name: "吉田 大輔",
+        email: "yoshida@example.com",
+        passwordHash: await hashPassword("test123"),
+        role: "user",
+        emailVerified: new Date(),
+      },
     ];
 
     console.log("Creating test users...");
+    const createdUsers = [];
     for (const user of testUsers) {
       const [createdUser] = await db.insert(users).values(user).returning();
-
+      createdUsers.push(createdUser);
       console.log(`✓ Created user: ${createdUser.email} (${createdUser.role})`);
     }
 
@@ -167,6 +254,93 @@ async function seed() {
       console.log(`✓ Created category: ${createdCategory.name}`);
     }
 
+    // Create teams
+    const sampleTeams = [
+      {
+        name: "開発チーム",
+        description: "アプリケーション開発を担当するチーム",
+        isActive: true,
+      },
+      {
+        name: "デザインチーム",
+        description: "UI/UXデザインを担当するチーム",
+        isActive: true,
+      },
+      {
+        name: "QAチーム",
+        description: "品質保証を担当するチーム",
+        isActive: true,
+      },
+    ];
+
+    console.log("\nCreating teams...");
+    const createdTeams = [];
+    for (const team of sampleTeams) {
+      const [createdTeam] = await db.insert(teams).values(team).returning();
+      createdTeams.push(createdTeam);
+      console.log(`✓ Created team: ${createdTeam.name}`);
+    }
+
+    // Create team members
+    console.log("\nCreating team members...");
+
+    // 開発チーム (Development Team)
+    const devTeam = createdTeams[0];
+    const devTeamMembers = [
+      { userId: createdUsers[2].id, role: "leader" }, // Manager User as leader
+      { userId: createdUsers[4].id, role: "member" }, // 田中
+      { userId: createdUsers[5].id, role: "member" }, // 佐藤
+      { userId: createdUsers[6].id, role: "member" }, // 鈴木
+      { userId: createdUsers[8].id, role: "member" }, // 伊藤
+    ];
+
+    for (const member of devTeamMembers) {
+      await db.insert(teamMembers).values({
+        teamId: devTeam.id,
+        userId: member.userId,
+        role: member.role,
+      });
+    }
+    console.log(`✓ Added ${devTeamMembers.length} members to ${devTeam.name}`);
+
+    // デザインチーム (Design Team)
+    const designTeam = createdTeams[1];
+    const designTeamMembers = [
+      { userId: createdUsers[7].id, role: "leader" }, // 高橋 as leader
+      { userId: createdUsers[9].id, role: "member" }, // 渡辺
+      { userId: createdUsers[11].id, role: "member" }, // 中村
+      { userId: createdUsers[13].id, role: "member" }, // 加藤
+    ];
+
+    for (const member of designTeamMembers) {
+      await db.insert(teamMembers).values({
+        teamId: designTeam.id,
+        userId: member.userId,
+        role: member.role,
+      });
+    }
+    console.log(
+      `✓ Added ${designTeamMembers.length} members to ${designTeam.name}`,
+    );
+
+    // QAチーム (QA Team)
+    const qaTeam = createdTeams[2];
+    const qaTeamMembers = [
+      { userId: createdUsers[3].id, role: "leader" }, // Regular User as leader
+      { userId: createdUsers[10].id, role: "member" }, // 山本
+      { userId: createdUsers[12].id, role: "member" }, // 小林
+      { userId: createdUsers[14].id, role: "member" }, // 吉田
+    ];
+
+    for (const member of qaTeamMembers) {
+      await db.insert(teamMembers).values({
+        teamId: qaTeam.id,
+        userId: member.userId,
+        role: member.role,
+      });
+    }
+    console.log(`✓ Added ${qaTeamMembers.length} members to ${qaTeam.name}`);
+
     // Create sample work logs for the last 7 days
     const allUsers = await db.select().from(users);
     const allProjects = await db
@@ -194,8 +368,8 @@ async function seed() {
 
         workLogsData.push({
           date: logDate,
-          hours: Math.floor(Math.random() * 6) + 2, // 2-8 hours
-          description: `Sample work on ${randomProject.name} - ${randomCategory.name}`,
+          hours: String(Math.floor(Math.random() * 6) + 2), // 2-8 hours (as string)
+          details: `Sample work on ${randomProject.name} - ${randomCategory.name}`,
           userId: randomUser.id,
           projectId: randomProject.id,
           categoryId: randomCategory.id,
@@ -211,9 +385,28 @@ async function seed() {
 
     console.log("\n✅ Seeding completed successfully!");
     console.log("\n📝 Test credentials:");
-    console.log("   Admin:   admin@example.com / admin123");
-    console.log("   Manager: manager@example.com / manager123");
-    console.log("   User:    user@example.com / user123");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("🔑 Primary Test Accounts:");
+    console.log("   👑 Admin:   admin@example.com / admin123");
+    console.log("   👔 Manager: manager@example.com / manager123");
+    console.log("   👤 User:    user@example.com / user123");
+    console.log("\n🔑 Additional Test Users (all with password: test123):");
+    console.log("   📧 tanaka@example.com    - 田中 太郎");
+    console.log("   📧 sato@example.com      - 佐藤 花子");
+    console.log("   📧 suzuki@example.com    - 鈴木 一郎");
+    console.log("   📧 takahashi@example.com - 高橋 美咲 (Manager)");
+    console.log("   📧 ito@example.com       - 伊藤 健太");
+    console.log("   📧 watanabe@example.com  - 渡辺 由美");
+    console.log("   📧 yamamoto@example.com  - 山本 誠");
+    console.log("   📧 nakamura@example.com  - 中村 愛");
+    console.log("   📧 kobayashi@example.com - 小林 翔太");
+    console.log("   📧 kato@example.com      - 加藤 麻衣");
+    console.log("   📧 yoshida@example.com   - 吉田 大輔");
+    console.log("\n👥 Teams:");
+    console.log("   🏢 開発チーム    - Manager User (leader) + 4 members");
+    console.log("   🎨 デザインチーム - 高橋 美咲 (leader) + 3 members");
+    console.log("   ✅ QAチーム      - Regular User (leader) + 3 members");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   } catch (error) {
     console.error("❌ Seeding failed:", error);
     throw error;

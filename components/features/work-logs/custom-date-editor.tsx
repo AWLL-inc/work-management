@@ -64,14 +64,17 @@ export const CustomDateEditor = ({
       style={{
         width: "100%",
         height: "100%",
-        padding: "12px 16px",
+        padding: 0,
         border: "none",
         outline: "none",
         fontSize: "14px",
         fontFamily: "inherit",
         backgroundColor: "transparent",
+        boxShadow: "none",
         boxSizing: "border-box",
         cursor: "pointer",
+        appearance: "none",
+        WebkitAppearance: "none",
       }}
     />
   );

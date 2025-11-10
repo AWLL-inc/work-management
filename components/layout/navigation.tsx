@@ -28,10 +28,11 @@ import { ThemeToggle } from "./theme-toggle";
 
 interface NavigationProps {
   userEmail?: string | null;
+  userName?: string | null;
   userRole?: string;
 }
 
-export function Navigation({ userEmail, userRole }: NavigationProps) {
+export function Navigation({ userEmail, userName, userRole }: NavigationProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const isAdmin = userRole === "admin";
@@ -176,7 +177,14 @@ export function Navigation({ userEmail, userRole }: NavigationProps) {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
+                      {userName && (
+                        <p className="text-sm font-medium leading-none">
+                          {userName}
+                        </p>
+                      )}
+                      <p
+                        className={`text-xs leading-none ${userName ? "text-muted-foreground" : "text-sm font-medium leading-none"}`}
+                      >
                         {userEmail}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">

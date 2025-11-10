@@ -129,7 +129,7 @@ export function WorkLogFormDialog({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-4"
           >
-            {canSelectUser && (
+            {canSelectUser ? (
               <FormField
                 control={form.control}
                 name="userId"
@@ -143,6 +143,29 @@ export function WorkLogFormDialog({
                         onSelectionChange={(userId) => {
                           field.onChange(userId || currentUserId);
                         }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <FormField
+                control={form.control}
+                name="userId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>User</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        value={
+                          users.find((u) => u.id === field.value)?.name ||
+                          users.find((u) => u.id === field.value)?.email ||
+                          "Unknown"
+                        }
+                        disabled
+                        className="bg-muted"
                       />
                     </FormControl>
                     <FormMessage />

@@ -12,21 +12,16 @@ Modern work management application built with Next.js 15, featuring task managem
 **Prerequisites**: Docker Desktop or Docker Engine
 
 ```bash
-# 1. Copy environment file
-cp .env.docker.example .env.docker
+# 1. Start services (builds automatically)
+docker compose up --build
 
-# 2. Update NEXTAUTH_SECRET in .env.docker
-# Generate with: openssl rand -base64 32
+# 2. In another terminal, run migrations and seed (first time only)
+docker compose exec app pnpm run db:migrate
+docker compose exec app pnpm run db:seed
 
-# 3. Start services
-npm run docker:dev:build
-
-# 4. Run migrations (first time only)
-docker-compose exec app npm run db:push
-docker-compose exec app npm run db:seed
-
-# 5. Access application
-# http://localhost:3000
+# 3. Access application
+# App:     http://localhost:3000
+# Mailpit: http://localhost:8025 (Email testing)
 ```
 
 **Test Accounts**:

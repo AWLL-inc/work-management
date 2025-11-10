@@ -174,7 +174,22 @@ export function EnhancedAGGrid<T extends { id: string }>({
       return;
     }
 
-    const newRow = {
+    // If parent provided a custom onRowAdd handler, use it
+    if (_onRowAdd) {
+      // Call parent's row creation logic
+      // Parent will handle the row addition via applyTransaction
+      await _onRowAdd([]);
+
+      // Focus on the new row after parent adds it
+      setTimeout(() => {
+        gridApi?.setFocusedCell(0, columnDefs[0].field || "");
+      }, 100);
+
+      return;
+    }
+
+    // Default row creation (fallback)
+    const newRow: T = {
       id: generateUuid(),
       date: new Date(), // Default to current date
       hours: "", // Empty - user should fill in
@@ -217,9 +232,9 @@ export function EnhancedAGGrid<T extends { id: string }>({
     };
     addToHistory(action);
 
-    // Note: onRowAdd is not called here to avoid double row creation
-    // Row addition is handled purely by AG Grid transaction
-  }, [batchEditingEnabled, gridApi, addToHistory, columnDefs]);
+    // Note: If parent provides onRowAdd, it will handle row creation with custom defaults
+    // Otherwise, default row creation is used
+  }, [batchEditingEnabled, gridApi, addToHistory, columnDefs, _onRowAdd]);
 
   // Row duplication handler
   const handleDuplicateRows = useCallback(async () => {

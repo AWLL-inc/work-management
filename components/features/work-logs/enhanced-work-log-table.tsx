@@ -423,18 +423,45 @@ export function EnhancedWorkLogTable({
             }
           : undefined,
       valueFormatter: (params) => {
-        if (isAdmin && batchEditingEnabled) {
-          // In edit mode, ensure we show the name but maintain the ID value
-          const userName = usersMap.get(params.value);
-          return userName || "ユーザーを選択してください";
-        } else {
-          // In view mode, show user name
-          return usersMap.get(params.value) || "Unknown";
+        // Try multiple ways to get the userId
+        const userId = params.value || params.data?.userId;
+
+        console.log("User column valueFormatter:", {
+          paramsValue: params.value,
+          dataUserId: params.data?.userId,
+          dataUserName: params.data?.userName,
+          finalUserId: userId,
+          usersMapSize: usersMap.size,
+          usersMapKeys: Array.from(usersMap.keys()).slice(0, 3),
+          hasUser: userId ? usersMap.has(userId) : false,
+        });
+
+        if (!userId) {
+          return isAdmin && batchEditingEnabled
+            ? "ユーザーを選択してください"
+            : "No User ID";
         }
-      },
-      valueGetter: (params) => {
-        // Ensure we always return the userId for editing
-        return params.data.userId;
+
+        // Try to get user name from usersMap
+        const userName = usersMap.get(userId);
+
+        if (userName) {
+          return userName;
+        }
+
+        // Fallback: Check if userName field exists in data
+        if (params.data?.userName && params.data.userName !== "Unknown") {
+          console.log(
+            "Using fallback userName from data:",
+            params.data.userName,
+          );
+          return params.data.userName;
+        }
+
+        // Last resort
+        return isAdmin && batchEditingEnabled
+          ? "ユーザーを選択してください"
+          : "Unknown";
       },
       valueSetter: (params) => {
         // Ensure the userId is stored correctly
@@ -444,13 +471,7 @@ export function EnhancedWorkLogTable({
         params.data.userName = usersMap.get(newValue) || "Unknown";
         return true;
       },
-      cellRenderer:
-        isAdmin && batchEditingEnabled
-          ? undefined
-          : (params: ICellRendererParams) => {
-              // In view mode, show user name
-              return usersMap.get(params.value) || "Unknown";
-            },
+      // Don't use cellRenderer - let valueFormatter handle display consistently
       cellClass: !isAdmin ? "cell-readonly" : "",
       tooltipValueGetter: !isAdmin ? () => "管理者のみ編集可能" : undefined,
     });
@@ -695,20 +716,50 @@ export function EnhancedWorkLogTable({
   // AG Grid standard: Handle row addition with applyTransaction
   const handleRowAdd = useCallback(
     async (_newRows: WorkLogGridRow[]) => {
+      console.log("=== handleRowAdd CALLED ===", {
+        batchEditingEnabled,
+        hasGridApi: !!gridApi,
+        currentUserId,
+        usersMapSize: usersMap.size,
+      });
+
       if (!batchEditingEnabled) {
+        console.log("handleRowAdd - Batch editing not enabled");
         toast.info("一括編集モードを有効にしてください");
         return;
       }
 
       if (!gridApi) {
+        console.log("handleRowAdd - Grid API not initialized");
         toast.error(ERROR_MESSAGES.GRID.NOT_INITIALIZED);
         return;
       }
 
+      // Verify current user exists in users map
+      const currentUserName = usersMap.get(currentUserId);
+      console.log("handleRowAdd - User verification:", {
+        currentUserId,
+        currentUserName,
+        usersMapSize: usersMap.size,
+        hasCurrentUser: usersMap.has(currentUserId),
+        allUserIds: Array.from(usersMap.keys()).slice(0, 5),
+      });
+
+      if (!currentUserName) {
+        console.error("Current user not found in users map:", {
+          currentUserId,
+          availableUserIds: Array.from(usersMap.keys()),
+        });
+        toast.error("現在のユーザー情報を取得できませんでした");
+        return;
+      }
+
       // Create new row with empty values for user to fill
+      // Note: Use same format as rowData to ensure consistency
+      const today = new Date();
       const newRow: WorkLogGridRow = {
         id: crypto.randomUUID(),
-        date: new Date(), // Default to current date
+        date: today, // AG Grid will handle Date objects
         hours: "", // Empty - user will fill in
         projectId: "",
         projectName: "",
@@ -718,8 +769,15 @@ export function EnhancedWorkLogTable({
         createdAt: new Date(),
         updatedAt: new Date(),
         userId: currentUserId, // Default to logged-in user
-        userName: usersMap.get(currentUserId) || "Unknown",
+        userName: currentUserName,
       };
+
+      console.log("handleRowAdd - New row created:", {
+        ...newRow,
+        userIdType: typeof newRow.userId,
+        userIdLength: newRow.userId?.length,
+        userNameType: typeof newRow.userName,
+      });
 
       // AG Grid standard: Add row using applyTransaction
       const result = gridApi.applyTransaction({
@@ -727,10 +785,26 @@ export function EnhancedWorkLogTable({
         addIndex: 0, // Add at top
       });
 
+      console.log("handleRowAdd - Transaction result:", {
+        success: !!result?.add,
+        addedCount: result?.add?.length || 0,
+        addedRows: result?.add?.map((node) => ({
+          id: node.data?.id,
+          userId: node.data?.userId,
+          userName: node.data?.userName,
+        })),
+      });
+
       if (result?.add && result.add.length > 0) {
         const message = "新しい行を追加しました（Ctrl+N で連続追加可能）";
         toast.success(message);
         announce(message);
+
+        // Refresh cells to ensure all columns are properly rendered
+        gridApi.refreshCells({
+          force: true,
+          suppressFlash: true,
+        });
 
         // Just focus on the new row without starting edit mode for better UX
         setTimeout(() => {

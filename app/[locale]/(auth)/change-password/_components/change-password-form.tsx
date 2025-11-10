@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { PasswordInput } from "@/components/ui/password-input";
+import { useRouter } from "@/i18n/routing";
 
 const changePasswordSchema = z
   .object({
@@ -81,10 +82,10 @@ export function ChangePasswordForm({ isRequired }: ChangePasswordFormProps) {
 
       if (response.ok) {
         toast.success(t("success"));
-        setTimeout(() => {
-          router.push("/");
-          router.refresh();
-        }, 1000);
+        // Log out to clear JWT token with old passwordResetRequired flag
+        await signOut({ redirect: false });
+        // Redirect to login page with success message
+        router.push("/login?passwordChanged=true");
       } else {
         // Show specific validation errors if available
         if (
@@ -97,11 +98,11 @@ export function ChangePasswordForm({ isRequired }: ChangePasswordFormProps) {
         } else {
           toast.error(result.error?.message || t("error"));
         }
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Change password error:", error);
       toast.error(t("error"));
-    } finally {
       setIsLoading(false);
     }
   };

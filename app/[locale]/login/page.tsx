@@ -35,10 +35,18 @@ export default function LoginPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const searchParams = useSearchParams();
 
-  // Check for logout success message
+  // Check for logout success message or password change success
   useEffect(() => {
     if (searchParams.get("logout") === "success") {
       setSuccessMessage("You have been successfully logged out.");
+      // Clear the message after 5 seconds
+      const timer = setTimeout(() => setSuccessMessage(""), 5000);
+      return () => clearTimeout(timer);
+    }
+    if (searchParams.get("passwordChanged") === "true") {
+      setSuccessMessage(
+        "Password successfully changed. Please sign in with your new password.",
+      );
       // Clear the message after 5 seconds
       const timer = setTimeout(() => setSuccessMessage(""), 5000);
       return () => clearTimeout(timer);

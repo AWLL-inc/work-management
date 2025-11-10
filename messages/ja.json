@@ -37,6 +37,7 @@
     "admin": "管理",
     "projects": "プロジェクト",
     "categories": "カテゴリ",
+    "users": "ユーザー",
     "signOut": "ログアウト",
     "signIn": "ログイン",
     "logout": "ログアウト",
@@ -348,6 +349,56 @@
   },
   "admin": {
     "title": "管理画面",
+    "users": {
+      "title": "ユーザー管理",
+      "subtitle": "システムユーザーとその権限を管理",
+      "addNew": "新しいユーザー",
+      "editTitle": "ユーザーを編集",
+      "createTitle": "ユーザーを作成",
+      "deleteTitle": "ユーザーを削除",
+      "deleteConfirmation": "このユーザーを削除してもよろしいですか？この操作は元に戻せません。",
+      "passwordGenerated": "仮パスワードが生成されました。このパスワードを安全に保存し、ユーザーと共有してください。",
+      "passwordCopied": "パスワードをクリップボードにコピーしました",
+      "fields": {
+        "name": "名前",
+        "email": "メールアドレス",
+        "role": "権限",
+        "isActive": "有効",
+        "temporaryPassword": "仮パスワード"
+      },
+      "roles": {
+        "admin": "管理者",
+        "manager": "マネージャー",
+        "user": "一般ユーザー"
+      },
+      "placeholders": {
+        "name": "ユーザー名を入力",
+        "email": "メールアドレスを入力"
+      },
+      "validation": {
+        "nameRequired": "名前は必須です",
+        "nameMinLength": "名前は1文字以上で入力してください",
+        "emailRequired": "メールアドレスは必須です",
+        "emailInvalid": "有効なメールアドレスを入力してください",
+        "roleRequired": "権限は必須です"
+      },
+      "table": {
+        "name": "名前",
+        "email": "メールアドレス",
+        "role": "権限",
+        "status": "ステータス",
+        "createdAt": "作成日",
+        "actions": "アクション"
+      },
+      "messages": {
+        "created": "ユーザーが作成されました",
+        "updated": "ユーザーが更新されました",
+        "deleted": "ユーザーが削除されました",
+        "createError": "ユーザーの作成に失敗しました",
+        "updateError": "ユーザーの更新に失敗しました",
+        "deleteError": "ユーザーの削除に失敗しました"
+      }
+    },
     "projects": {
       "title": "プロジェクト管理",
       "addNew": "新しいプロジェクト",

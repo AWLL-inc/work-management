@@ -135,15 +135,6 @@ export default function LoginPage() {
           </div>
 
           <SubmitButton />
-
-          <div className="mt-4 text-xs text-muted-foreground">
-            <p className="font-semibold">Test accounts:</p>
-            <ul className="mt-2 space-y-1">
-              <li>Admin: admin@example.com / admin123</li>
-              <li>Manager: manager@example.com / manager123</li>
-              <li>User: user@example.com / user123</li>
-            </ul>
-          </div>
         </form>
       </div>
     </div>

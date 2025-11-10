@@ -12,7 +12,7 @@ import type {
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { KeyboardShortcutsDialog } from "@/components/ui/keyboard-shortcuts-dialog";
 import { useLiveRegion } from "@/components/ui/live-region";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import type { SanitizedUser } from "@/lib/api/users";
@@ -61,7 +60,6 @@ const COLUMN_WIDTHS = {
   HOURS: 100,
   PROJECT: 200,
   CATEGORY: 180,
-  ACTIONS: 100,
 } as const;
 
 interface EnhancedWorkLogTableProps {
@@ -71,14 +69,16 @@ interface EnhancedWorkLogTableProps {
   users: SanitizedUser[];
   currentUserId: string;
   userRole: string;
+  currentScope: "own" | "team" | "all";
   editableWorkLogIds: string[];
+  canSelectUser: boolean;
   onCreateWorkLog: (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
     categoryId: string;
     details?: string;
-    userId?: string;
   }) => Promise<void>;
   onUpdateWorkLog: (
     id: string,
@@ -100,6 +100,8 @@ interface EnhancedWorkLogTableProps {
   ) => Promise<void>;
   onRefresh?: () => void;
   isLoading: boolean;
+  onBatchEditingChange?: (enabled: boolean) => void;
+  onRegisterHasChangesCheck?: (checkFn: () => boolean) => void;
 }
 
 interface WorkLogGridRow extends WorkLog {
@@ -115,13 +117,17 @@ export function EnhancedWorkLogTable({
   users,
   currentUserId,
   userRole,
+  currentScope,
   editableWorkLogIds: editableWorkLogIdsArray,
+  canSelectUser,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
   onBatchUpdateWorkLogs,
   onRefresh,
   isLoading,
+  onBatchEditingChange,
+  onRegisterHasChangesCheck,
 }: EnhancedWorkLogTableProps) {
   // Responsive design hook
   const { isMobile, isTablet } = useMediaQuery();
@@ -149,6 +155,11 @@ export function EnhancedWorkLogTable({
   const [batchEditingEnabled, setBatchEditingEnabled] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
+
+  // Notify parent when batch editing state changes
+  useEffect(() => {
+    onBatchEditingChange?.(batchEditingEnabled);
+  }, [batchEditingEnabled, onBatchEditingChange]);
 
   // URL state management
   const router = useRouter();
@@ -253,43 +264,25 @@ export function EnhancedWorkLogTable({
 
   // AG Grid handles data management internally - no manual sync needed
 
-  // Actions cell renderer
-  const ActionsCellRenderer = useCallback((params: { data: WorkLog }) => {
-    const onEdit = () => {
-      setSelectedWorkLog(params.data);
-      setFormOpen(true);
-    };
-
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEdit}
-          className="h-7 px-3 text-xs"
-        >
-          Edit
-        </Button>
-      </div>
-    );
-  }, []);
-
   // Column definitions
   const columnDefs: ColDef[] = useMemo(() => {
     const columns: ColDef[] = [];
     const isAdmin = userRole === "admin";
 
-    // Add checkbox column for selection (always available)
-    columns.push({
-      headerName: "",
-      checkboxSelection: true,
-      headerCheckboxSelection: true,
-      width: 50,
-      pinned: "left",
-      lockPosition: "left",
-      sortable: false,
-      filter: false,
-    });
+    // Add checkbox column for selection (only in batch editing mode)
+    if (batchEditingEnabled) {
+      columns.push({
+        headerName: "",
+        checkboxSelection: true,
+        headerCheckboxSelection: true,
+        width: 50,
+        pinned: "left",
+        lockPosition: "left",
+        sortable: false,
+        filter: false,
+        cellClass: "selection-checkbox-cell",
+      });
+    }
 
     columns.push({
       headerName: "Date",
@@ -421,18 +414,45 @@ export function EnhancedWorkLogTable({
             }
           : undefined,
       valueFormatter: (params) => {
-        if (isAdmin && batchEditingEnabled) {
-          // In edit mode, ensure we show the name but maintain the ID value
-          const userName = usersMap.get(params.value);
-          return userName || "ユーザーを選択してください";
-        } else {
-          // In view mode, show user name
-          return usersMap.get(params.value) || "Unknown";
+        // Try multiple ways to get the userId
+        const userId = params.value || params.data?.userId;
+
+        console.log("User column valueFormatter:", {
+          paramsValue: params.value,
+          dataUserId: params.data?.userId,
+          dataUserName: params.data?.userName,
+          finalUserId: userId,
+          usersMapSize: usersMap.size,
+          usersMapKeys: Array.from(usersMap.keys()).slice(0, 3),
+          hasUser: userId ? usersMap.has(userId) : false,
+        });
+
+        if (!userId) {
+          return isAdmin && batchEditingEnabled
+            ? "ユーザーを選択してください"
+            : "No User ID";
         }
-      },
-      valueGetter: (params) => {
-        // Ensure we always return the userId for editing
-        return params.data.userId;
+
+        // Try to get user name from usersMap
+        const userName = usersMap.get(userId);
+
+        if (userName) {
+          return userName;
+        }
+
+        // Fallback: Check if userName field exists in data
+        if (params.data?.userName && params.data.userName !== "Unknown") {
+          console.log(
+            "Using fallback userName from data:",
+            params.data.userName,
+          );
+          return params.data.userName;
+        }
+
+        // Last resort
+        return isAdmin && batchEditingEnabled
+          ? "ユーザーを選択してください"
+          : "Unknown";
       },
       valueSetter: (params) => {
         // Ensure the userId is stored correctly
@@ -442,13 +462,7 @@ export function EnhancedWorkLogTable({
         params.data.userName = usersMap.get(newValue) || "Unknown";
         return true;
       },
-      cellRenderer:
-        isAdmin && batchEditingEnabled
-          ? undefined
-          : (params: ICellRendererParams) => {
-              // In view mode, show user name
-              return usersMap.get(params.value) || "Unknown";
-            },
+      // Don't use cellRenderer - let valueFormatter handle display consistently
       cellClass: !isAdmin ? "cell-readonly" : "",
       tooltipValueGetter: !isAdmin ? () => "管理者のみ編集可能" : undefined,
     });
@@ -610,21 +624,6 @@ export function EnhancedWorkLogTable({
       cellClass: "details-cell",
     });
 
-    // Add Actions column only when not in batch editing mode
-    if (!batchEditingEnabled) {
-      columns.push({
-        headerName: "Actions",
-        cellRenderer: ActionsCellRenderer,
-        width: COLUMN_WIDTHS.ACTIONS,
-        minWidth: 100,
-        sortable: false,
-        filter: false,
-        pinned: "right",
-        editable: false,
-        cellClass: "actions-cell",
-      });
-    }
-
     return columns;
   }, [
     batchEditingEnabled,
@@ -635,7 +634,6 @@ export function EnhancedWorkLogTable({
     categoriesMap,
     usersMap,
     userRole,
-    ActionsCellRenderer,
     isMobile,
     isTablet,
   ]);
@@ -693,20 +691,50 @@ export function EnhancedWorkLogTable({
   // AG Grid standard: Handle row addition with applyTransaction
   const handleRowAdd = useCallback(
     async (_newRows: WorkLogGridRow[]) => {
+      console.log("=== handleRowAdd CALLED ===", {
+        batchEditingEnabled,
+        hasGridApi: !!gridApi,
+        currentUserId,
+        usersMapSize: usersMap.size,
+      });
+
       if (!batchEditingEnabled) {
+        console.log("handleRowAdd - Batch editing not enabled");
         toast.info("一括編集モードを有効にしてください");
         return;
       }
 
       if (!gridApi) {
+        console.log("handleRowAdd - Grid API not initialized");
         toast.error(ERROR_MESSAGES.GRID.NOT_INITIALIZED);
         return;
       }
 
+      // Verify current user exists in users map
+      const currentUserName = usersMap.get(currentUserId);
+      console.log("handleRowAdd - User verification:", {
+        currentUserId,
+        currentUserName,
+        usersMapSize: usersMap.size,
+        hasCurrentUser: usersMap.has(currentUserId),
+        allUserIds: Array.from(usersMap.keys()).slice(0, 5),
+      });
+
+      if (!currentUserName) {
+        console.error("Current user not found in users map:", {
+          currentUserId,
+          availableUserIds: Array.from(usersMap.keys()),
+        });
+        toast.error("現在のユーザー情報を取得できませんでした");
+        return;
+      }
+
       // Create new row with empty values for user to fill
+      // Note: Use same format as rowData to ensure consistency
+      const today = new Date();
       const newRow: WorkLogGridRow = {
         id: crypto.randomUUID(),
-        date: new Date(), // Default to current date
+        date: today, // AG Grid will handle Date objects
         hours: "", // Empty - user will fill in
         projectId: "",
         projectName: "",
@@ -716,8 +744,15 @@ export function EnhancedWorkLogTable({
         createdAt: new Date(),
         updatedAt: new Date(),
         userId: currentUserId, // Default to logged-in user
-        userName: usersMap.get(currentUserId) || "Unknown",
+        userName: currentUserName,
       };
+
+      console.log("handleRowAdd - New row created:", {
+        ...newRow,
+        userIdType: typeof newRow.userId,
+        userIdLength: newRow.userId?.length,
+        userNameType: typeof newRow.userName,
+      });
 
       // AG Grid standard: Add row using applyTransaction
       const result = gridApi.applyTransaction({
@@ -725,10 +760,26 @@ export function EnhancedWorkLogTable({
         addIndex: 0, // Add at top
       });
 
+      console.log("handleRowAdd - Transaction result:", {
+        success: !!result?.add,
+        addedCount: result?.add?.length || 0,
+        addedRows: result?.add?.map((node) => ({
+          id: node.data?.id,
+          userId: node.data?.userId,
+          userName: node.data?.userName,
+        })),
+      });
+
       if (result?.add && result.add.length > 0) {
         const message = "新しい行を追加しました（Ctrl+N で連続追加可能）";
         toast.success(message);
         announce(message);
+
+        // Refresh cells to ensure all columns are properly rendered
+        gridApi.refreshCells({
+          force: true,
+          suppressFlash: true,
+        });
 
         // Just focus on the new row without starting edit mode for better UX
         setTimeout(() => {
@@ -826,6 +877,7 @@ export function EnhancedWorkLogTable({
 
   // Handle form submission
   const handleFormSubmit = async (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
@@ -1098,11 +1150,10 @@ export function EnhancedWorkLogTable({
     announce,
   ]);
 
-  // AG Grid standard: Simplified cancel batch editing
-  const handleCancelBatchEditing = useCallback(() => {
+  // Function to check if there are any changes in the grid
+  const checkHasChanges = useCallback((): boolean => {
     if (!gridApi) {
-      setBatchEditingEnabled(false);
-      return;
+      return false;
     }
 
     // Stop any editing in progress before checking for changes
@@ -1161,14 +1212,31 @@ export function EnhancedWorkLogTable({
       }
     }
 
+    return hasNewRows || hasDeletedRows || hasCellChanges;
+  }, [gridApi, workLogs]);
+
+  // Register the changes check function with parent
+  useEffect(() => {
+    onRegisterHasChangesCheck?.(checkHasChanges);
+  }, [checkHasChanges, onRegisterHasChangesCheck]);
+
+  // AG Grid standard: Simplified cancel batch editing
+  const handleCancelBatchEditing = useCallback(() => {
+    if (!gridApi) {
+      setBatchEditingEnabled(false);
+      return;
+    }
+
+    const hasChanges = checkHasChanges();
+
     // Show confirmation dialog if there are any changes
-    if (hasNewRows || hasDeletedRows || hasCellChanges) {
+    if (hasChanges) {
       setCancelDialogOpen(true);
     } else {
-      // No changes, just exit batch editing mode
+      // No changes, just exit batch editing mode (keep selection as is)
       setBatchEditingEnabled(false);
     }
-  }, [gridApi, workLogs]);
+  }, [gridApi, checkHasChanges]);
 
   // AG Grid standard: Reset to original data and clear all state
   const handleConfirmCancel = useCallback(() => {
@@ -1259,9 +1327,6 @@ export function EnhancedWorkLogTable({
           isLoading={isLoading}
           className="flex-1"
         />
-
-        {/* Keyboard shortcuts help button */}
-        <KeyboardShortcutsDialog />
       </div>
 
       {/* Table - Takes remaining height */}
@@ -1296,7 +1361,17 @@ export function EnhancedWorkLogTable({
           enableFloatingFilter={false}
           enableFilterToolPanel={false}
           // Work Log specific toolbar buttons
-          onToggleBatchEdit={() => setBatchEditingEnabled(true)}
+          onToggleBatchEdit={() => {
+            // Prevent editing for USER role in team/all scope
+            if (
+              userRole === "user" &&
+              (currentScope === "team" || currentScope === "all")
+            ) {
+              toast.error("チームまたは全体の工数を編集する権限がありません");
+              return;
+            }
+            setBatchEditingEnabled(true);
+          }}
           onAddWorkLog={() => {
             setSelectedWorkLog(null);
             setFormOpen(true);
@@ -1332,6 +1407,9 @@ export function EnhancedWorkLogTable({
         onSubmit={handleFormSubmit}
         projects={projects}
         categories={categories}
+        users={users}
+        currentUserId={currentUserId}
+        canSelectUser={canSelectUser}
         workLog={selectedWorkLog}
         isSubmitting={isSubmitting}
       />

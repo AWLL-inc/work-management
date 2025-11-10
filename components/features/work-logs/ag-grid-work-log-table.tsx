@@ -28,6 +28,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
+import type { SanitizedUser } from "@/lib/api/users";
 import { formatDateForDisplay, parseDate } from "@/lib/utils";
 import { WORK_LOG_CONSTRAINTS } from "@/lib/validations";
 import {
@@ -49,7 +50,11 @@ interface AGGridWorkLogTableProps {
   workLogs: WorkLog[];
   projects: Project[];
   categories: WorkCategory[];
+  users: SanitizedUser[];
+  currentUserId: string;
+  canSelectUser: boolean;
   onCreateWorkLog: (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
@@ -80,6 +85,9 @@ export function AGGridWorkLogTable({
   workLogs,
   projects,
   categories,
+  users,
+  currentUserId,
+  canSelectUser,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -396,6 +404,7 @@ export function AGGridWorkLogTable({
   }, []);
 
   const handleFormSubmit = async (data: {
+    userId: string;
     date: string;
     hours: string;
     projectId: string;
@@ -592,6 +601,9 @@ export function AGGridWorkLogTable({
         onSubmit={handleFormSubmit}
         projects={projects}
         categories={categories}
+        users={users}
+        currentUserId={currentUserId}
+        canSelectUser={canSelectUser}
         workLog={selectedWorkLog}
         isSubmitting={isSubmitting}
       />

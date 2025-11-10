@@ -124,12 +124,11 @@ export function UserRequestForm({
             approvers={availableApprovers}
             value={formData.approverId}
             onValueChange={handleInputChange("approverId")}
-            disabled
           />
           <p className="text-sm text-muted-foreground mt-1">
-            承認者はログインユーザー（
+            承認者を選択してください。デフォルトはログインユーザー（
             {currentUser.name} - {currentUser.email}
-            ）に自動設定されています。
+            ）に設定されています。
           </p>
         </div>
 

@@ -39,6 +39,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   // Get user info for navigation
   const userEmail = session?.user?.email || null;
+  const userName = session?.user?.name || null;
   const userRole = session?.user?.role || "user";
   const passwordResetRequired = session?.user?.passwordResetRequired || false;
 
@@ -70,7 +71,11 @@ export default async function LocaleLayout({ children, params }: Props) {
           <LiveRegion />
           <div className="min-h-screen bg-background">
             {!shouldHideNavigation && (
-              <Navigation userEmail={userEmail} userRole={userRole} />
+              <Navigation
+                userEmail={userEmail}
+                userName={userName}
+                userRole={userRole}
+              />
             )}
             <main className="container mx-auto p-6">{children}</main>
           </div>

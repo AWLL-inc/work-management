@@ -8,6 +8,7 @@ import "../ag-grid-styles.css";
 import type {
   CellEditingStoppedEvent,
   CellKeyDownEvent,
+  CellValueChangedEvent,
   ColDef,
   GridApi,
   GridOptions,
@@ -143,12 +144,16 @@ export function EnhancedAGGrid<T extends { id: string }>({
     setSelectedNodes(selectedNodes);
   }, []);
 
-  // Cell editing stopped handler
-  const onCellEditingStopped = useCallback(
-    (event: CellEditingStoppedEvent) => {
+  // Cell value changed handler - for undo/redo tracking
+  const onCellValueChanged = useCallback(
+    (event: CellValueChangedEvent) => {
       const { data, colDef, newValue, oldValue } = event;
 
-      if (newValue !== oldValue) {
+      // Only track changes in batch editing mode
+      const currentBatchEditingEnabled = batchEditingEnabledRef.current;
+
+      // Only add to history if value actually changed, field exists, and in batch editing mode
+      if (newValue !== oldValue && colDef.field && currentBatchEditingEnabled) {
         const action: GridAction = {
           type: "UPDATE",
           timestamp: Date.now(),
@@ -161,11 +166,25 @@ export function EnhancedAGGrid<T extends { id: string }>({
         };
         addToHistory(action);
       }
+    },
+    [addToHistory, batchEditingEnabledRef],
+  );
 
+  // Cell editing stopped handler
+  const onCellEditingStopped = useCallback(
+    (event: CellEditingStoppedEvent) => {
       onCellEditingStoppedProp?.(event);
     },
-    [addToHistory, onCellEditingStoppedProp],
+    [onCellEditingStoppedProp],
   );
+
+  // Cancel batch editing handler
+  const handleCancelBatchEdit = useCallback(() => {
+    if (onCancelBatchEdit) {
+      // Don't clear selection here - wait for confirmation dialog
+      onCancelBatchEdit();
+    }
+  }, [onCancelBatchEdit]);
 
   // Row addition handler
   const handleAddRow = useCallback(async () => {
@@ -174,7 +193,22 @@ export function EnhancedAGGrid<T extends { id: string }>({
       return;
     }
 
-    const newRow = {
+    // If parent provided a custom onRowAdd handler, use it
+    if (_onRowAdd) {
+      // Call parent's row creation logic
+      // Parent will handle the row addition via applyTransaction
+      await _onRowAdd([]);
+
+      // Focus on the new row after parent adds it
+      setTimeout(() => {
+        gridApi?.setFocusedCell(0, columnDefs[0].field || "");
+      }, 100);
+
+      return;
+    }
+
+    // Default row creation (fallback)
+    const newRow: T = {
       id: generateUuid(),
       date: new Date(), // Default to current date
       hours: "", // Empty - user should fill in
@@ -217,9 +251,9 @@ export function EnhancedAGGrid<T extends { id: string }>({
     };
     addToHistory(action);
 
-    // Note: onRowAdd is not called here to avoid double row creation
-    // Row addition is handled purely by AG Grid transaction
-  }, [batchEditingEnabled, gridApi, addToHistory, columnDefs]);
+    // Note: If parent provides onRowAdd, it will handle row creation with custom defaults
+    // Otherwise, default row creation is used
+  }, [batchEditingEnabled, gridApi, addToHistory, columnDefs, _onRowAdd]);
 
   // Row duplication handler
   const handleDuplicateRows = useCallback(async () => {
@@ -759,12 +793,14 @@ export function EnhancedAGGrid<T extends { id: string }>({
           onToggleBatchEdit={onToggleBatchEdit}
           onAddWorkLog={onAddWorkLog}
           onBatchSave={onBatchSave}
-          onCancelBatchEdit={onCancelBatchEdit}
+          onCancelBatchEdit={handleCancelBatchEdit}
           isSavingBatch={isSavingBatch}
         />
       )}
 
-      <div className="ag-theme-quartz flex-1 min-h-[400px] w-full overflow-auto">
+      <div
+        className={`ag-theme-quartz flex-1 min-h-[400px] w-full overflow-auto ${batchEditingEnabled ? "editing-mode" : ""}`}
+      >
         <AgGridReact
           ref={gridRef}
           className="h-full w-full"
@@ -774,6 +810,7 @@ export function EnhancedAGGrid<T extends { id: string }>({
           defaultColDef={defaultColDef}
           getRowClass={getRowClass}
           onGridReady={onGridReady}
+          onCellValueChanged={onCellValueChanged}
           onCellEditingStopped={onCellEditingStopped}
           onSelectionChanged={onSelectionChanged}
           gridOptions={enhancedGridOptions}

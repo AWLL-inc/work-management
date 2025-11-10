@@ -219,15 +219,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = createWorkLogSchema.parse(body);
 
+    // Determine target user ID with permission check
+    let targetUserId = session.user.id;
+    if (validatedData.userId && validatedData.userId !== session.user.id) {
+      // Only admins can create work logs for other users
+      if (session.user.role !== "admin") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: "FORBIDDEN",
+              message: "Only admins can create work logs for other users",
+            },
+          },
+          { status: 403 },
+        );
+      }
+      targetUserId = validatedData.userId;
+    }
+
     // Convert date string to Date object if needed
     const dateValue =
       typeof validatedData.date === "string"
         ? new Date(validatedData.date)
         : validatedData.date;
 
-    // Create work log with authenticated user's ID
+    // Create work log with target user's ID
     const workLog = await createWorkLog({
-      userId: session.user.id,
+      userId: targetUserId,
       date: dateValue,
       hours: validatedData.hours,
       projectId: validatedData.projectId,

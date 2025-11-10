@@ -88,7 +88,7 @@ export function ProjectIncrementalSearch({
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
-          className="w-full"
+          className="w-full focus-visible:ring-0"
         />
 
         {/* Dropdown Results */}

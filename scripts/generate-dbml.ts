@@ -15,9 +15,7 @@ async function generateDBML() {
     const dbml = pgGenerate({ schema });
 
     // Add generation metadata header
-    const timestamp = new Date().toISOString();
     const dbmlWithHeader = `// Database Markup Language (DBML) Schema
-// 自動生成日時: ${timestamp}
 // 注意: このファイルは drizzle/schema.ts から自動生成されます。直接編集しないでください。
 // 再生成: npm run docs:db:dbml
 // 可視化: https://dbdiagram.io/d

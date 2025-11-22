@@ -15,7 +15,6 @@ async function generateDatabaseReadme() {
   try {
     console.log("Generating database documentation README...");
 
-    const timestamp = new Date().toISOString();
     const outputDir = path.join(process.cwd(), "docs", "database");
 
     // Ensure output directory exists
@@ -26,7 +25,6 @@ async function generateDatabaseReadme() {
 
     const readmeContent = `# データベーススキーマドキュメント
 
-> **自動生成日時**: ${timestamp}
 > **注意**: このファイルは自動生成されます。直接編集しないでください。
 >
 > 再生成: \`pnpm run docs:db\`
@@ -121,7 +119,6 @@ pnpm run docs:db:tables    # テーブル別詳細
 ---
 
 > このドキュメントは \`scripts/generate-db-readme.ts\` により自動生成されています。
-> 最終更新: ${timestamp}
 `;
 
     const outputPath = path.join(outputDir, "README.md");

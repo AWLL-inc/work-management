@@ -73,6 +73,9 @@ COPY . .
 # Disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Enable standalone output for Docker builds
+ENV DOCKER_BUILD=true
+
 # Build the Next.js application
 # This will create .next/standalone directory
 RUN pnpm run build

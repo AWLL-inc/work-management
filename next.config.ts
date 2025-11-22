@@ -8,9 +8,13 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-  // Enable standalone output for Docker production builds
+  // Enable standalone output for Docker production builds only
   // This creates a minimal .next/standalone directory
-  output: "standalone",
+  // Disabled in development to avoid Windows symlink permission issues
+  ...(process.env.NODE_ENV === "production" &&
+  process.env.DOCKER_BUILD === "true"
+    ? { output: "standalone" }
+    : {}),
 
   // Transpile CSS from external packages
   transpilePackages: ["ag-grid-community", "ag-grid-react"],

@@ -174,26 +174,46 @@ async function seed() {
       console.log(`✓ Created user: ${createdUser.email} (${createdUser.role})`);
     }
 
-    // Create sample projects
+    // Create sample projects (realistic Japanese project names)
     const sampleProjects = [
       {
-        name: "Project Alpha",
-        description: "First sample project for testing",
+        name: "Croro (アイメッドオンライン)",
+        description: "医療システム開発プロジェクト",
         isActive: true,
       },
       {
-        name: "Project Beta",
-        description: "Second sample project for testing",
+        name: "Miletos (SMCC VPA)",
+        description: "VPA基盤システム開発",
         isActive: true,
       },
       {
-        name: "Project Gamma",
-        description: "Third sample project for testing",
+        name: "estrics",
+        description: "不動産管理システム開発",
         isActive: true,
       },
       {
-        name: "Archived Project",
-        description: "An archived project",
+        name: "テラスホールディングス",
+        description: "グループ統合基盤システム",
+        isActive: true,
+      },
+      {
+        name: "Himalayan",
+        description: "決済システム開発プロジェクト",
+        isActive: true,
+      },
+      {
+        name: "社内業務効率化",
+        description: "社内業務システムの改善プロジェクト",
+        isActive: true,
+      },
+      {
+        name: "新規ECサイト構築",
+        description: "新規ECサイト立ち上げプロジェクト",
+        isActive: true,
+      },
+      {
+        name: "レガシーシステム刷新",
+        description: "旧システムのモダナイゼーション",
         isActive: false,
       },
     ];
@@ -210,36 +230,66 @@ async function seed() {
       );
     }
 
-    // Create work categories
+    // Create work categories (realistic work categories)
     const categories = [
       {
-        name: "設計",
-        description: "Design and architecture work",
+        name: "コーディング",
+        description: "プログラミング・実装作業",
         displayOrder: 1,
         isActive: true,
       },
       {
-        name: "開発",
-        description: "Development and coding work",
+        name: "テスト",
+        description: "単体テスト・結合テスト・システムテスト",
         displayOrder: 2,
         isActive: true,
       },
       {
-        name: "テスト",
-        description: "Testing and QA work",
+        name: "設計",
+        description: "要件定義・基本設計・詳細設計",
         displayOrder: 3,
         isActive: true,
       },
       {
         name: "レビュー",
-        description: "Code review and documentation review",
+        description: "コードレビュー・ドキュメントレビュー",
         displayOrder: 4,
         isActive: true,
       },
       {
         name: "会議",
-        description: "Meetings and discussions",
+        description: "定例会議・打ち合わせ・ミーティング",
         displayOrder: 5,
+        isActive: true,
+      },
+      {
+        name: "調査",
+        description: "技術調査・問題解析・原因究明",
+        displayOrder: 6,
+        isActive: true,
+      },
+      {
+        name: "ドキュメント作成",
+        description: "仕様書作成・マニュアル作成・議事録作成",
+        displayOrder: 7,
+        isActive: true,
+      },
+      {
+        name: "Salesforce実装",
+        description: "Salesforce開発・カスタマイズ作業",
+        displayOrder: 8,
+        isActive: true,
+      },
+      {
+        name: "保守・運用",
+        description: "障害対応・メンテナンス・監視",
+        displayOrder: 9,
+        isActive: true,
+      },
+      {
+        name: "その他",
+        description: "その他の業務",
+        displayOrder: 10,
         isActive: true,
       },
     ];

@@ -79,8 +79,7 @@
   transition: opacity 0.2s ease-in-out;
 }
 
-.ag-header-cell:not(.ag-header-cell-sorted-asc):not(.ag-header-cell-sorted-desc)
-  .ag-sort-icon {
+.ag-header-cell:not(.ag-header-cell-sorted-asc):not(.ag-header-cell-sorted-desc) .ag-sort-icon {
   opacity: 0.3;
 }
 
@@ -419,13 +418,16 @@
 }
 
 @keyframes shake {
+
   0%,
   100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-4px);
   }
+
   75% {
     transform: translateX(4px);
   }
@@ -454,6 +456,7 @@
     border-left-width: 0;
     opacity: 0.8;
   }
+
   to {
     border-left-width: 4px;
     opacity: 1;
@@ -485,10 +488,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -801,6 +806,7 @@
    ================================= */
 
 @media (prefers-reduced-motion: reduce) {
+
   .ag-row,
   .ag-cell,
   .ag-header-cell,
@@ -816,6 +822,7 @@
 
 /* Mobile devices (< 768px) */
 @media (max-width: 767px) {
+
   /* Increase touch target sizes for better mobile UX */
   .ag-cell {
     min-height: 44px !important;
@@ -886,6 +893,7 @@
 
 /* Tablet devices (768px - 1024px) */
 @media (min-width: 768px) and (max-width: 1023px) {
+
   /* Slightly larger touch targets for tablets */
   .ag-cell {
     min-height: 40px !important;
@@ -922,6 +930,7 @@
 
 /* Touch device specific improvements */
 @media (hover: none) and (pointer: coarse) {
+
   /* Remove hover effects on touch devices */
   .ag-row:hover {
     background-color: transparent;
@@ -1489,10 +1498,7 @@ output[aria-live] {
 }
 
 /* Dark mode: Ensure cell backgrounds are transparent to show grid background */
-.dark
-.ag-cell:not(.ag-cell-editing):not(.ag-cell-range-selected):not(
-  .ag-row-selected .ag-cell
-) {
+.dark .ag-cell:not(.ag-cell-editing):not(.ag-cell-range-selected):not(.ag-row-selected .ag-cell) {
   background-color: transparent !important;
 }
 
@@ -1619,16 +1625,13 @@ output[aria-live] {
 }
 
 /* Editing mode - Editable cell hover effect */
-.ag-theme-quartz.editing-mode
-.ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
+.ag-theme-quartz.editing-mode .ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
   background-color: hsl(217 91% 95%) !important;
   cursor: text;
   transition: background-color 0.15s ease-in-out;
 }
 
-.dark
-  .ag-theme-quartz.editing-mode
-  .ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
+.dark .ag-theme-quartz.editing-mode .ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
   background-color: hsl(217 91% 15% / 0.3) !important;
 }
 
@@ -1678,4 +1681,127 @@ output[aria-live] {
 .dark .ag-theme-quartz.editing-mode .ag-cell-editor select:focus {
   outline-color: hsl(217 91% 70%) !important;
   border-color: hsl(217 91% 70%) !important;
+}
+
+/* =================================
+   Batch Edit Mode - Teal Theme Overrides
+   ================================= */
+
+.editing-mode {
+  --ag-border-color: #4DB6AC !important;
+  border-color: #4DB6AC !important;
+}
+
+.editing-mode .ag-root-wrapper {
+  border-color: #4DB6AC !important;
+}
+
+.editing-mode .ag-header {
+  background-color: #E0F2F1 !important;
+  border-bottom-color: #4DB6AC !important;
+}
+
+.editing-mode .ag-header-cell {
+  color: #00695C !important;
+}
+
+.editing-mode .ag-header-cell:hover {
+  background-color: #B2DFDB !important;
+}
+
+.editing-mode .ag-header-cell-text {
+  color: #00695C !important;
+  font-weight: 700 !important;
+}
+
+.editing-mode .ag-icon {
+  color: #00695C !important;
+}
+
+/* Row hover in edit mode */
+.editing-mode .ag-row:hover {
+  background-color: #F0FDFA !important;
+}
+
+/* Selected row in edit mode */
+.editing-mode .ag-row-selected {
+  background-color: #E0F2F1 !important;
+  border-left-color: #4DB6AC !important;
+}
+
+.editing-mode .ag-row-selected:hover {
+  background-color: #B2DFDB !important;
+}
+
+/* Input focus color in edit mode */
+.editing-mode .ag-cell-focus {
+  border-color: #4DB6AC !important;
+}
+
+/* Row Height & Spacing */
+.editing-mode .ag-row {
+  min-height: 60px !important;
+  height: 60px !important;
+}
+
+.editing-mode .ag-cell {
+  line-height: 58px !important;
+  /* Vertically center text */
+  padding: 0 !important;
+  /* Remove all padding */
+}
+
+/* Input Styling in Edit Mode */
+.editing-mode .ag-cell-editing {
+  padding: 0 !important;
+  /* Remove padding to allow full width */
+}
+
+.editing-mode .ag-input-field-input,
+.editing-mode input:not([type="checkbox"]),
+.editing-mode select {
+  height: 40px !important;
+  /* Taller inputs */
+  border-radius: 6px !important;
+  border: 1px solid transparent !important;
+  background-color: transparent !important;
+  transition: all 0.2s ease !important;
+  padding: 0 12px !important;
+  width: 100% !important;
+}
+
+/* Fix for AG Grid Input Wrapper */
+.editing-mode .ag-input-wrapper,
+.editing-mode .ag-text-field-input-wrapper,
+.editing-mode .ag-react-container,
+.editing-mode .ag-cell-wrapper,
+.editing-mode .ag-cell-value {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  line-height: normal !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.editing-mode .ag-cell-focus .ag-input-field-input,
+.editing-mode .ag-cell-focus input:not([type="checkbox"]),
+.editing-mode .ag-cell-focus select,
+.editing-mode input:focus,
+.editing-mode select:focus {
+  background-color: #F0FDFA !important;
+  /* Light Teal background on focus */
+  border-color: #4DB6AC !important;
+  box-shadow: 0 0 0 2px rgba(77, 182, 172, 0.2) !important;
+}
+
+/* Checkbox alignment */
+.editing-mode .ag-selection-checkbox {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
 }

@@ -13,6 +13,7 @@ import type {
 } from "ag-grid-community";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
@@ -55,7 +56,7 @@ import {
 
 // Column width constants
 const COLUMN_WIDTHS = {
-  DATE: 120,
+  DATE: 160,
   USER: 150,
   HOURS: 100,
   PROJECT: 200,
@@ -137,6 +138,8 @@ export function EnhancedWorkLogTable({
 
   // Accessibility - Skip link target ref
   const gridRef = useRef<HTMLElement>(null);
+
+  const t = useTranslations("workLogs");
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
@@ -285,7 +288,7 @@ export function EnhancedWorkLogTable({
     }
 
     columns.push({
-      headerName: "Date",
+      headerName: t("columns.date"),
       field: "date",
       width: COLUMN_WIDTHS.DATE,
       editable: batchEditingEnabled,
@@ -396,7 +399,7 @@ export function EnhancedWorkLogTable({
 
     // User column - editable only for admins
     columns.push({
-      headerName: "User",
+      headerName: t("columns.user"),
       field: "userId",
       width: COLUMN_WIDTHS.USER,
       editable: isAdmin && batchEditingEnabled,
@@ -468,7 +471,7 @@ export function EnhancedWorkLogTable({
     });
 
     columns.push({
-      headerName: "Hours",
+      headerName: t("columns.hours"),
       field: "hours",
       width: COLUMN_WIDTHS.HOURS,
       editable: batchEditingEnabled,
@@ -504,7 +507,7 @@ export function EnhancedWorkLogTable({
     });
 
     columns.push({
-      headerName: "Project",
+      headerName: t("columns.project"),
       field: "projectId", // Always use projectId field
       width: COLUMN_WIDTHS.PROJECT,
       hide: isMobile, // Hide on mobile devices
@@ -551,7 +554,7 @@ export function EnhancedWorkLogTable({
     });
 
     columns.push({
-      headerName: "Category",
+      headerName: t("columns.category"),
       field: "categoryId", // Always use categoryId field
       width: COLUMN_WIDTHS.CATEGORY,
       hide: isMobile, // Hide on mobile devices
@@ -598,7 +601,7 @@ export function EnhancedWorkLogTable({
     });
 
     columns.push({
-      headerName: "Details",
+      headerName: t("columns.details"),
       field: "details",
       flex: 1,
       hide: isMobile || isTablet, // Hide on mobile and tablet devices
@@ -640,6 +643,11 @@ export function EnhancedWorkLogTable({
 
   // Row height calculation for multi-line details
   const getRowHeight = useCallback((params: RowHeightParams) => {
+    // In batch edit mode, use a fixed taller height for better readability
+    if (batchEditingEnabled) {
+      return 60;
+    }
+
     const details = params.data?.details;
     if (!details) return 50; // Default height
 
@@ -650,8 +658,8 @@ export function EnhancedWorkLogTable({
       return Math.max(50, 40 + (lineBreaks + 1) * 20);
     }
 
-    return 50; // Default height
-  }, []);
+    return 50;
+  }, [batchEditingEnabled]);
 
   // Default column properties
   const defaultColDef: ColDef = useMemo(

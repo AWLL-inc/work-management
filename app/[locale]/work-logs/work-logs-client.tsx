@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight, Home } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useOptimistic, useRef, useState, useTransition } from "react";
@@ -14,9 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import type { SanitizedUser } from "@/lib/api/users";
+import { cn } from "@/lib/utils";
 
 /**
  * Prefix for temporary IDs used in optimistic updates
@@ -257,20 +258,46 @@ export function WorkLogsClient({
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] px-4 sm:px-0 space-y-6">
-      {/* Scope Tabs */}
-      <Tabs
-        id="work-logs-scope-tabs"
-        value={currentScope}
-        onValueChange={handleScopeChange}
-      >
-        <TabsList>
-          <TabsTrigger value="own">{t("tabs.own")}</TabsTrigger>
-          <TabsTrigger value="team">{t("tabs.team")}</TabsTrigger>
-          {userRole === "admin" && (
-            <TabsTrigger value="all">{t("tabs.all")}</TabsTrigger>
+
+
+      {/* Scope Buttons */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => handleScopeChange("own")}
+          className={cn(
+            "px-4 py-2 text-sm font-medium transition-colors",
+            currentScope === "own"
+              ? "text-primary bg-primary/10 border border-primary rounded-full"
+              : "text-foreground bg-background border border-border rounded-md shadow-sm hover:bg-accent",
           )}
-        </TabsList>
-      </Tabs>
+        >
+          {t("tabs.own")}
+        </button>
+        <button
+          onClick={() => handleScopeChange("team")}
+          className={cn(
+            "px-4 py-2 text-sm font-medium transition-colors",
+            currentScope === "team"
+              ? "text-primary bg-primary/10 border border-primary rounded-full"
+              : "text-foreground bg-background border border-border rounded-md shadow-sm hover:bg-accent",
+          )}
+        >
+          {t("tabs.team")}
+        </button>
+        {userRole === "admin" && (
+          <button
+            onClick={() => handleScopeChange("all")}
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-colors",
+              currentScope === "all"
+                ? "text-primary bg-primary/10 border border-primary rounded-full"
+                : "text-foreground bg-background border border-border rounded-md shadow-sm hover:bg-accent",
+            )}
+          >
+            {t("tabs.all")}
+          </button>
+        )}
+      </div>
 
       {/* Work Log Table - Takes remaining height */}
       <div className="flex-1 min-h-0">

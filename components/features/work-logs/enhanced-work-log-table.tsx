@@ -1,8 +1,6 @@
 "use client";
 
 import type {
-  CellEditingStartedEvent,
-  CellValueChangedEvent,
   ColDef,
   GridApi,
   GridReadyEvent,
@@ -914,37 +912,6 @@ export function EnhancedWorkLogTable({
     }
   };
 
-  // AG Grid standard: Simple cell value change handler
-  const _onCellValueChanged = useCallback(
-    (event: CellValueChangedEvent) => {
-      const { data, colDef, newValue } = event;
-      const field = colDef.field;
-
-      if (!field) return;
-
-      // Update related fields for consistency (project/category/user names)
-      if (field === "projectId") {
-        data.projectName = projectsMap.get(newValue) || "Unknown";
-      } else if (field === "categoryId") {
-        data.categoryName = categoriesMap.get(newValue) || "Unknown";
-      } else if (field === "userId") {
-        data.userName = usersMap.get(newValue) || "Unknown";
-      }
-
-      // AG Grid handles the data internally - no manual state sync needed
-    },
-    [projectsMap, categoriesMap, usersMap],
-  );
-
-  // AG Grid standard: Minimal cell editing start handler
-  const _onCellEditingStarted = useCallback(
-    (_event: CellEditingStartedEvent) => {
-      // Let AG Grid handle the date editor with the current value
-      // No manual intervention needed
-    },
-    [],
-  );
-
   // Validate work log data
   const validateWorkLogData = useCallback(
     (data: Partial<WorkLog>) => {
@@ -1121,8 +1088,6 @@ export function EnhancedWorkLogTable({
       }
 
       // Success
-      const _totalChanges =
-        newRows.length + updatedRows.length + deletedRows.length;
       const changeDetails = [];
       if (newRows.length > 0) changeDetails.push(`${newRows.length}件追加`);
       if (updatedRows.length > 0)

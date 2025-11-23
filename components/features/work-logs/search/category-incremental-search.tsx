@@ -52,24 +52,6 @@ export function CategoryIncrementalSearch({
     }
   };
 
-  const _handleInputFocus = () => {
-    setIsDropdownOpen(true);
-  };
-
-  const _handleInputBlur = (e: React.FocusEvent) => {
-    // Don't close if focus is moving to a dropdown item
-    const relatedTarget = e.relatedTarget as HTMLElement;
-    if (relatedTarget?.closest("[data-dropdown-content]")) {
-      return;
-    }
-    // Delay to allow click events on dropdown items
-    setTimeout(() => setIsDropdownOpen(false), 200);
-  };
-
-  const _handleCloseDropdown = () => {
-    setIsDropdownOpen(false);
-  };
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isDropdownOpen) {

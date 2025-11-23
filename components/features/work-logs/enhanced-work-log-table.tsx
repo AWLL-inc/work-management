@@ -432,7 +432,7 @@ export function EnhancedWorkLogTable({
 
         if (!userId) {
           return isAdmin && batchEditingEnabled
-            ? "ユーザーを選択してください"
+            ? "ユーザーを検索"
             : "No User ID";
         }
 

@@ -1758,6 +1758,17 @@ output[aria-live] {
 }
 
 .editing-mode .ag-input-field-input,
+.editing-mode input[type="text"],
+.editing-mode input[type="number"] {
+  height: 100% !important;
+  width: 100% !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 10px !important;
+  /* Approx half-width space padding */
+  text-align: left !important;
+}
+
 .editing-mode input:not([type="checkbox"]),
 .editing-mode select {
   height: 40px !important;

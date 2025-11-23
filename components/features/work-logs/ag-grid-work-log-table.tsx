@@ -509,14 +509,14 @@ export function AGGridWorkLogTable({
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-lg border-2 border-primary/20 p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex-1">
             <h2 className="text-2xl font-bold text-primary mb-2">
               {t("title")}
             </h2>
             <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             {!batchEditingEnabled ? (
               <>
                 <Button

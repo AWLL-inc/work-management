@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -53,24 +52,6 @@ export function CategoryIncrementalSearch({
     }
   };
 
-  const handleInputFocus = () => {
-    setIsDropdownOpen(true);
-  };
-
-  const handleInputBlur = (e: React.FocusEvent) => {
-    // Don't close if focus is moving to a dropdown item
-    const relatedTarget = e.relatedTarget as HTMLElement;
-    if (relatedTarget?.closest("[data-dropdown-content]")) {
-      return;
-    }
-    // Delay to allow click events on dropdown items
-    setTimeout(() => setIsDropdownOpen(false), 200);
-  };
-
-  const handleCloseDropdown = () => {
-    setIsDropdownOpen(false);
-  };
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isDropdownOpen) {
@@ -83,81 +64,92 @@ export function CategoryIncrementalSearch({
   }, [isDropdownOpen]);
 
   return (
-    <div className={cn("space-y-2", className)}>
-      {/* Search Input */}
-      <div className="relative">
-        <Input
-          placeholder={placeholder || t("search.searchCategories")}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          className="w-full focus-visible:ring-0"
-        />
+    <div className={cn("relative w-full", className)}>
+      {/* Trigger */}
+      <div
+        role="combobox"
+        aria-expanded={isDropdownOpen}
+        tabIndex={0}
+        className="w-full p-2 border rounded-md bg-background cursor-pointer flex justify-between items-center h-10"
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setIsDropdownOpen(!isDropdownOpen);
+          }
+        }}
+      >
+        <span
+          className={cn(
+            "block truncate mr-2",
+            selectedCategoryIds.length > 0 ? "" : "text-muted-foreground",
+          )}
+        >
+          {selectedCategoryIds.length > 0
+            ? categories
+                .filter((c) => selectedCategoryIds.includes(c.id))
+                .map((c) => c.name)
+                .join(", ")
+            : placeholder || t("search.searchCategories")}
+        </span>
+        <span className="text-muted-foreground shrink-0">▼</span>
+      </div>
 
-        {/* Dropdown Results */}
-        {isDropdownOpen && (
-          <div
-            className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-y-auto"
-            data-dropdown-content
-            role="listbox"
-            onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking in dropdown
-          >
-            {/* Close Button */}
-            <div className="flex justify-end p-1 border-b">
-              <button
-                type="button"
-                onClick={handleCloseDropdown}
-                className="text-muted-foreground hover:text-foreground p-1"
-                aria-label="Close dropdown"
-              >
-                <ChevronUp className="h-4 w-4" />
-              </button>
-            </div>
+      {/* Dropdown Results */}
+      {isDropdownOpen && (
+        <div
+          className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-lg"
+          data-dropdown-content
+        >
+          <div className="p-2 border-b">
+            <Input
+              placeholder={t("search.searchCategories")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+              className="h-9"
+            />
+          </div>
 
+          <div className="max-h-60 overflow-y-auto p-1">
             {filteredCategories.length > 0 ? (
-              <div className="p-1">
-                {filteredCategories.map((category) => (
+              filteredCategories.map((category) => (
+                <div
+                  key={category.id}
+                  role="option"
+                  tabIndex={0}
+                  onClick={() => handleCategoryToggle(category.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleCategoryToggle(category.id);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded hover:bg-accent",
+                    selectedCategoryIds.includes(category.id) && "bg-accent/50",
+                  )}
+                >
                   <div
-                    key={category.id}
-                    role="option"
-                    tabIndex={0}
-                    onClick={() => handleCategoryToggle(category.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleCategoryToggle(category.id);
-                      }
-                    }}
                     className={cn(
-                      "flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded hover:bg-accent",
-                      selectedCategoryIds.includes(category.id) &&
-                        "bg-accent/50",
+                      "w-4 h-4 border rounded flex items-center justify-center shrink-0",
+                      selectedCategoryIds.includes(category.id)
+                        ? "bg-primary border-primary"
+                        : "border-gray-300",
                     )}
                   >
-                    <div
-                      className={cn(
-                        "w-4 h-4 border rounded",
-                        selectedCategoryIds.includes(category.id)
-                          ? "bg-primary border-primary"
-                          : "border-gray-300",
-                      )}
-                    >
-                      {selectedCategoryIds.includes(category.id) && (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="w-2 h-2 bg-white rounded-sm" />
-                        </div>
-                      )}
-                    </div>
-                    <span className="flex-1">{category.name}</span>
-                    {category.description && (
-                      <span className="text-xs text-muted-foreground ml-2">
-                        {category.description}
-                      </span>
+                    {selectedCategoryIds.includes(category.id) && (
+                      <div className="w-2 h-2 bg-white rounded-sm" />
                     )}
                   </div>
-                ))}
-              </div>
+                  <span className="flex-1 truncate">{category.name}</span>
+                  {category.description && (
+                    <span className="text-xs text-muted-foreground ml-2 truncate max-w-[100px]">
+                      {category.description}
+                    </span>
+                  )}
+                </div>
+              ))
             ) : (
               <div className="p-4 text-center text-sm text-muted-foreground">
                 {searchQuery
@@ -166,8 +158,19 @@ export function CategoryIncrementalSearch({
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Backdrop to close dropdown */}
+      {isDropdownOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-transparent border-0 cursor-default"
+          tabIndex={-1}
+          onClick={() => setIsDropdownOpen(false)}
+          aria-label="Close dropdown"
+        />
+      )}
     </div>
   );
 }

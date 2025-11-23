@@ -1,8 +1,6 @@
 "use client";
 
 import type {
-  CellEditingStartedEvent,
-  CellValueChangedEvent,
   ColDef,
   GridApi,
   GridReadyEvent,
@@ -12,6 +10,7 @@ import type {
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
@@ -37,6 +36,13 @@ import { CustomDateEditor } from "./custom-date-editor";
 import { SearchControls } from "./search/search-controls";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
 
+// Debug helper - only logs in development
+const debug = (...args: unknown[]) => {
+  if (process.env.NODE_ENV === "development") {
+    console.log(...args);
+  }
+};
+
 // Search filters type
 interface SearchFilters {
   dateRange: {
@@ -55,7 +61,7 @@ import {
 
 // Column width constants
 const COLUMN_WIDTHS = {
-  DATE: 120,
+  DATE: 160,
   USER: 150,
   HOURS: 100,
   PROJECT: 200,
@@ -138,6 +144,8 @@ export function EnhancedWorkLogTable({
   // Accessibility - Skip link target ref
   const gridRef = useRef<HTMLElement>(null);
 
+  const t = useTranslations("workLogs");
+
   const [formOpen, setFormOpen] = useState(false);
   const [selectedWorkLog, setSelectedWorkLog] = useState<WorkLog | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -217,7 +225,7 @@ export function EnhancedWorkLogTable({
         updateUrlWithFilters(newFilters);
         // Next.js App Router automatically re-renders Server Component on URL change
       } catch (error) {
-        console.error("Filter state update error:", error);
+        debug("Filter state update error:", error);
         toast.error(ERROR_MESSAGES.FILTER.UPDATE_FAILED);
       }
     },
@@ -285,7 +293,7 @@ export function EnhancedWorkLogTable({
     }
 
     columns.push({
-      headerName: "Date",
+      headerName: t("columns.date"),
       field: "date",
       width: COLUMN_WIDTHS.DATE,
       editable: batchEditingEnabled,
@@ -396,7 +404,7 @@ export function EnhancedWorkLogTable({
 
     // User column - editable only for admins
     columns.push({
-      headerName: "User",
+      headerName: t("columns.user"),
       field: "userId",
       width: COLUMN_WIDTHS.USER,
       editable: isAdmin && batchEditingEnabled,
@@ -417,7 +425,7 @@ export function EnhancedWorkLogTable({
         // Try multiple ways to get the userId
         const userId = params.value || params.data?.userId;
 
-        console.log("User column valueFormatter:", {
+        debug("User column valueFormatter:", {
           paramsValue: params.value,
           dataUserId: params.data?.userId,
           dataUserName: params.data?.userName,
@@ -429,7 +437,7 @@ export function EnhancedWorkLogTable({
 
         if (!userId) {
           return isAdmin && batchEditingEnabled
-            ? "ユーザーを選択してください"
+            ? "ユーザーを検索"
             : "No User ID";
         }
 
@@ -442,10 +450,7 @@ export function EnhancedWorkLogTable({
 
         // Fallback: Check if userName field exists in data
         if (params.data?.userName && params.data.userName !== "Unknown") {
-          console.log(
-            "Using fallback userName from data:",
-            params.data.userName,
-          );
+          debug("Using fallback userName from data:", params.data.userName);
           return params.data.userName;
         }
 
@@ -468,7 +473,7 @@ export function EnhancedWorkLogTable({
     });
 
     columns.push({
-      headerName: "Hours",
+      headerName: t("columns.hours"),
       field: "hours",
       width: COLUMN_WIDTHS.HOURS,
       editable: batchEditingEnabled,
@@ -504,7 +509,7 @@ export function EnhancedWorkLogTable({
     });
 
     columns.push({
-      headerName: "Project",
+      headerName: t("columns.project"),
       field: "projectId", // Always use projectId field
       width: COLUMN_WIDTHS.PROJECT,
       hide: isMobile, // Hide on mobile devices
@@ -551,7 +556,7 @@ export function EnhancedWorkLogTable({
     });
 
     columns.push({
-      headerName: "Category",
+      headerName: t("columns.category"),
       field: "categoryId", // Always use categoryId field
       width: COLUMN_WIDTHS.CATEGORY,
       hide: isMobile, // Hide on mobile devices
@@ -598,7 +603,7 @@ export function EnhancedWorkLogTable({
     });
 
     columns.push({
-      headerName: "Details",
+      headerName: t("columns.details"),
       field: "details",
       flex: 1,
       hide: isMobile || isTablet, // Hide on mobile and tablet devices
@@ -639,19 +644,27 @@ export function EnhancedWorkLogTable({
   ]);
 
   // Row height calculation for multi-line details
-  const getRowHeight = useCallback((params: RowHeightParams) => {
-    const details = params.data?.details;
-    if (!details) return 50; // Default height
+  const getRowHeight = useCallback(
+    (params: RowHeightParams) => {
+      // In batch edit mode, use a fixed taller height for better readability
+      if (batchEditingEnabled) {
+        return 60;
+      }
 
-    // Count line breaks and estimate height
-    const lineBreaks = (details.match(/\n/g) || []).length;
-    if (lineBreaks > 0) {
-      // Base height + extra height per line (roughly 20px per line)
-      return Math.max(50, 40 + (lineBreaks + 1) * 20);
-    }
+      const details = params.data?.details;
+      if (!details) return 50; // Default height
 
-    return 50; // Default height
-  }, []);
+      // Count line breaks and estimate height
+      const lineBreaks = (details.match(/\n/g) || []).length;
+      if (lineBreaks > 0) {
+        // Base height + extra height per line (roughly 20px per line)
+        return Math.max(50, 40 + (lineBreaks + 1) * 20);
+      }
+
+      return 50;
+    },
+    [batchEditingEnabled],
+  );
 
   // Default column properties
   const defaultColDef: ColDef = useMemo(
@@ -691,7 +704,7 @@ export function EnhancedWorkLogTable({
   // AG Grid standard: Handle row addition with applyTransaction
   const handleRowAdd = useCallback(
     async (_newRows: WorkLogGridRow[]) => {
-      console.log("=== handleRowAdd CALLED ===", {
+      debug("=== handleRowAdd CALLED ===", {
         batchEditingEnabled,
         hasGridApi: !!gridApi,
         currentUserId,
@@ -699,20 +712,20 @@ export function EnhancedWorkLogTable({
       });
 
       if (!batchEditingEnabled) {
-        console.log("handleRowAdd - Batch editing not enabled");
+        debug("handleRowAdd - Batch editing not enabled");
         toast.info("一括編集モードを有効にしてください");
         return;
       }
 
       if (!gridApi) {
-        console.log("handleRowAdd - Grid API not initialized");
+        debug("handleRowAdd - Grid API not initialized");
         toast.error(ERROR_MESSAGES.GRID.NOT_INITIALIZED);
         return;
       }
 
       // Verify current user exists in users map
       const currentUserName = usersMap.get(currentUserId);
-      console.log("handleRowAdd - User verification:", {
+      debug("handleRowAdd - User verification:", {
         currentUserId,
         currentUserName,
         usersMapSize: usersMap.size,
@@ -721,7 +734,7 @@ export function EnhancedWorkLogTable({
       });
 
       if (!currentUserName) {
-        console.error("Current user not found in users map:", {
+        debug("Current user not found in users map:", {
           currentUserId,
           availableUserIds: Array.from(usersMap.keys()),
         });
@@ -747,7 +760,7 @@ export function EnhancedWorkLogTable({
         userName: currentUserName,
       };
 
-      console.log("handleRowAdd - New row created:", {
+      debug("handleRowAdd - New row created:", {
         ...newRow,
         userIdType: typeof newRow.userId,
         userIdLength: newRow.userId?.length,
@@ -760,7 +773,7 @@ export function EnhancedWorkLogTable({
         addIndex: 0, // Add at top
       });
 
-      console.log("handleRowAdd - Transaction result:", {
+      debug("handleRowAdd - Transaction result:", {
         success: !!result?.add,
         addedCount: result?.add?.length || 0,
         addedRows: result?.add?.map((node) => ({
@@ -826,7 +839,7 @@ export function EnhancedWorkLogTable({
         setFailedWorkLogIds(new Set());
         onRefresh?.();
       } catch (error) {
-        console.error("Failed to update rows:", error);
+        debug("Failed to update rows:", error);
         throw error;
       }
     },
@@ -842,7 +855,7 @@ export function EnhancedWorkLogTable({
         }
         onRefresh?.();
       } catch (error) {
-        console.error("Failed to delete rows:", error);
+        debug("Failed to delete rows:", error);
         throw error;
       }
     },
@@ -898,37 +911,6 @@ export function EnhancedWorkLogTable({
       setIsSubmitting(false);
     }
   };
-
-  // AG Grid standard: Simple cell value change handler
-  const _onCellValueChanged = useCallback(
-    (event: CellValueChangedEvent) => {
-      const { data, colDef, newValue } = event;
-      const field = colDef.field;
-
-      if (!field) return;
-
-      // Update related fields for consistency (project/category/user names)
-      if (field === "projectId") {
-        data.projectName = projectsMap.get(newValue) || "Unknown";
-      } else if (field === "categoryId") {
-        data.categoryName = categoriesMap.get(newValue) || "Unknown";
-      } else if (field === "userId") {
-        data.userName = usersMap.get(newValue) || "Unknown";
-      }
-
-      // AG Grid handles the data internally - no manual state sync needed
-    },
-    [projectsMap, categoriesMap, usersMap],
-  );
-
-  // AG Grid standard: Minimal cell editing start handler
-  const _onCellEditingStarted = useCallback(
-    (_event: CellEditingStartedEvent) => {
-      // Let AG Grid handle the date editor with the current value
-      // No manual intervention needed
-    },
-    [],
-  );
 
   // Validate work log data
   const validateWorkLogData = useCallback(
@@ -1106,8 +1088,6 @@ export function EnhancedWorkLogTable({
       }
 
       // Success
-      const _totalChanges =
-        newRows.length + updatedRows.length + deletedRows.length;
       const changeDetails = [];
       if (newRows.length > 0) changeDetails.push(`${newRows.length}件追加`);
       if (updatedRows.length > 0)
@@ -1122,7 +1102,7 @@ export function EnhancedWorkLogTable({
       setBatchEditingEnabled(false);
       onRefresh?.();
     } catch (error) {
-      console.error("Batch save error:", error);
+      debug("Batch save error:", error);
 
       const errorMessage =
         error instanceof Error

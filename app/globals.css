@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  /* Background & Surface */
-  --background: 0 0% 100%; /* #FFFFFF - Page background */
-  --foreground: 222 47% 11%; /* #1E293B - Primary text */
-  --card: 0 0% 100%; /* #FFFFFF - Card background */
-  --card-foreground: 222 47% 11%; /* #1E293B - Card text */
+  /* Background & Surface - Matching sample.html */
+  --background: 210 40% 98%; /* #F8FAFC - Light gray page background */
+  --foreground: 222 47% 11%; /* #0F172A - Primary text */
+  --card: 0 0% 100%; /* #FFFFFF - Card/Surface background */
+  --card-foreground: 222 47% 11%; /* #0F172A - Card text */
 
   /* Popover */
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
 
-  /* Primary - Indigo/Blue */
-  --primary: 221 83% 53%; /* #3B82F6 - Primary action */
+  /* Primary - Teal/Cyan (#5AB5B2) */
+  --primary: 178 40% 53%; /* #5AB5B2 - Primary action (teal) */
   --primary-foreground: 0 0% 100%; /* #FFFFFF - Primary text */
 
   /* Secondary - Light Gray */
@@ -23,9 +23,9 @@
   --muted: 210 40% 96%; /* #F1F5F9 - Muted background */
   --muted-foreground: 215 16% 47%; /* #64748B - Muted text */
 
-  /* Accent - Blue */
-  --accent: 221 83% 53%;
-  --accent-foreground: 0 0% 100%;
+  /* Accent - Gold (#D9A62E) */
+  --accent: 43 70% 52%; /* #D9A62E - Accent color (gold) */
+  --accent-foreground: 0 0% 100%; /* White text on accent */
 
   /* Destructive - Red */
   --destructive: 0 84% 60%; /* #EF4444 */
@@ -46,59 +46,59 @@
   /* Borders & Inputs */
   --border: 214 32% 91%; /* #E2E8F0 */
   --input: 214 32% 91%; /* #E2E8F0 */
-  --ring: 221 83% 53%; /* #3B82F6 - Focus ring */
+  --ring: 178 40% 53%; /* #5AB5B2 - Focus ring (primary color) */
 
   /* Radius */
   --radius: 0.5rem;
 }
 
 .dark {
-  /* Background & Surface - Improved contrast */
-  --background: 222 47% 11%; /* #0F172A - Very dark slate background */
-  --foreground: 210 40% 96%; /* #F1F5F9 - Light gray text (not pure white) */
-  --card: 217 33% 17%; /* #1E293B - Lighter card background for contrast */
-  --card-foreground: 210 40% 96%; /* #F1F5F9 - Light gray text */
+  /* Background & Surface - GitHub-inspired dark mode (from code.html) */
+  --background: 210 24% 7%; /* #0d1117 - GitHub-style dark background */
+  --foreground: 214 33% 91%; /* #e6edf3 - Light foreground text */
+  --card: 215 28% 11%; /* #161b22 - Card background */
+  --card-foreground: 214 33% 91%; /* #e6edf3 - Card text */
 
-  /* Popover - Darker for better contrast */
-  --popover: 222 47% 11%; /* #0F172A - Same as background */
-  --popover-foreground: 210 40% 96%;
+  /* Popover - Matching card style */
+  --popover: 215 28% 11%; /* #161b22 - Same as card */
+  --popover-foreground: 214 33% 91%;
 
-  /* Primary - Brighter for dark mode */
-  --primary: 217 91% 60%; /* #60A5FA - Bright blue */
-  --primary-foreground: 222 47% 11%; /* Dark text on bright button */
+  /* Primary - Teal/Cyan (#5AB5B2) */
+  --primary: 178 40% 53%; /* #5AB5B2 - Primary teal */
+  --primary-foreground: 0 0% 100%; /* White text on primary button */
 
-  /* Secondary - Better visibility */
-  --secondary: 217 33% 23%; /* #334155 - Medium dark gray */
-  --secondary-foreground: 210 40% 96%;
+  /* Secondary - Subtle background */
+  --secondary: 213 18% 15%; /* #21262d - Subtle gray */
+  --secondary-foreground: 214 33% 91%;
 
-  /* Muted - More visible subtle elements */
-  --muted: 217 33% 23%; /* #334155 - Medium gray for backgrounds */
-  --muted-foreground: 215 20% 65%; /* #94A3B8 - Lighter muted text */
+  /* Muted - Subtle elements (from code.html) */
+  --muted: 213 18% 15%; /* #21262d - Muted background */
+  --muted-foreground: 210 10% 59%; /* #8b949e - Muted text */
 
-  /* Accent - Bright and visible */
-  --accent: 217 91% 60%; /* #60A5FA - Bright blue */
-  --accent-foreground: 222 47% 11%;
+  /* Accent - Gold (#D9A62E) */
+  --accent: 43 70% 52%; /* #D9A62E - Accent gold */
+  --accent-foreground: 0 0% 100%; /* White text on accent */
 
-  /* Destructive - Visible red */
-  --destructive: 0 84% 60%; /* #EF4444 - Brighter red for visibility */
-  --destructive-foreground: 210 40% 98%; /* Almost white for contrast */
+  /* Destructive - Red */
+  --destructive: 0 84% 60%; /* #EF4444 - Red for visibility */
+  --destructive-foreground: 0 0% 100%; /* White for contrast */
 
-  /* Success - Bright green */
+  /* Success - Green */
   --success: 142 71% 45%; /* #22C55E - Green */
-  --success-foreground: 210 40% 98%; /* Light text */
+  --success-foreground: 0 0% 100%; /* White text */
 
-  /* Warning - Bright amber */
+  /* Warning - Amber */
   --warning: 38 92% 50%; /* #F59E0B - Amber */
   --warning-foreground: 222 47% 11%; /* Dark text for contrast */
 
-  /* Info - Bright sky blue */
+  /* Info - Sky Blue */
   --info: 199 89% 48%; /* #0EA5E9 - Sky blue */
-  --info-foreground: 222 47% 11%; /* Dark text for contrast */
+  --info-foreground: 0 0% 100%; /* White text */
 
-  /* Borders & Inputs - More visible */
-  --border: 217 33% 30%; /* #475569 - Lighter border for visibility */
-  --input: 217 33% 23%; /* #334155 - Input background */
-  --ring: 217 91% 60%; /* #60A5FA - Bright focus ring */
+  /* Borders & Inputs - GitHub-style (from code.html) */
+  --border: 210 16% 22%; /* #30363d - Border color */
+  --input: 210 24% 7%; /* #0d1117 - Input background (same as background) */
+  --ring: 178 40% 53%; /* #5AB5B2 - Teal focus ring */
 }
 
 @theme inline {
@@ -231,12 +231,12 @@ tr:hover {
   resize: vertical;
 }
 
-/* Dark mode - より明るいボーダー */
+/* Dark mode - GitHub-style border */
 .ag-theme-quartz-dark .ag-large-text-input {
   width: 100%;
   min-height: 100px;
   padding: 8px;
-  border: 1px solid hsl(217 33% 40%); /* より明るい色 */
+  border: 1px solid hsl(210 16% 30%); /* Slightly brighter than --border for visibility */
   box-sizing: border-box;
   resize: vertical;
 }

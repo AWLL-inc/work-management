@@ -53,52 +53,52 @@
 }
 
 .dark {
-  /* Background & Surface - Matching sample.html dark mode */
-  --background: 220 40% 9%; /* #0B1120 - Very dark blue background */
-  --foreground: 214 32% 85%; /* #CBD5E1 - Light gray text */
-  --card: 220 38% 14%; /* #172134 - Lighter card background for contrast */
-  --card-foreground: 214 32% 85%; /* #CBD5E1 - Light gray text */
+  /* Background & Surface - GitHub-inspired dark mode (from code.html) */
+  --background: 210 24% 7%; /* #0d1117 - GitHub-style dark background */
+  --foreground: 214 33% 91%; /* #e6edf3 - Light foreground text */
+  --card: 215 28% 11%; /* #161b22 - Card background */
+  --card-foreground: 214 33% 91%; /* #e6edf3 - Card text */
 
-  /* Popover - Darker for better contrast */
-  --popover: 220 40% 9%; /* #0B1120 - Same as background */
-  --popover-foreground: 214 32% 85%;
+  /* Popover - Matching card style */
+  --popover: 215 28% 11%; /* #161b22 - Same as card */
+  --popover-foreground: 214 33% 91%;
 
-  /* Primary - Teal/Cyan (#5AB5B2) - Brighter for dark mode */
-  --primary: 178 40% 60%; /* Brighter teal for visibility */
+  /* Primary - Teal/Cyan (#5AB5B2) */
+  --primary: 178 40% 53%; /* #5AB5B2 - Primary teal */
   --primary-foreground: 0 0% 100%; /* White text on primary button */
 
-  /* Secondary - Better visibility */
-  --secondary: 217 33% 23%; /* #334155 - Medium dark gray */
-  --secondary-foreground: 214 32% 85%;
+  /* Secondary - Subtle background */
+  --secondary: 213 18% 15%; /* #21262d - Subtle gray */
+  --secondary-foreground: 214 33% 91%;
 
-  /* Muted - More visible subtle elements */
-  --muted: 217 33% 23%; /* #334155 - Medium gray for backgrounds */
-  --muted-foreground: 215 20% 65%; /* #94A3B8 - Lighter muted text */
+  /* Muted - Subtle elements (from code.html) */
+  --muted: 213 18% 15%; /* #21262d - Muted background */
+  --muted-foreground: 210 10% 59%; /* #8b949e - Muted text */
 
-  /* Accent - Gold (#D9A62E) - Bright and visible */
-  --accent: 43 70% 60%; /* Brighter gold for visibility */
-  --accent-foreground: 220 40% 9%; /* Dark text on bright accent */
+  /* Accent - Gold (#D9A62E) */
+  --accent: 43 70% 52%; /* #D9A62E - Accent gold */
+  --accent-foreground: 0 0% 100%; /* White text on accent */
 
-  /* Destructive - Visible red */
-  --destructive: 0 84% 60%; /* #EF4444 - Brighter red for visibility */
-  --destructive-foreground: 210 40% 98%; /* Almost white for contrast */
+  /* Destructive - Red */
+  --destructive: 0 84% 60%; /* #EF4444 - Red for visibility */
+  --destructive-foreground: 0 0% 100%; /* White for contrast */
 
-  /* Success - Bright green */
+  /* Success - Green */
   --success: 142 71% 45%; /* #22C55E - Green */
-  --success-foreground: 210 40% 98%; /* Light text */
+  --success-foreground: 0 0% 100%; /* White text */
 
-  /* Warning - Bright amber */
+  /* Warning - Amber */
   --warning: 38 92% 50%; /* #F59E0B - Amber */
   --warning-foreground: 222 47% 11%; /* Dark text for contrast */
 
-  /* Info - Bright sky blue */
+  /* Info - Sky Blue */
   --info: 199 89% 48%; /* #0EA5E9 - Sky blue */
-  --info-foreground: 222 47% 11%; /* Dark text for contrast */
+  --info-foreground: 0 0% 100%; /* White text */
 
-  /* Borders & Inputs - More visible */
-  --border: 217 33% 30%; /* #334155 - Border color */
-  --input: 217 33% 23%; /* #334155 - Input background */
-  --ring: 178 40% 60%; /* Teal focus ring */
+  /* Borders & Inputs - GitHub-style (from code.html) */
+  --border: 210 16% 22%; /* #30363d - Border color */
+  --input: 210 24% 7%; /* #0d1117 - Input background (same as background) */
+  --ring: 178 40% 53%; /* #5AB5B2 - Teal focus ring */
 }
 
 @theme inline {
@@ -231,12 +231,12 @@ tr:hover {
   resize: vertical;
 }
 
-/* Dark mode - より明るいボーダー */
+/* Dark mode - GitHub-style border */
 .ag-theme-quartz-dark .ag-large-text-input {
   width: 100%;
   min-height: 100px;
   padding: 8px;
-  border: 1px solid hsl(217 33% 40%); /* より明るい色 */
+  border: 1px solid hsl(210 16% 30%); /* Slightly brighter than --border for visibility */
   box-sizing: border-box;
   resize: vertical;
 }

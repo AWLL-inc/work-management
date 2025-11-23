@@ -50,14 +50,14 @@ export function GridToolbar({
   return (
     <TooltipProvider>
       <div
-        className={`flex items-center justify-between p-2 rounded-md transition-colors duration-200 ${
+        className={`flex flex-wrap items-center justify-between gap-2 p-2 rounded-md transition-colors duration-200 ${
           batchEditingEnabled
             ? "bg-[#E0F2F1] dark:bg-[#E0F2F1]/20"
             : "bg-muted/50"
         }`}
       >
         {/* Left side - Standard grid operations */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Editing mode badge */}
           {batchEditingEnabled && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-full shadow-sm">
@@ -297,7 +297,7 @@ export function GridToolbar({
           onAddWorkLog ||
           onBatchSave ||
           onCancelBatchEdit) && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
             {!batchEditingEnabled ? (
               onToggleBatchEdit && (
                 <Tooltip>

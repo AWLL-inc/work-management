@@ -212,9 +212,9 @@ export const SearchControls = memo(
 
           <div className="space-y-4">
             {/* Filter Controls */}
-            <div className="flex flex-wrap gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
               {/* Date Range Filter */}
-              <div className="flex-1 min-w-[200px]">
+              <div className="col-span-1 md:col-span-2">
                 <DateRangePicker
                   value={filters.dateRange}
                   onChange={handleDateRangeChange}
@@ -223,7 +223,7 @@ export const SearchControls = memo(
               </div>
 
               {/* Project Filter */}
-              <div className="flex-1 min-w-[200px]">
+              <div>
                 <ProjectIncrementalSearch
                   projects={projects}
                   selectedProjectIds={filters.projectIds}
@@ -233,7 +233,7 @@ export const SearchControls = memo(
               </div>
 
               {/* Category Filter */}
-              <div className="flex-1 min-w-[200px]">
+              <div>
                 <CategoryIncrementalSearch
                   categories={categories}
                   selectedCategoryIds={filters.categoryIds}
@@ -243,8 +243,8 @@ export const SearchControls = memo(
               </div>
 
               {/* User Filter (Admin only) */}
-              {showUserFilter && users.length > 0 && (
-                <div className="flex-1 min-w-[200px]">
+              {showUserFilter && users.length > 0 ? (
+                <div>
                   <UserSelect
                     users={users}
                     selectedUserId={filters.userId}
@@ -252,6 +252,8 @@ export const SearchControls = memo(
                     className="w-full"
                   />
                 </div>
+              ) : (
+                <div className="hidden lg:block" /> /* Spacer for alignment if no user filter */
               )}
             </div>
 
@@ -261,7 +263,7 @@ export const SearchControls = memo(
                 <Button
                   onClick={onApplyFilters}
                   disabled={isLoading}
-                  className="min-w-[80px]"
+                  className="min-w-[100px] h-10 bg-[#4DB6AC] hover:bg-[#4DB6AC]/90 text-white shadow-sm"
                 >
                   {isLoading && (
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -275,7 +277,7 @@ export const SearchControls = memo(
                   variant="outline"
                   onClick={clearAllFilters}
                   disabled={isLoading}
-                  className="min-w-[80px]"
+                  className="min-w-[100px] h-10"
                 >
                   <X className="mr-2 h-4 w-4" />
                   {t("search.clear")}

@@ -75,8 +75,8 @@ export function DateRangePicker({
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
-      <div className="grid grid-cols-2 gap-2">
+    <div className={cn("space-y-2 relative", className)}>
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <label
             htmlFor="from-date"
@@ -89,7 +89,7 @@ export function DateRangePicker({
             type="date"
             value={formatDate(value.from)}
             onChange={(e) => handleFromChange(e.target.value)}
-            className="w-full min-w-[160px]"
+            className="w-full min-w-[120px]"
           />
         </div>
         <div>
@@ -104,7 +104,7 @@ export function DateRangePicker({
             type="date"
             value={formatDate(value.to)}
             onChange={(e) => handleToChange(e.target.value)}
-            className="w-full min-w-[160px]"
+            className="w-full min-w-[120px]"
           />
         </div>
       </div>
@@ -114,7 +114,7 @@ export function DateRangePicker({
           variant="ghost"
           size="sm"
           onClick={clearDates}
-          className="text-xs text-destructive"
+          className="absolute -top-1 right-0 h-6 px-2 text-xs text-destructive hover:bg-destructive/10"
         >
           <X className="h-3 w-3 mr-1" />
           {t("search.clearDate")}

@@ -67,6 +67,71 @@ async function seedMinimal() {
       `✓ Created system user: ${createdUser.email} (${createdUser.role})`,
     );
 
+    // Create minimal projects
+    console.log("\n🌱 Creating minimal projects...\n");
+    const minimalProjects = [
+      {
+        name: "サンプルプロジェクト A",
+        description: "開発用サンプルプロジェクト",
+        isActive: true,
+      },
+      {
+        name: "サンプルプロジェクト B",
+        description: "テスト用サンプルプロジェクト",
+        isActive: true,
+      },
+      {
+        name: "サンプルプロジェクト C",
+        description: "デモ用サンプルプロジェクト",
+        isActive: true,
+      },
+    ];
+
+    for (const project of minimalProjects) {
+      const [createdProject] = await db
+        .insert(projects)
+        .values(project)
+        .returning();
+      console.log(`✓ Created project: ${createdProject.name}`);
+    }
+
+    // Create minimal work categories
+    console.log("\n🌱 Creating minimal work categories...\n");
+    const minimalCategories = [
+      {
+        name: "コーディング",
+        description: "プログラミング・実装作業",
+        displayOrder: 1,
+        isActive: true,
+      },
+      {
+        name: "テスト",
+        description: "テスト・品質保証作業",
+        displayOrder: 2,
+        isActive: true,
+      },
+      {
+        name: "会議",
+        description: "ミーティング・打ち合わせ",
+        displayOrder: 3,
+        isActive: true,
+      },
+      {
+        name: "その他",
+        description: "その他の業務",
+        displayOrder: 4,
+        isActive: true,
+      },
+    ];
+
+    for (const category of minimalCategories) {
+      const [createdCategory] = await db
+        .insert(workCategories)
+        .values(category)
+        .returning();
+      console.log(`✓ Created category: ${createdCategory.name}`);
+    }
+
     console.log("\n✅ Minimal seeding completed successfully!");
     console.log("\n📝 Login credentials:");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");

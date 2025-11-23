@@ -50,15 +50,17 @@ export function GridToolbar({
   return (
     <TooltipProvider>
       <div
-        className={`flex items-center justify-between p-4 border-b transition-colors duration-200 ${
-          batchEditingEnabled ? "bg-blue-50 dark:bg-blue-900/20" : "bg-muted/50"
+        className={`flex items-center justify-between p-2 rounded-md transition-colors duration-200 ${
+          batchEditingEnabled
+            ? "bg-[#E0F2F1] dark:bg-[#E0F2F1]/20"
+            : "bg-muted/50"
         }`}
       >
         {/* Left side - Standard grid operations */}
         <div className="flex items-center gap-2">
           {/* Editing mode badge */}
           {batchEditingEnabled && (
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-md">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4DB6AC] text-white text-xs font-bold rounded-full shadow-sm">
               <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
               編集中
             </div>
@@ -66,15 +68,15 @@ export function GridToolbar({
 
           {/* Row Operations - Only show in batch editing mode */}
           {batchEditingEnabled && (
-            <div className="flex items-center gap-1 border-r pr-3">
+            <div className="flex items-center gap-2 border-r border-gray-300/50 pr-3 ml-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={onAddRow}
                     disabled={!batchEditingEnabled}
-                    className={`h-8 px-3 ${!batchEditingEnabled ? "opacity-50" : ""}`}
+                    className="h-8 px-3 bg-white hover:bg-[#E0F2F1] hover:text-[#00695C] hover:border-[#4DB6AC] text-gray-700 shadow-sm border border-transparent transition-all"
                     data-testid="add-row-button"
                   >
                     <Plus className="w-4 h-4 mr-1" />
@@ -97,11 +99,11 @@ export function GridToolbar({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={onDuplicateRows}
                     disabled={!batchEditingEnabled}
-                    className={`h-8 px-3 ${!batchEditingEnabled ? "opacity-50" : ""}`}
+                    className="h-8 px-3 bg-white hover:bg-[#E0F2F1] hover:text-[#00695C] hover:border-[#4DB6AC] text-gray-700 shadow-sm border border-transparent transition-all"
                     data-testid="duplicate-row-button"
                   >
                     <Copy className="w-4 h-4 mr-1" />
@@ -129,11 +131,11 @@ export function GridToolbar({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={onDeleteRows}
                     disabled={selectedRowCount === 0}
-                    className={`h-8 px-3 text-destructive hover:text-destructive ${selectedRowCount === 0 ? "opacity-50" : ""}`}
+                    className={`h-8 px-3 bg-white hover:bg-red-50 text-red-500 shadow-sm border border-transparent transition-all ${selectedRowCount === 0 ? "opacity-50" : ""}`}
                     data-testid="delete-row-button"
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
@@ -162,15 +164,15 @@ export function GridToolbar({
 
           {/* Undo/Redo Operations - Only show in batch editing mode */}
           {batchEditingEnabled && (
-            <div className="flex items-center gap-1 border-r pr-3">
+            <div className="flex items-center gap-2 border-r border-gray-300/50 pr-3">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={onUndo}
                     disabled={!canUndo || !batchEditingEnabled}
-                    className={`h-8 px-3 ${!batchEditingEnabled ? "opacity-50" : ""}`}
+                    className="h-8 px-3 bg-white hover:bg-gray-50 text-gray-700 shadow-sm border-0"
                     data-testid="undo-button"
                   >
                     <Undo className="w-4 h-4 mr-1" />
@@ -193,11 +195,11 @@ export function GridToolbar({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={onRedo}
                     disabled={!canRedo || !batchEditingEnabled}
-                    className={`h-8 px-3 ${!batchEditingEnabled ? "opacity-50" : ""}`}
+                    className="h-8 px-3 bg-white hover:bg-gray-50 text-gray-700 shadow-sm border-0"
                     data-testid="redo-button"
                   >
                     <Redo className="w-4 h-4 mr-1" />
@@ -221,7 +223,7 @@ export function GridToolbar({
 
           {/* Quick Filter */}
           {enableQuickFilter && batchEditingEnabled && (
-            <div className="flex items-center gap-1 border-r pr-3">
+            <div className="flex items-center gap-1 border-r border-gray-300/50 pr-3">
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -229,7 +231,7 @@ export function GridToolbar({
                   placeholder={t("toolbar.searchPlaceholder")}
                   value={quickFilterText}
                   onChange={(e) => onQuickFilterChange?.(e.target.value)}
-                  className="pl-8 pr-8 w-48 h-8 focus-visible:ring-0"
+                  className="pl-8 pr-8 w-48 h-8 focus-visible:ring-0 bg-white border-0 shadow-sm"
                 />
                 {quickFilterText && (
                   <Button
@@ -247,13 +249,13 @@ export function GridToolbar({
 
           {/* Filter Tool Panel Toggle */}
           {enableFilterToolPanel && batchEditingEnabled && (
-            <div className="flex items-center gap-1 border-r pr-3">
+            <div className="flex items-center gap-1 border-r border-gray-300/50 pr-3">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
-                    className="h-8 px-3"
+                    className="h-8 px-3 bg-white hover:bg-gray-50 text-gray-700 shadow-sm border-0"
                     onClick={() => {
                       if (gridApi) {
                         const isToolPanelShowing = gridApi.isToolPanelShowing();
@@ -301,10 +303,10 @@ export function GridToolbar({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                       onClick={onToggleBatchEdit}
-                      className="h-8 px-3"
+                      className="h-9 px-4 bg-[#4DB6AC] hover:bg-[#4DB6AC]/90 text-white shadow-sm"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       編集
@@ -325,7 +327,7 @@ export function GridToolbar({
                         size="sm"
                         onClick={onBatchSave}
                         disabled={isSavingBatch}
-                        className="h-8 px-3"
+                        className="h-9 px-4 bg-[#4DB6AC] hover:bg-[#4DB6AC]/90 text-white shadow-sm"
                       >
                         {isSavingBatch && (
                           <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
@@ -342,11 +344,11 @@ export function GridToolbar({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={onCancelBatchEdit}
                         disabled={isSavingBatch}
-                        className="h-8 px-3"
+                        className="h-9 px-4 bg-white hover:bg-gray-50 text-gray-700 shadow-sm border-0"
                       >
                         <X className="w-4 h-4 mr-1" />
                         {t("cancel")}

@@ -409,13 +409,16 @@ describe("POST /api/users", () => {
     vi.mocked(authHelpers.getAuthenticatedSession).mockResolvedValue(
       mockSession,
     );
-    vi.mocked(userRepository.getUserByEmail).mockResolvedValue(null);
+    vi.mocked(userRepository.getUserByEmail).mockResolvedValue(undefined);
     vi.mocked(password.generateSecurePassword).mockReturnValue(
       "temp-password-123",
     );
     vi.mocked(password.hashPassword).mockResolvedValue("hashed-password");
     vi.mocked(userRepository.createUser).mockResolvedValue(newUser);
-    vi.mocked(emailService.sendWelcomeEmail).mockResolvedValue(undefined);
+    vi.mocked(emailService.sendWelcomeEmail).mockResolvedValue({
+      success: true,
+      messageId: "test-message-id",
+    });
 
     const request = new NextRequest("http://localhost:3000/api/users", {
       method: "POST",

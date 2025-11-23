@@ -12,8 +12,8 @@ import type {
   SuppressKeyboardEventParams,
 } from "ag-grid-community";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EnhancedAGGrid } from "@/components/data-table/enhanced/enhanced-ag-grid";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,13 @@ import { validateUUID } from "@/lib/validations/common";
 import { CustomDateEditor } from "./custom-date-editor";
 import { SearchControls } from "./search/search-controls";
 import { WorkLogFormDialog } from "./work-log-form-dialog";
+
+// Debug helper - only logs in development
+const debug = (...args: unknown[]) => {
+  if (process.env.NODE_ENV === "development") {
+    console.log(...args);
+  }
+};
 
 // Search filters type
 interface SearchFilters {
@@ -220,7 +227,7 @@ export function EnhancedWorkLogTable({
         updateUrlWithFilters(newFilters);
         // Next.js App Router automatically re-renders Server Component on URL change
       } catch (error) {
-        console.error("Filter state update error:", error);
+        debug("Filter state update error:", error);
         toast.error(ERROR_MESSAGES.FILTER.UPDATE_FAILED);
       }
     },
@@ -420,7 +427,7 @@ export function EnhancedWorkLogTable({
         // Try multiple ways to get the userId
         const userId = params.value || params.data?.userId;
 
-        console.log("User column valueFormatter:", {
+        debug("User column valueFormatter:", {
           paramsValue: params.value,
           dataUserId: params.data?.userId,
           dataUserName: params.data?.userName,
@@ -445,10 +452,7 @@ export function EnhancedWorkLogTable({
 
         // Fallback: Check if userName field exists in data
         if (params.data?.userName && params.data.userName !== "Unknown") {
-          console.log(
-            "Using fallback userName from data:",
-            params.data.userName,
-          );
+          debug("Using fallback userName from data:", params.data.userName);
           return params.data.userName;
         }
 
@@ -642,24 +646,27 @@ export function EnhancedWorkLogTable({
   ]);
 
   // Row height calculation for multi-line details
-  const getRowHeight = useCallback((params: RowHeightParams) => {
-    // In batch edit mode, use a fixed taller height for better readability
-    if (batchEditingEnabled) {
-      return 60;
-    }
+  const getRowHeight = useCallback(
+    (params: RowHeightParams) => {
+      // In batch edit mode, use a fixed taller height for better readability
+      if (batchEditingEnabled) {
+        return 60;
+      }
 
-    const details = params.data?.details;
-    if (!details) return 50; // Default height
+      const details = params.data?.details;
+      if (!details) return 50; // Default height
 
-    // Count line breaks and estimate height
-    const lineBreaks = (details.match(/\n/g) || []).length;
-    if (lineBreaks > 0) {
-      // Base height + extra height per line (roughly 20px per line)
-      return Math.max(50, 40 + (lineBreaks + 1) * 20);
-    }
+      // Count line breaks and estimate height
+      const lineBreaks = (details.match(/\n/g) || []).length;
+      if (lineBreaks > 0) {
+        // Base height + extra height per line (roughly 20px per line)
+        return Math.max(50, 40 + (lineBreaks + 1) * 20);
+      }
 
-    return 50;
-  }, [batchEditingEnabled]);
+      return 50;
+    },
+    [batchEditingEnabled],
+  );
 
   // Default column properties
   const defaultColDef: ColDef = useMemo(
@@ -699,7 +706,7 @@ export function EnhancedWorkLogTable({
   // AG Grid standard: Handle row addition with applyTransaction
   const handleRowAdd = useCallback(
     async (_newRows: WorkLogGridRow[]) => {
-      console.log("=== handleRowAdd CALLED ===", {
+      debug("=== handleRowAdd CALLED ===", {
         batchEditingEnabled,
         hasGridApi: !!gridApi,
         currentUserId,
@@ -707,20 +714,20 @@ export function EnhancedWorkLogTable({
       });
 
       if (!batchEditingEnabled) {
-        console.log("handleRowAdd - Batch editing not enabled");
+        debug("handleRowAdd - Batch editing not enabled");
         toast.info("一括編集モードを有効にしてください");
         return;
       }
 
       if (!gridApi) {
-        console.log("handleRowAdd - Grid API not initialized");
+        debug("handleRowAdd - Grid API not initialized");
         toast.error(ERROR_MESSAGES.GRID.NOT_INITIALIZED);
         return;
       }
 
       // Verify current user exists in users map
       const currentUserName = usersMap.get(currentUserId);
-      console.log("handleRowAdd - User verification:", {
+      debug("handleRowAdd - User verification:", {
         currentUserId,
         currentUserName,
         usersMapSize: usersMap.size,
@@ -729,7 +736,7 @@ export function EnhancedWorkLogTable({
       });
 
       if (!currentUserName) {
-        console.error("Current user not found in users map:", {
+        debug("Current user not found in users map:", {
           currentUserId,
           availableUserIds: Array.from(usersMap.keys()),
         });
@@ -755,7 +762,7 @@ export function EnhancedWorkLogTable({
         userName: currentUserName,
       };
 
-      console.log("handleRowAdd - New row created:", {
+      debug("handleRowAdd - New row created:", {
         ...newRow,
         userIdType: typeof newRow.userId,
         userIdLength: newRow.userId?.length,
@@ -768,7 +775,7 @@ export function EnhancedWorkLogTable({
         addIndex: 0, // Add at top
       });
 
-      console.log("handleRowAdd - Transaction result:", {
+      debug("handleRowAdd - Transaction result:", {
         success: !!result?.add,
         addedCount: result?.add?.length || 0,
         addedRows: result?.add?.map((node) => ({
@@ -834,7 +841,7 @@ export function EnhancedWorkLogTable({
         setFailedWorkLogIds(new Set());
         onRefresh?.();
       } catch (error) {
-        console.error("Failed to update rows:", error);
+        debug("Failed to update rows:", error);
         throw error;
       }
     },
@@ -850,7 +857,7 @@ export function EnhancedWorkLogTable({
         }
         onRefresh?.();
       } catch (error) {
-        console.error("Failed to delete rows:", error);
+        debug("Failed to delete rows:", error);
         throw error;
       }
     },
@@ -1130,7 +1137,7 @@ export function EnhancedWorkLogTable({
       setBatchEditingEnabled(false);
       onRefresh?.();
     } catch (error) {
-      console.error("Batch save error:", error);
+      debug("Batch save error:", error);
 
       const errorMessage =
         error instanceof Error

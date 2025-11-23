@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronRight, Home } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useOptimistic, useRef, useState, useTransition } from "react";
@@ -258,11 +257,10 @@ export function WorkLogsClient({
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] px-4 sm:px-0 space-y-6">
-
-
       {/* Scope Buttons */}
       <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={() => handleScopeChange("own")}
           className={cn(
             "px-4 py-2 text-sm font-medium transition-colors",
@@ -274,6 +272,7 @@ export function WorkLogsClient({
           {t("tabs.own")}
         </button>
         <button
+          type="button"
           onClick={() => handleScopeChange("team")}
           className={cn(
             "px-4 py-2 text-sm font-medium transition-colors",
@@ -286,6 +285,7 @@ export function WorkLogsClient({
         </button>
         {userRole === "admin" && (
           <button
+            type="button"
             onClick={() => handleScopeChange("all")}
             className={cn(
               "px-4 py-2 text-sm font-medium transition-colors",

@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -49,11 +48,11 @@ export function ProjectIncrementalSearch({
     }
   };
 
-  const handleInputFocus = () => {
+  const _handleInputFocus = () => {
     setIsDropdownOpen(true);
   };
 
-  const handleInputBlur = (e: React.FocusEvent) => {
+  const _handleInputBlur = (e: React.FocusEvent) => {
     // Don't close if focus is moving to a dropdown item
     const relatedTarget = e.relatedTarget as HTMLElement;
     if (relatedTarget?.closest("[data-dropdown-content]")) {
@@ -63,7 +62,7 @@ export function ProjectIncrementalSearch({
     setTimeout(() => setIsDropdownOpen(false), 200);
   };
 
-  const handleCloseDropdown = () => {
+  const _handleCloseDropdown = () => {
     setIsDropdownOpen(false);
   };
 
@@ -128,45 +127,43 @@ export function ProjectIncrementalSearch({
 
           <div className="max-h-60 overflow-y-auto p-1">
             {filteredProjects.length > 0 ? (
-              <>
-                {filteredProjects.map((project) => (
+              filteredProjects.map((project) => (
+                <div
+                  key={project.id}
+                  role="option"
+                  tabIndex={0}
+                  onClick={() => handleProjectToggle(project.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleProjectToggle(project.id);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded hover:bg-accent",
+                    selectedProjectIds.includes(project.id) && "bg-accent/50",
+                  )}
+                >
                   <div
-                    key={project.id}
-                    role="option"
-                    tabIndex={0}
-                    onClick={() => handleProjectToggle(project.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleProjectToggle(project.id);
-                      }
-                    }}
                     className={cn(
-                      "flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded hover:bg-accent",
-                      selectedProjectIds.includes(project.id) && "bg-accent/50",
+                      "w-4 h-4 border rounded flex items-center justify-center shrink-0",
+                      selectedProjectIds.includes(project.id)
+                        ? "bg-primary border-primary"
+                        : "border-gray-300",
                     )}
                   >
-                    <div
-                      className={cn(
-                        "w-4 h-4 border rounded flex items-center justify-center shrink-0",
-                        selectedProjectIds.includes(project.id)
-                          ? "bg-primary border-primary"
-                          : "border-gray-300",
-                      )}
-                    >
-                      {selectedProjectIds.includes(project.id) && (
-                        <div className="w-2 h-2 bg-white rounded-sm" />
-                      )}
-                    </div>
-                    <span className="flex-1 truncate">{project.name}</span>
-                    {project.description && (
-                      <span className="text-xs text-muted-foreground ml-2 truncate max-w-[100px]">
-                        {project.description}
-                      </span>
+                    {selectedProjectIds.includes(project.id) && (
+                      <div className="w-2 h-2 bg-white rounded-sm" />
                     )}
                   </div>
-                ))}
-              </>
+                  <span className="flex-1 truncate">{project.name}</span>
+                  {project.description && (
+                    <span className="text-xs text-muted-foreground ml-2 truncate max-w-[100px]">
+                      {project.description}
+                    </span>
+                  )}
+                </div>
+              ))
             ) : (
               <div className="p-4 text-center text-sm text-muted-foreground">
                 {searchQuery

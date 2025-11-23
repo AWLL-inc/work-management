@@ -60,7 +60,7 @@ export function GridToolbar({
         <div className="flex items-center gap-2">
           {/* Editing mode badge */}
           {batchEditingEnabled && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4DB6AC] text-white text-xs font-bold rounded-full shadow-sm">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-full shadow-sm">
               <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
               編集中
             </div>
@@ -306,7 +306,7 @@ export function GridToolbar({
                       variant="default"
                       size="sm"
                       onClick={onToggleBatchEdit}
-                      className="h-9 px-4 bg-[#4DB6AC] hover:bg-[#4DB6AC]/90 text-white shadow-sm"
+                      className="h-9 px-4 bg-primary hover:bg-primary/90 text-white shadow-sm"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       編集
@@ -327,7 +327,7 @@ export function GridToolbar({
                         size="sm"
                         onClick={onBatchSave}
                         disabled={isSavingBatch}
-                        className="h-9 px-4 bg-[#4DB6AC] hover:bg-[#4DB6AC]/90 text-white shadow-sm"
+                        className="h-9 px-4 bg-primary hover:bg-primary/90 text-white shadow-sm"
                       >
                         {isSavingBatch && (
                           <RefreshCw className="w-4 h-4 mr-1 animate-spin" />

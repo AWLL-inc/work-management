@@ -79,7 +79,8 @@
   transition: opacity 0.2s ease-in-out;
 }
 
-.ag-header-cell:not(.ag-header-cell-sorted-asc):not(.ag-header-cell-sorted-desc) .ag-sort-icon {
+.ag-header-cell:not(.ag-header-cell-sorted-asc):not(.ag-header-cell-sorted-desc)
+  .ag-sort-icon {
   opacity: 0.3;
 }
 
@@ -418,7 +419,6 @@
 }
 
 @keyframes shake {
-
   0%,
   100% {
     transform: translateX(0);
@@ -488,7 +488,6 @@
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;
@@ -806,7 +805,6 @@
    ================================= */
 
 @media (prefers-reduced-motion: reduce) {
-
   .ag-row,
   .ag-cell,
   .ag-header-cell,
@@ -822,7 +820,6 @@
 
 /* Mobile devices (< 768px) */
 @media (max-width: 767px) {
-
   /* Increase touch target sizes for better mobile UX */
   .ag-cell {
     min-height: 44px !important;
@@ -893,7 +890,6 @@
 
 /* Tablet devices (768px - 1024px) */
 @media (min-width: 768px) and (max-width: 1023px) {
-
   /* Slightly larger touch targets for tablets */
   .ag-cell {
     min-height: 40px !important;
@@ -930,7 +926,6 @@
 
 /* Touch device specific improvements */
 @media (hover: none) and (pointer: coarse) {
-
   /* Remove hover effects on touch devices */
   .ag-row:hover {
     background-color: transparent;
@@ -1498,7 +1493,10 @@ output[aria-live] {
 }
 
 /* Dark mode: Ensure cell backgrounds are transparent to show grid background */
-.dark .ag-cell:not(.ag-cell-editing):not(.ag-cell-range-selected):not(.ag-row-selected .ag-cell) {
+.dark
+.ag-cell:not(.ag-cell-editing):not(.ag-cell-range-selected):not(
+  .ag-row-selected .ag-cell
+) {
   background-color: transparent !important;
 }
 
@@ -1625,13 +1623,16 @@ output[aria-live] {
 }
 
 /* Editing mode - Editable cell hover effect */
-.ag-theme-quartz.editing-mode .ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
+.ag-theme-quartz.editing-mode
+.ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
   background-color: hsl(217 91% 95%) !important;
   cursor: text;
   transition: background-color 0.15s ease-in-out;
 }
 
-.dark .ag-theme-quartz.editing-mode .ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
+.dark
+  .ag-theme-quartz.editing-mode
+  .ag-cell.ag-cell-not-inline-editing:not(.ag-cell-editing):hover {
   background-color: hsl(217 91% 15% / 0.3) !important;
 }
 
@@ -1688,54 +1689,57 @@ output[aria-live] {
    ================================= */
 
 .editing-mode {
-  --ag-border-color: #4DB6AC !important;
-  border-color: #4DB6AC !important;
+  --ag-border-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
 }
 
 .editing-mode .ag-root-wrapper {
-  border-color: #4DB6AC !important;
+  border-color: hsl(var(--primary)) !important;
 }
 
 .editing-mode .ag-header {
-  background-color: #E0F2F1 !important;
-  border-bottom-color: #4DB6AC !important;
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border-bottom-color: hsl(var(--primary)) !important;
 }
 
 .editing-mode .ag-header-cell {
-  color: #00695C !important;
+  color: hsl(178 100% 21%) !important;
+  /* Dark teal for header text */
 }
 
 .editing-mode .ag-header-cell:hover {
-  background-color: #B2DFDB !important;
+  background-color: hsl(var(--primary) / 0.25) !important;
 }
 
 .editing-mode .ag-header-cell-text {
-  color: #00695C !important;
+  color: hsl(178 100% 21%) !important;
+  /* Dark teal for header text */
   font-weight: 700 !important;
 }
 
 .editing-mode .ag-icon {
-  color: #00695C !important;
+  color: hsl(178 100% 21%) !important;
+  /* Dark teal for icons */
 }
 
 /* Row hover in edit mode */
 .editing-mode .ag-row:hover {
-  background-color: #F0FDFA !important;
+  background-color: hsl(var(--primary) / 0.05) !important;
 }
 
 /* Selected row in edit mode */
 .editing-mode .ag-row-selected {
-  background-color: #E0F2F1 !important;
-  border-left-color: #4DB6AC !important;
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border-left-color: hsl(var(--primary)) !important;
 }
 
 .editing-mode .ag-row-selected:hover {
-  background-color: #B2DFDB !important;
+  background-color: hsl(var(--primary) / 0.25) !important;
 }
 
 /* Input focus color in edit mode */
 .editing-mode .ag-cell-focus {
-  border-color: #4DB6AC !important;
+  border-color: hsl(var(--primary)) !important;
 }
 
 /* Row Height & Spacing */
@@ -1804,10 +1808,10 @@ output[aria-live] {
 .editing-mode .ag-cell-focus select,
 .editing-mode input:focus,
 .editing-mode select:focus {
-  background-color: #F0FDFA !important;
+  background-color: hsl(var(--primary) / 0.05) !important;
   /* Light Teal background on focus */
-  border-color: #4DB6AC !important;
-  box-shadow: 0 0 0 2px rgba(77, 182, 172, 0.2) !important;
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2) !important;
 }
 
 /* Checkbox alignment */

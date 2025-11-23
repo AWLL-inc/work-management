@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -53,11 +52,11 @@ export function CategoryIncrementalSearch({
     }
   };
 
-  const handleInputFocus = () => {
+  const _handleInputFocus = () => {
     setIsDropdownOpen(true);
   };
 
-  const handleInputBlur = (e: React.FocusEvent) => {
+  const _handleInputBlur = (e: React.FocusEvent) => {
     // Don't close if focus is moving to a dropdown item
     const relatedTarget = e.relatedTarget as HTMLElement;
     if (relatedTarget?.closest("[data-dropdown-content]")) {
@@ -67,7 +66,7 @@ export function CategoryIncrementalSearch({
     setTimeout(() => setIsDropdownOpen(false), 200);
   };
 
-  const handleCloseDropdown = () => {
+  const _handleCloseDropdown = () => {
     setIsDropdownOpen(false);
   };
 
@@ -132,46 +131,43 @@ export function CategoryIncrementalSearch({
 
           <div className="max-h-60 overflow-y-auto p-1">
             {filteredCategories.length > 0 ? (
-              <>
-                {filteredCategories.map((category) => (
+              filteredCategories.map((category) => (
+                <div
+                  key={category.id}
+                  role="option"
+                  tabIndex={0}
+                  onClick={() => handleCategoryToggle(category.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleCategoryToggle(category.id);
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded hover:bg-accent",
+                    selectedCategoryIds.includes(category.id) && "bg-accent/50",
+                  )}
+                >
                   <div
-                    key={category.id}
-                    role="option"
-                    tabIndex={0}
-                    onClick={() => handleCategoryToggle(category.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleCategoryToggle(category.id);
-                      }
-                    }}
                     className={cn(
-                      "flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded hover:bg-accent",
-                      selectedCategoryIds.includes(category.id) &&
-                        "bg-accent/50",
+                      "w-4 h-4 border rounded flex items-center justify-center shrink-0",
+                      selectedCategoryIds.includes(category.id)
+                        ? "bg-primary border-primary"
+                        : "border-gray-300",
                     )}
                   >
-                    <div
-                      className={cn(
-                        "w-4 h-4 border rounded flex items-center justify-center shrink-0",
-                        selectedCategoryIds.includes(category.id)
-                          ? "bg-primary border-primary"
-                          : "border-gray-300",
-                      )}
-                    >
-                      {selectedCategoryIds.includes(category.id) && (
-                        <div className="w-2 h-2 bg-white rounded-sm" />
-                      )}
-                    </div>
-                    <span className="flex-1 truncate">{category.name}</span>
-                    {category.description && (
-                      <span className="text-xs text-muted-foreground ml-2 truncate max-w-[100px]">
-                        {category.description}
-                      </span>
+                    {selectedCategoryIds.includes(category.id) && (
+                      <div className="w-2 h-2 bg-white rounded-sm" />
                     )}
                   </div>
-                ))}
-              </>
+                  <span className="flex-1 truncate">{category.name}</span>
+                  {category.description && (
+                    <span className="text-xs text-muted-foreground ml-2 truncate max-w-[100px]">
+                      {category.description}
+                    </span>
+                  )}
+                </div>
+              ))
             ) : (
               <div className="p-4 text-center text-sm text-muted-foreground">
                 {searchQuery

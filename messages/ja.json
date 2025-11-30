@@ -157,6 +157,19 @@
     "title": "ダッシュボード",
     "subtitle": "作業時間の傾向と分析を確認できます",
     "personalSubtitle": "工数消化状況の可視化",
+    "allUsersSubtitle": "全ユーザーの工数消化状況",
+    "scope": {
+      "all": "全員",
+      "own": "自分",
+      "user": "ユーザー選択"
+    },
+    "userFilter": {
+      "label": "ユーザーで絞り込み",
+      "placeholder": "ユーザーを選択",
+      "searchPlaceholder": "ユーザーを検索...",
+      "noUsersFound": "ユーザーが見つかりません",
+      "selectUserPrompt": "ダッシュボードを表示するユーザーを選択してください"
+    },
     "loading": "読み込み中...",
     "unknownError": "不明なエラー",
     "lastUpdated": "最終更新",

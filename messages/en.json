@@ -157,6 +157,19 @@
     "title": "Dashboard",
     "subtitle": "View work time trends and analysis",
     "personalSubtitle": "Visualize work hours consumption",
+    "allUsersSubtitle": "All users work hours overview",
+    "scope": {
+      "all": "All Users",
+      "own": "My Own",
+      "user": "Select User"
+    },
+    "userFilter": {
+      "label": "Filter by User",
+      "placeholder": "Select a user",
+      "searchPlaceholder": "Search users...",
+      "noUsersFound": "No users found",
+      "selectUserPrompt": "Please select a user to view their dashboard"
+    },
     "loading": "Loading...",
     "unknownError": "Unknown error",
     "lastUpdated": "Last updated",

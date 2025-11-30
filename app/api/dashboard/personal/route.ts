@@ -12,6 +12,8 @@ const personalStatsSchema = z.object({
     .enum(["today", "week", "month", "custom"])
     .optional()
     .default("today"),
+  scope: z.enum(["own", "all", "user"]).optional().default("own"),
+  userId: z.string().uuid().optional(),
   startDate: z
     .string()
     .optional()
@@ -71,6 +73,8 @@ export async function GET(request: NextRequest) {
 
     const validationResult = personalStatsSchema.safeParse({
       period: searchParams.get("period") || undefined,
+      scope: searchParams.get("scope") || undefined,
+      userId: searchParams.get("userId") || undefined,
       startDate: searchParams.get("startDate") || undefined,
       endDate: searchParams.get("endDate") || undefined,
     });
@@ -107,9 +111,52 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Validate scope - only admins can view all users' or specific user's data
+    const scope = validatedParams.scope;
+    if (
+      (scope === "all" || scope === "user") &&
+      session.user.role !== "admin"
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN",
+            message: "Only admins can view other users' statistics",
+          },
+        },
+        { status: 403 },
+      );
+    }
+
+    // Validate userId is provided when scope is "user"
+    if (scope === "user" && !validatedParams.userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "userId is required when scope is 'user'",
+          },
+        },
+        { status: 400 },
+      );
+    }
+
+    // Determine the target userId based on scope
+    let targetUserId: string | undefined;
+    if (scope === "all") {
+      targetUserId = undefined; // All users
+    } else if (scope === "user") {
+      targetUserId = validatedParams.userId; // Specific user
+    } else {
+      targetUserId = session.user.id; // Own data
+    }
+
     // Get personal statistics
     const stats = await getPersonalStats({
-      userId: session.user.id,
+      userId: targetUserId,
+      scope,
       period: validatedParams.period,
       startDate: validatedParams.startDate,
       endDate: validatedParams.endDate,

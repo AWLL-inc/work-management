@@ -13,9 +13,13 @@ import type { RecentLog } from "./types";
 
 interface RecentWorkLogsProps {
   logs: RecentLog[];
+  showUserName?: boolean;
 }
 
-export function RecentWorkLogs({ logs }: RecentWorkLogsProps) {
+export function RecentWorkLogs({
+  logs,
+  showUserName = false,
+}: RecentWorkLogsProps) {
   if (logs.length === 0) {
     return (
       <Card>
@@ -41,6 +45,7 @@ export function RecentWorkLogs({ logs }: RecentWorkLogsProps) {
           <TableHeader>
             <TableRow>
               <TableHead>日付</TableHead>
+              {showUserName && <TableHead>ユーザー</TableHead>}
               <TableHead>工数</TableHead>
               <TableHead>プロジェクト</TableHead>
               <TableHead>カテゴリ</TableHead>
@@ -56,6 +61,7 @@ export function RecentWorkLogs({ logs }: RecentWorkLogsProps) {
                     day: "2-digit",
                   })}
                 </TableCell>
+                {showUserName && <TableCell>{log.userName || "-"}</TableCell>}
                 <TableCell>{log.hours}h</TableCell>
                 <TableCell>{log.projectName}</TableCell>
                 <TableCell>{log.categoryName}</TableCell>

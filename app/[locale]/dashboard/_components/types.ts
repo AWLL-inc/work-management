@@ -37,12 +37,21 @@ export interface CategoryDistribution {
   logCount: number;
 }
 
+export interface UserDistribution {
+  userId: string;
+  userName: string | null;
+  totalHours: string;
+  percentage: number;
+  logCount: number;
+}
+
 export interface RecentLog {
   id: string;
   date: string;
   hours: string;
   projectName: string;
   categoryName: string;
+  userName: string | null;
 }
 
 export interface TrendData {
@@ -56,6 +65,7 @@ export interface PersonalStatsResponse {
     summary: PersonalSummary;
     byProject: ProjectDistribution[];
     byCategory: CategoryDistribution[];
+    byUser: UserDistribution[];
     recentLogs: RecentLog[];
     trend: {
       daily: TrendData[];
@@ -69,3 +79,5 @@ export interface PersonalStatsResponse {
 }
 
 export type PeriodType = "today" | "week" | "month" | "custom";
+
+export type ScopeType = "own" | "all" | "user";

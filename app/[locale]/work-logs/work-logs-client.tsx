@@ -14,8 +14,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Pagination,
+  PaginationButton,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationFirst,
+  PaginationItem,
+  PaginationLast,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import type { Project, WorkCategory, WorkLog } from "@/drizzle/schema";
 import type { SanitizedUser } from "@/lib/api/users";
+import type { PaginationResult } from "@/lib/db/repositories/work-log-repository";
 import { cn } from "@/lib/utils";
 
 /**
@@ -50,6 +62,7 @@ interface WorkLogsClientProps {
   currentUserId: string;
   editableWorkLogIds: string[];
   canSelectUser: boolean;
+  pagination: PaginationResult;
   onCreateWorkLog: (data: {
     userId: string;
     date: string;
@@ -82,6 +95,7 @@ export function WorkLogsClient({
   currentUserId,
   editableWorkLogIds,
   canSelectUser,
+  pagination,
   onCreateWorkLog,
   onUpdateWorkLog,
   onDeleteWorkLog,
@@ -255,6 +269,57 @@ export function WorkLogsClient({
     });
   };
 
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    router.push(`/work-logs?${params.toString()}`);
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const { page, totalPages } = pagination;
+    const pages: { type: "page" | "ellipsis"; value: number; key: string }[] =
+      [];
+
+    if (totalPages <= 7) {
+      // Show all pages if 7 or fewer
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push({ type: "page", value: i, key: `page-${i}` });
+      }
+    } else {
+      // Always show first page
+      pages.push({ type: "page", value: 1, key: "page-1" });
+
+      if (page > 3) {
+        pages.push({ type: "ellipsis", value: 0, key: "ellipsis-start" });
+      }
+
+      // Show pages around current page
+      const start = Math.max(2, page - 1);
+      const end = Math.min(totalPages - 1, page + 1);
+
+      for (let i = start; i <= end; i++) {
+        pages.push({ type: "page", value: i, key: `page-${i}` });
+      }
+
+      if (page < totalPages - 2) {
+        pages.push({ type: "ellipsis", value: 0, key: "ellipsis-end" });
+      }
+
+      // Always show last page
+      if (totalPages > 1) {
+        pages.push({
+          type: "page",
+          value: totalPages,
+          key: `page-${totalPages}`,
+        });
+      }
+    }
+
+    return pages;
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] px-4 sm:px-0 space-y-6">
       {/* Scope Buttons */}
@@ -324,6 +389,68 @@ export function WorkLogsClient({
           }}
         />
       </div>
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t pt-4">
+          <div className="text-sm text-muted-foreground">
+            {t("pagination.showing", {
+              from: (pagination.page - 1) * pagination.limit + 1,
+              to: Math.min(
+                pagination.page * pagination.limit,
+                pagination.total,
+              ),
+              total: pagination.total,
+            })}
+          </div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationFirst
+                  onClick={() => handlePageChange(1)}
+                  disabled={pagination.page === 1}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                />
+              </PaginationItem>
+
+              {getPageNumbers().map((item) =>
+                item.type === "ellipsis" ? (
+                  <PaginationItem key={item.key}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={item.key}>
+                    <PaginationButton
+                      onClick={() => handlePageChange(item.value)}
+                      isActive={pagination.page === item.value}
+                    >
+                      {item.value}
+                    </PaginationButton>
+                  </PaginationItem>
+                ),
+              )}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.totalPages}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLast
+                  onClick={() => handlePageChange(pagination.totalPages)}
+                  disabled={pagination.page === pagination.totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       {/* Scope change confirmation dialog */}
       <Dialog

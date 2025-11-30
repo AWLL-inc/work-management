@@ -349,6 +349,9 @@
       "batchSaved": "{count}件の変更を保存しました",
       "batchSaveError": "保存に失敗しました"
     },
+    "pagination": {
+      "showing": "{from}〜{to}件を表示（全{total}件）"
+    },
     "buttons": {
       "edit": "Edit",
       "delete": "Delete",

@@ -29,6 +29,8 @@ interface WorkLogsPageProps {
     projects?: string;
     categories?: string;
     userId?: string;
+    page?: string;
+    limit?: string;
   }>;
 }
 
@@ -50,7 +52,16 @@ export default async function WorkLogsPage({
     projects: projectIdsParam,
     categories: categoryIdsParam,
     userId: filterUserId,
+    page: pageParam,
+    limit: limitParam,
   } = params;
+
+  // Parse pagination parameters
+  const page = Math.max(1, Number.parseInt(pageParam || "1", 10) || 1);
+  const limit = Math.min(
+    100,
+    Math.max(10, Number.parseInt(limitParam || "20", 10) || 20),
+  );
 
   // Build query options based on scope and filters
   const options: GetWorkLogsOptions = {
@@ -62,6 +73,9 @@ export default async function WorkLogsPage({
     categoryIds: parseUrlUUIDs(categoryIdsParam) ?? undefined,
     // User filter (for admin viewing specific user's logs, with UUID validation)
     userId: parseUrlUUID(filterUserId),
+    // Pagination
+    page,
+    limit,
   };
 
   // Apply scope-based filtering (unless userId filter is specified)
@@ -115,6 +129,7 @@ export default async function WorkLogsPage({
   ]);
 
   const workLogs = workLogsResult.data;
+  const pagination = workLogsResult.pagination;
 
   // Sanitize users data (remove password hashes)
   const sanitizedUsers = users.map((user) => ({
@@ -229,6 +244,7 @@ export default async function WorkLogsPage({
       currentUserId={session.user.id}
       editableWorkLogIds={Array.from(editableWorkLogIds)}
       canSelectUser={session.user.role === "admin"}
+      pagination={pagination}
       onCreateWorkLog={handleCreateWorkLog}
       onUpdateWorkLog={handleUpdateWorkLog}
       onDeleteWorkLog={handleDeleteWorkLog}

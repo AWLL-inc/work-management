@@ -341,6 +341,9 @@
       "batchSaved": "Saved {count} changes successfully",
       "batchSaveError": "Failed to save changes"
     },
+    "pagination": {
+      "showing": "Showing {from} to {to} of {total} entries"
+    },
     "buttons": {
       "edit": "Edit",
       "delete": "Delete",

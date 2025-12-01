@@ -55,10 +55,6 @@ interface SearchFilters {
 }
 
 import {
-  exportWorkLogsToCsv,
-  type WorkLogCsvRow,
-} from "@/lib/utils/csv-export";
-import {
   validateDate,
   validateHours,
 } from "@/lib/validations/work-log-validations";
@@ -274,8 +270,8 @@ export function EnhancedWorkLogTable({
     });
   }, [workLogs, projectsMap, categoriesMap, usersMap]);
 
-  // Handle CSV export (placed after maps and rowData are defined)
-  const handleExportCsv = useCallback(() => {
+  // Handle CSV export by calling API endpoint (exports all data matching filters)
+  const handleExportCsv = useCallback(async () => {
     try {
       // Validate that date range is specified
       if (!searchFilters.dateRange.from || !searchFilters.dateRange.to) {
@@ -283,29 +279,63 @@ export function EnhancedWorkLogTable({
         return;
       }
 
-      // Prepare data for CSV export using workLogs and lookup maps
-      const csvData: WorkLogCsvRow[] = workLogs.map((log) => ({
-        date: log.date,
-        user: usersMap.get(log.userId) || "Unknown",
-        hours: log.hours,
-        project: projectsMap.get(log.projectId) || "Unknown",
-        category: categoriesMap.get(log.categoryId) || "Unknown",
-        details: log.details,
-      }));
+      // Build query parameters for API call
+      const params = new URLSearchParams();
+      params.set(
+        "from",
+        searchFilters.dateRange.from.toISOString().split("T")[0],
+      );
+      params.set("to", searchFilters.dateRange.to.toISOString().split("T")[0]);
+      params.set("scope", currentScope);
 
-      // Generate filename with date range
-      const fromDate = searchFilters.dateRange.from.toISOString().split("T")[0];
-      const toDate = searchFilters.dateRange.to.toISOString().split("T")[0];
-      const filename = `work-logs-${fromDate}_${toDate}.csv`;
+      if (searchFilters.projectIds.length > 0) {
+        params.set("projects", searchFilters.projectIds.join(","));
+      }
+      if (searchFilters.categoryIds.length > 0) {
+        params.set("categories", searchFilters.categoryIds.join(","));
+      }
+      if (searchFilters.userId) {
+        params.set("userId", searchFilters.userId);
+      }
 
-      // Export to CSV
-      exportWorkLogsToCsv(csvData, filename);
+      // Call CSV export API endpoint
+      const response = await fetch(
+        `/api/work-logs/export?${params.toString()}`,
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "CSV export failed");
+      }
+
+      // Get CSV content as blob
+      const blob = await response.blob();
+
+      // Extract filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get("Content-Disposition");
+      const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+      const filename =
+        filenameMatch?.[1] ||
+        `work-logs-${searchFilters.dateRange.from.toISOString().split("T")[0]}_${searchFilters.dateRange.to.toISOString().split("T")[0]}.csv`;
+
+      // Trigger download
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
       toast.success(t("search.exportCsvSuccess"));
     } catch (error) {
       debug("CSV export error:", error);
-      toast.error(t("search.exportCsvError"));
+      const errorMessage =
+        error instanceof Error ? error.message : t("search.exportCsvError");
+      toast.error(errorMessage);
     }
-  }, [searchFilters, workLogs, usersMap, projectsMap, categoriesMap, t]);
+  }, [searchFilters, currentScope, t]);
 
   // AG Grid handles data management internally - no manual sync needed
 

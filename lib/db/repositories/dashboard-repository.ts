@@ -1,3 +1,4 @@
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { and, between, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { projects, users, workCategories, workLogs } from "@/drizzle/schema";
 import { db } from "@/lib/db/connection";
@@ -7,30 +8,107 @@ import { db } from "@/lib/db/connection";
  * Handles all dashboard statistics queries with optimized aggregations
  */
 
-// Helper function to get week boundaries (Monday to Sunday)
-function getWeekBoundaries(date: Date): { start: Date; end: Date } {
-  const start = new Date(date);
+// Timezone constant for Japan Standard Time
+const TIMEZONE = "Asia/Tokyo";
+
+// Helper function to get today's boundaries in JST
+function getTodayBoundaries(referenceDate?: Date): { start: Date; end: Date } {
+  const now = referenceDate || new Date();
+  const jstNow = toZonedTime(now, TIMEZONE);
+
+  const start = new Date(jstNow);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(jstNow);
+  end.setHours(23, 59, 59, 999);
+
+  return {
+    start: fromZonedTime(start, TIMEZONE),
+    end: fromZonedTime(end, TIMEZONE),
+  };
+}
+
+// Helper function to get week boundaries (Monday to Sunday) in JST
+function getWeekBoundaries(referenceDate?: Date): { start: Date; end: Date } {
+  const now = referenceDate || new Date();
+  const jstNow = toZonedTime(now, TIMEZONE);
+
+  const start = new Date(jstNow);
   const day = start.getDay();
   const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
   start.setDate(diff);
   start.setHours(0, 0, 0, 0);
 
   const end = new Date(start);
-  end.setDate(start.getDate() + 6);
+  end.setDate(end.getDate() + 6);
   end.setHours(23, 59, 59, 999);
 
-  return { start, end };
+  return {
+    start: fromZonedTime(start, TIMEZONE),
+    end: fromZonedTime(end, TIMEZONE),
+  };
 }
 
-// Helper function to get month boundaries
-function getMonthBoundaries(date: Date): { start: Date; end: Date } {
-  const start = new Date(date.getFullYear(), date.getMonth(), 1);
+// Helper function to get month boundaries in JST
+function getMonthBoundaries(referenceDate?: Date): { start: Date; end: Date } {
+  const now = referenceDate || new Date();
+  const jstNow = toZonedTime(now, TIMEZONE);
+
+  const start = new Date(jstNow.getFullYear(), jstNow.getMonth(), 1);
   start.setHours(0, 0, 0, 0);
 
-  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  const end = new Date(jstNow.getFullYear(), jstNow.getMonth() + 1, 0);
   end.setHours(23, 59, 59, 999);
 
-  return { start, end };
+  return {
+    start: fromZonedTime(start, TIMEZONE),
+    end: fromZonedTime(end, TIMEZONE),
+  };
+}
+
+// Helper function to get last week's boundaries in JST
+function getLastWeekBoundaries(): { start: Date; end: Date } {
+  const now = new Date();
+  const jstNow = toZonedTime(now, TIMEZONE);
+
+  const currentWeekStart = new Date(jstNow);
+  const day = currentWeekStart.getDay();
+  const diff = currentWeekStart.getDate() - day + (day === 0 ? -6 : 1);
+  currentWeekStart.setDate(diff);
+  currentWeekStart.setHours(0, 0, 0, 0);
+
+  // Last week's start (previous week Monday)
+  const start = new Date(currentWeekStart);
+  start.setDate(start.getDate() - 7);
+
+  // Last week's end (previous week Sunday)
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  return {
+    start: fromZonedTime(start, TIMEZONE),
+    end: fromZonedTime(end, TIMEZONE),
+  };
+}
+
+// Helper function to get last month's boundaries in JST
+function getLastMonthBoundaries(): { start: Date; end: Date } {
+  const now = new Date();
+  const jstNow = toZonedTime(now, TIMEZONE);
+
+  // Last month's first day
+  const start = new Date(jstNow.getFullYear(), jstNow.getMonth() - 1, 1);
+  start.setHours(0, 0, 0, 0);
+
+  // Last month's last day
+  const end = new Date(jstNow.getFullYear(), jstNow.getMonth(), 0);
+  end.setHours(23, 59, 59, 999);
+
+  return {
+    start: fromZonedTime(start, TIMEZONE),
+    end: fromZonedTime(end, TIMEZONE),
+  };
 }
 
 /**
@@ -41,7 +119,7 @@ function getMonthBoundaries(date: Date): { start: Date; end: Date } {
 export async function getPersonalStats(options: {
   userId?: string;
   scope?: "own" | "all" | "user";
-  period?: "today" | "week" | "month" | "custom";
+  period?: "today" | "week" | "month" | "lastWeek" | "lastMonth" | "custom";
   startDate?: Date;
   endDate?: Date;
 }) {
@@ -64,12 +142,8 @@ export async function getPersonalStats(options: {
 
   const now = new Date();
 
-  // Determine date ranges
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
-  const todayEnd = new Date(today);
-  todayEnd.setHours(23, 59, 59, 999);
-
+  // Determine date ranges (all in JST)
+  const today = getTodayBoundaries(now);
   const week = getWeekBoundaries(now);
   const month = getMonthBoundaries(now);
 
@@ -79,8 +153,8 @@ export async function getPersonalStats(options: {
 
   switch (period) {
     case "today":
-      periodStart = today;
-      periodEnd = todayEnd;
+      periodStart = today.start;
+      periodEnd = today.end;
       break;
     case "week":
       periodStart = week.start;
@@ -90,13 +164,31 @@ export async function getPersonalStats(options: {
       periodStart = month.start;
       periodEnd = month.end;
       break;
-    case "custom":
+    case "lastWeek": {
+      const lastWeek = getLastWeekBoundaries();
+      periodStart = lastWeek.start;
+      periodEnd = lastWeek.end;
+      break;
+    }
+    case "lastMonth": {
+      const lastMonth = getLastMonthBoundaries();
+      periodStart = lastMonth.start;
+      periodEnd = lastMonth.end;
+      break;
+    }
+    case "custom": {
       if (!startDate || !endDate) {
         throw new Error("Start and end dates are required for custom period");
       }
-      periodStart = startDate;
-      periodEnd = endDate;
+      // Custom period also uses JST
+      const jstStart = toZonedTime(startDate, TIMEZONE);
+      jstStart.setHours(0, 0, 0, 0);
+      const jstEnd = toZonedTime(endDate, TIMEZONE);
+      jstEnd.setHours(23, 59, 59, 999);
+      periodStart = fromZonedTime(jstStart, TIMEZONE);
+      periodEnd = fromZonedTime(jstEnd, TIMEZONE);
       break;
+    }
   }
 
   // Summary statistics
@@ -106,7 +198,7 @@ export async function getPersonalStats(options: {
       logCount: sql<number>`COUNT(*)::int`,
     })
     .from(workLogs)
-    .where(and(userCondition, between(workLogs.date, today, todayEnd)));
+    .where(and(userCondition, between(workLogs.date, today.start, today.end)));
 
   const [weekSummary] = await db
     .select({

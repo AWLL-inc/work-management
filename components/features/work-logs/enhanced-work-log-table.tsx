@@ -55,13 +55,13 @@ interface SearchFilters {
 }
 
 import {
-  validateDate,
-  validateHours,
-} from "@/lib/validations/work-log-validations";
-import {
   exportWorkLogsToCsv,
   type WorkLogCsvRow,
 } from "@/lib/utils/csv-export";
+import {
+  validateDate,
+  validateHours,
+} from "@/lib/validations/work-log-validations";
 
 // Column width constants
 const COLUMN_WIDTHS = {

@@ -3,8 +3,6 @@
  * Provides functions to export data to CSV format
  */
 
-import type { WorkLog } from "@/drizzle/schema";
-
 /**
  * Escapes CSV special characters and wraps value in quotes if needed
  */
@@ -57,7 +55,14 @@ export function exportWorkLogsToCsv(
   filename?: string,
 ): void {
   // CSV header
-  const headers = ["日付", "ユーザー", "工数", "プロジェクト", "カテゴリ", "詳細"];
+  const headers = [
+    "日付",
+    "ユーザー",
+    "工数",
+    "プロジェクト",
+    "カテゴリ",
+    "詳細",
+  ];
   const csvRows = [headers.join(",")];
 
   // Add data rows
@@ -82,7 +87,8 @@ export function exportWorkLogsToCsv(
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = filename || `work-logs-${new Date().toISOString().split("T")[0]}.csv`;
+  link.download =
+    filename || `work-logs-${new Date().toISOString().split("T")[0]}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

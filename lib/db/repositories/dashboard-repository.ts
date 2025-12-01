@@ -191,30 +191,43 @@ export async function getPersonalStats(options: {
     }
   }
 
-  // Summary statistics
-  const [todaySummary] = await db
+  // Summary statistics - get data based on selected period and calculate averages
+  // Get period summary with working days count
+  const [periodSummary] = await db
     .select({
       totalHours: sql<string>`COALESCE(SUM(CAST(${workLogs.hours} AS DECIMAL)), 0)::text`,
       logCount: sql<number>`COUNT(*)::int`,
+      workingDays: sql<number>`COUNT(DISTINCT ${workLogs.date})::int`,
     })
     .from(workLogs)
-    .where(and(userCondition, between(workLogs.date, today.start, today.end)));
+    .where(and(userCondition, between(workLogs.date, periodStart, periodEnd)));
 
-  const [weekSummary] = await db
-    .select({
-      totalHours: sql<string>`COALESCE(SUM(CAST(${workLogs.hours} AS DECIMAL)), 0)::text`,
-      logCount: sql<number>`COUNT(*)::int`,
-    })
-    .from(workLogs)
-    .where(and(userCondition, between(workLogs.date, week.start, week.end)));
+  const totalHoursNum = Number.parseFloat(periodSummary?.totalHours || "0");
+  const logCount = periodSummary?.logCount || 0;
+  const workingDays = periodSummary?.workingDays || 0;
 
-  const [monthSummary] = await db
-    .select({
-      totalHours: sql<string>`COALESCE(SUM(CAST(${workLogs.hours} AS DECIMAL)), 0)::text`,
-      logCount: sql<number>`COUNT(*)::int`,
-    })
-    .from(workLogs)
-    .where(and(userCondition, between(workLogs.date, month.start, month.end)));
+  // Calculate card values based on period type
+  // Card 3 is always the total hours for the period
+  const card3Hours = totalHoursNum.toFixed(1);
+
+  // Card 1: Daily average (total hours / working days)
+  const card1Hours =
+    workingDays > 0 ? (totalHoursNum / workingDays).toFixed(1) : "0.0";
+
+  // Card 2: Depends on period type
+  const card2Hours =
+    period === "today" || period === "week" || period === "lastWeek"
+      ? // For today/week/lastWeek: show total hours (same as card 3)
+        card3Hours
+      : // For month/lastMonth/custom: calculate weekly average
+        (() => {
+          const periodDays = Math.ceil(
+            (periodEnd.getTime() - periodStart.getTime()) /
+              (1000 * 60 * 60 * 24),
+          );
+          const weeks = Math.max(1, Math.ceil(periodDays / 7));
+          return (totalHoursNum / weeks).toFixed(1);
+        })();
 
   // By Project (for selected period)
   const [periodTotal] = await db
@@ -338,21 +351,23 @@ export async function getPersonalStats(options: {
 
   return {
     summary: {
-      today: {
-        totalHours: todaySummary?.totalHours || "0",
-        logCount: todaySummary?.logCount || 0,
+      card1: {
+        totalHours: card1Hours,
+        logCount,
+        periodStart: periodStart.toISOString().split("T")[0],
+        periodEnd: periodEnd.toISOString().split("T")[0],
       },
-      thisWeek: {
-        totalHours: weekSummary?.totalHours || "0",
-        logCount: weekSummary?.logCount || 0,
-        weekStart: week.start.toISOString().split("T")[0],
-        weekEnd: week.end.toISOString().split("T")[0],
+      card2: {
+        totalHours: card2Hours,
+        logCount,
+        periodStart: periodStart.toISOString().split("T")[0],
+        periodEnd: periodEnd.toISOString().split("T")[0],
       },
-      thisMonth: {
-        totalHours: monthSummary?.totalHours || "0",
-        logCount: monthSummary?.logCount || 0,
-        monthStart: month.start.toISOString().split("T")[0],
-        monthEnd: month.end.toISOString().split("T")[0],
+      card3: {
+        totalHours: card3Hours,
+        logCount,
+        periodStart: periodStart.toISOString().split("T")[0],
+        periodEnd: periodEnd.toISOString().split("T")[0],
       },
     },
     byProject: byProjectWithPercentage,

@@ -474,7 +474,9 @@ describe("Work Logs CSV Export API", () => {
       expect(response.status).toBe(200);
       const text = await response.text();
       // Null details should result in empty field at the end
-      expect(text).toContain("2024-01-15,Test User,8.0,Test Project,Development,");
+      expect(text).toContain(
+        "2024-01-15,Test User,8.0,Test Project,Development,",
+      );
     });
 
     it("should export with exactly 31 days period", async () => {

@@ -34,12 +34,25 @@ export function DateRangePicker({
     return dateString ? new Date(dateString) : undefined;
   };
 
+  // Helper function to check if period exceeds 1 month
+  const isPeriodTooLong = (from: Date, to: Date): boolean => {
+    const oneMonthInMs = 31 * 24 * 60 * 60 * 1000; // 31 days in milliseconds
+    const diffInMs = to.getTime() - from.getTime();
+    return diffInMs > oneMonthInMs;
+  };
+
   const handleFromChange = (dateString: string) => {
     const fromDate = parseDate(dateString);
 
     // Validation: check if start date is after end date
     if (value.to && fromDate && fromDate > value.to) {
       setError(t("search.dateRangeError.startAfterEnd"));
+      return;
+    }
+
+    // Validation: check if period exceeds 1 month
+    if (value.to && fromDate && isPeriodTooLong(fromDate, value.to)) {
+      setError(t("search.dateRangeError.periodTooLong"));
       return;
     }
 
@@ -56,6 +69,12 @@ export function DateRangePicker({
     // Validation: check if end date is before start date
     if (value.from && toDate && toDate < value.from) {
       setError(t("search.dateRangeError.endBeforeStart"));
+      return;
+    }
+
+    // Validation: check if period exceeds 1 month
+    if (value.from && toDate && isPeriodTooLong(value.from, toDate)) {
+      setError(t("search.dateRangeError.periodTooLong"));
       return;
     }
 

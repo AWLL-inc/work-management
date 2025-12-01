@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // Query parameter schema
 const personalStatsSchema = z.object({
   period: z
-    .enum(["today", "week", "month", "custom"])
+    .enum(["today", "week", "month", "lastWeek", "lastMonth", "custom"])
     .optional()
     .default("today"),
   scope: z.enum(["own", "all", "user"]).optional().default("own"),

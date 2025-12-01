@@ -78,6 +78,12 @@ export interface PersonalStatsResponse {
   };
 }
 
-export type PeriodType = "today" | "week" | "month" | "custom";
+export type PeriodType =
+  | "today"
+  | "week"
+  | "month"
+  | "lastWeek"
+  | "lastMonth"
+  | "custom";
 
 export type ScopeType = "own" | "all" | "user";

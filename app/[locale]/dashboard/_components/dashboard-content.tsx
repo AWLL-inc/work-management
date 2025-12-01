@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
@@ -30,6 +31,9 @@ export function DashboardContent() {
   const [period, setPeriod] = useState<PeriodType>("week");
   const [scope, setScope] = useState<ScopeType>("all");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [customDates, setCustomDates] = useState<
+    { start: Date; end: Date } | undefined
+  >(undefined);
 
   const isAdmin = session?.user?.role === "admin";
   // Admin defaults to "all" scope, others always use "own"
@@ -59,6 +63,15 @@ export function DashboardContent() {
     }));
   }, [paginatedItems]);
 
+  // Handle period change with optional custom dates
+  const handlePeriodChange = (
+    newPeriod: PeriodType,
+    newCustomDates?: { start: Date; end: Date },
+  ) => {
+    setPeriod(newPeriod);
+    setCustomDates(newCustomDates);
+  };
+
   // Build API URL with parameters (null if user scope without selected user)
   const apiUrl = useMemo(() => {
     // Don't fetch if scope is "user" but no user is selected
@@ -69,11 +82,18 @@ export function DashboardContent() {
       period,
       scope: effectiveScope,
     });
+
+    // Add custom date range parameters if period is "custom"
+    if (period === "custom" && customDates) {
+      params.set("startDate", format(customDates.start, "yyyy-MM-dd"));
+      params.set("endDate", format(customDates.end, "yyyy-MM-dd"));
+    }
+
     if (effectiveScope === "user" && selectedUserId) {
       params.set("userId", selectedUserId);
     }
     return `/api/dashboard/personal?${params.toString()}`;
-  }, [period, effectiveScope, selectedUserId]);
+  }, [period, customDates, effectiveScope, selectedUserId]);
 
   const { data, error, isLoading } = useSWR<PersonalStatsResponse>(
     apiUrl,
@@ -257,7 +277,11 @@ export function DashboardContent() {
               className="w-[250px]"
             />
           )}
-          <PeriodSelector period={period} onPeriodChange={setPeriod} />
+          <PeriodSelector
+            period={period}
+            onPeriodChange={handlePeriodChange}
+            customDates={customDates}
+          />
         </div>
       </div>
 

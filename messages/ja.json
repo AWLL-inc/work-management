@@ -338,8 +338,14 @@
       "closeCategorySelection": "カテゴリ選択を閉じる",
       "dateRangeError": {
         "startAfterEnd": "開始日は終了日以前を選択してください",
-        "endBeforeStart": "終了日は開始日以降を選択してください"
-      }
+        "endBeforeStart": "終了日は開始日以降を選択してください",
+        "periodTooLong": "検索期間は最長1か月までです"
+      },
+      "exportCsv": "CSV出力",
+      "exportCsvTooltip": "検索結果をCSV形式でダウンロードします",
+      "exportCsvError": "CSV出力に失敗しました",
+      "exportCsvSuccess": "CSVファイルをダウンロードしました",
+      "exportCsvPeriodError": "CSV出力には開始日と終了日を指定してください"
     },
     "table": {
       "date": "日付",

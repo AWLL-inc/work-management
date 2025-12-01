@@ -2,6 +2,7 @@
 
 import {
   Calendar,
+  Download,
   Folder,
   RefreshCw,
   Tag,
@@ -41,6 +42,7 @@ interface SearchControlsProps {
   showUserFilter?: boolean;
   onApplyFilters?: () => void;
   onClearFilters?: () => void;
+  onExportCsv?: () => void;
   isLoading?: boolean;
   className?: string;
 }
@@ -55,6 +57,7 @@ export const SearchControls = memo(
     showUserFilter = false,
     onApplyFilters,
     onClearFilters,
+    onExportCsv,
     isLoading = false,
     className,
   }: SearchControlsProps) {
@@ -272,6 +275,19 @@ export const SearchControls = memo(
                 </Button>
               )}
 
+              {onExportCsv && (
+                <Button
+                  variant="outline"
+                  onClick={onExportCsv}
+                  disabled={isLoading}
+                  className="min-w-[100px] h-10"
+                  title={t("search.exportCsvTooltip")}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {t("search.exportCsv")}
+                </Button>
+              )}
+
               {hasActiveFilters && (
                 <Button
                   variant="outline"
@@ -298,7 +314,8 @@ export const SearchControls = memo(
       prevProps.categories === nextProps.categories &&
       prevProps.users === nextProps.users &&
       prevProps.showUserFilter === nextProps.showUserFilter &&
-      prevProps.className === nextProps.className
+      prevProps.className === nextProps.className &&
+      prevProps.onExportCsv === nextProps.onExportCsv
     );
   },
 );

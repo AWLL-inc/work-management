@@ -58,6 +58,10 @@ import {
   validateDate,
   validateHours,
 } from "@/lib/validations/work-log-validations";
+import {
+  exportWorkLogsToCsv,
+  type WorkLogCsvRow,
+} from "@/lib/utils/csv-export";
 
 // Column width constants
 const COLUMN_WIDTHS = {
@@ -269,6 +273,39 @@ export function EnhancedWorkLogTable({
       };
     });
   }, [workLogs, projectsMap, categoriesMap, usersMap]);
+
+  // Handle CSV export (placed after maps and rowData are defined)
+  const handleExportCsv = useCallback(() => {
+    try {
+      // Validate that date range is specified
+      if (!searchFilters.dateRange.from || !searchFilters.dateRange.to) {
+        toast.error(t("search.exportCsvPeriodError"));
+        return;
+      }
+
+      // Prepare data for CSV export using workLogs and lookup maps
+      const csvData: WorkLogCsvRow[] = workLogs.map((log) => ({
+        date: log.date,
+        user: usersMap.get(log.userId) || "Unknown",
+        hours: log.hours,
+        project: projectsMap.get(log.projectId) || "Unknown",
+        category: categoriesMap.get(log.categoryId) || "Unknown",
+        details: log.details,
+      }));
+
+      // Generate filename with date range
+      const fromDate = searchFilters.dateRange.from.toISOString().split("T")[0];
+      const toDate = searchFilters.dateRange.to.toISOString().split("T")[0];
+      const filename = `work-logs-${fromDate}_${toDate}.csv`;
+
+      // Export to CSV
+      exportWorkLogsToCsv(csvData, filename);
+      toast.success(t("search.exportCsvSuccess"));
+    } catch (error) {
+      debug("CSV export error:", error);
+      toast.error(t("search.exportCsvError"));
+    }
+  }, [searchFilters, workLogs, usersMap, projectsMap, categoriesMap, t]);
 
   // AG Grid handles data management internally - no manual sync needed
 
@@ -1304,6 +1341,7 @@ export function EnhancedWorkLogTable({
             handleFiltersChange(clearedFilters);
             // URL update triggers Server Component re-render automatically
           }}
+          onExportCsv={handleExportCsv}
           isLoading={isLoading}
           className="flex-1"
         />

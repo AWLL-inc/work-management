@@ -20,6 +20,7 @@ describe("DateRangePicker", () => {
           "開始日は終了日以前を選択してください",
         "search.dateRangeError.endBeforeStart":
           "終了日は開始日以降を選択してください",
+        "search.dateRangeError.periodTooLong": "検索期間は最長1か月までです",
       };
       return translations[key] || key;
     });
@@ -197,7 +198,7 @@ describe("DateRangePicker", () => {
   });
 
   it("should preserve existing to date when changing from date", () => {
-    const existingTo = new Date("2024-12-31");
+    const existingTo = new Date("2024-10-31");
     const value = {
       from: undefined,
       to: existingTo,
@@ -216,7 +217,7 @@ describe("DateRangePicker", () => {
   });
 
   it("should preserve existing from date when changing to date", () => {
-    const existingFrom = new Date("2024-01-01");
+    const existingFrom = new Date("2024-12-01");
     const value = {
       from: existingFrom,
       to: undefined,
@@ -347,5 +348,78 @@ describe("DateRangePicker", () => {
       from: new Date("2024-01-15"),
       to: new Date("2024-01-15"),
     });
+  });
+
+  it("should show error when period exceeds 31 days (from date change)", () => {
+    const value = {
+      from: undefined,
+      to: new Date("2024-12-31"),
+    };
+    const onChange = vi.fn();
+
+    render(<DateRangePicker value={value} onChange={onChange} />);
+
+    const fromInput = screen.getByLabelText("開始日");
+    // Set from date to 2024-01-01, which makes period 365 days (exceeds 31 days)
+    fireEvent.change(fromInput, { target: { value: "2024-01-01" } });
+
+    expect(screen.getByText("検索期間は最長1か月までです")).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("should show error when period exceeds 31 days (to date change)", () => {
+    const value = {
+      from: new Date("2024-01-01"),
+      to: undefined,
+    };
+    const onChange = vi.fn();
+
+    render(<DateRangePicker value={value} onChange={onChange} />);
+
+    const toInput = screen.getByLabelText("終了日");
+    // Set to date to 2024-12-31, which makes period 365 days (exceeds 31 days)
+    fireEvent.change(toInput, { target: { value: "2024-12-31" } });
+
+    expect(screen.getByText("検索期間は最長1か月までです")).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("should allow period of exactly 31 days", () => {
+    const value = {
+      from: new Date("2024-01-01"),
+      to: undefined,
+    };
+    const onChange = vi.fn();
+
+    render(<DateRangePicker value={value} onChange={onChange} />);
+
+    const toInput = screen.getByLabelText("終了日");
+    // Set to date to 2024-02-01, which makes period exactly 31 days
+    fireEvent.change(toInput, { target: { value: "2024-02-01" } });
+
+    expect(
+      screen.queryByText("検索期間は最長1か月までです"),
+    ).not.toBeInTheDocument();
+    expect(onChange).toHaveBeenCalledWith({
+      from: new Date("2024-01-01"),
+      to: new Date("2024-02-01"),
+    });
+  });
+
+  it("should reject period of 32 days", () => {
+    const value = {
+      from: new Date("2024-01-01"),
+      to: undefined,
+    };
+    const onChange = vi.fn();
+
+    render(<DateRangePicker value={value} onChange={onChange} />);
+
+    const toInput = screen.getByLabelText("終了日");
+    // Set to date to 2024-02-02, which makes period 32 days (exceeds 31 days)
+    fireEvent.change(toInput, { target: { value: "2024-02-02" } });
+
+    expect(screen.getByText("検索期間は最長1か月までです")).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

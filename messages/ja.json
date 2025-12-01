@@ -213,6 +213,39 @@
     "error": {
       "title": "エラーが発生しました",
       "fetchFailed": "ダッシュボードデータの取得に失敗しました: {message}"
+    },
+    "cards": {
+      "today": {
+        "card1": "今日の工数",
+        "card2": "今週の工数",
+        "card3": "今月の工数"
+      },
+      "week": {
+        "card1": "今週の平均",
+        "card2": "今週の工数",
+        "card3": "今月の工数"
+      },
+      "month": {
+        "card1": "今月の平均",
+        "card2": "今月の工数",
+        "card3": "今月の工数"
+      },
+      "lastWeek": {
+        "card1": "先週の平均",
+        "card2": "先週の工数",
+        "card3": "先週の工数"
+      },
+      "lastMonth": {
+        "card1": "先月の平均",
+        "card2": "先月の工数",
+        "card3": "先月の工数"
+      },
+      "custom": {
+        "card1": "期間の平均",
+        "card2": "期間の工数",
+        "card3": "期間の工数"
+      },
+      "logCount": "{count}件の記録"
     }
   },
   "workLogs": {

@@ -171,7 +171,7 @@ export function DashboardContent() {
     return (
       <>
         {/* Summary Cards */}
-        <PersonalSummaryCard summary={stats.summary} />
+        <PersonalSummaryCard summary={stats.summary} period={period} />
 
         {/* User Distribution Chart (only when scope is "all") */}
         {effectiveScope === "all" &&

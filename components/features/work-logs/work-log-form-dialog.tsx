@@ -139,7 +139,7 @@ export function WorkLogFormDialog({
                     <FormControl>
                       <UserSelect
                         users={users}
-                        selectedUserId={field.value}
+                        selectedUserId={field.value ?? null}
                         onSelectionChange={(userId) => {
                           field.onChange(userId || currentUserId);
                         }}

@@ -24,9 +24,9 @@ export function PersonalSummaryCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{summary.today.totalHours}h</div>
+          <div className="text-2xl font-bold">{summary.card1.totalHours}h</div>
           <p className="text-xs text-muted-foreground">
-            {t("logCount", { count: summary.today.logCount })}
+            {t("logCount", { count: summary.card1.logCount })}
           </p>
         </CardContent>
       </Card>
@@ -38,11 +38,9 @@ export function PersonalSummaryCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {summary.thisWeek.totalHours}h
-          </div>
+          <div className="text-2xl font-bold">{summary.card2.totalHours}h</div>
           <p className="text-xs text-muted-foreground">
-            {t("logCount", { count: summary.thisWeek.logCount })}
+            {t("logCount", { count: summary.card2.logCount })}
           </p>
         </CardContent>
       </Card>
@@ -54,11 +52,9 @@ export function PersonalSummaryCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {summary.thisMonth.totalHours}h
-          </div>
+          <div className="text-2xl font-bold">{summary.card3.totalHours}h</div>
           <p className="text-xs text-muted-foreground">
-            {t("logCount", { count: summary.thisMonth.logCount })}
+            {t("logCount", { count: summary.card3.logCount })}
           </p>
         </CardContent>
       </Card>
